@@ -1,0 +1,22 @@
+SELECT vta.zone_id AS zoneId,
+                        vta.zone_name AS zoneName,
+                        v.variety_name AS varietyName,
+                        COUNT(DISTINCT f.id) AS nosofFarmer,
+                        COUNT(pd.bale_id) AS nosofBale,
+                        SUM(pd.weight) AS weight,
+                        SUM(brw.weight - (bs.sacks_weight + bs.extra_weight)) AS reWeight,
+                        SUM((brw.weight - (bs.sacks_weight + bs.extra_weight)) - pd.weight) AS difference
+                        FROM purchase_main pm
+                        JOIN purchase_details pd ON pm.id = pd.purchase_main_id
+                        JOIN farmer_contact fc ON (fc.id = pm.farmer_contact_id AND fc.season_id = :seasonId)
+                        JOIN farmer f ON pm.farmer_id = f.id
+                        JOIN v_territory_all vta ON f.territory_id = vta.vill_id
+                        JOIN bale_weight brw ON pd.bale_id = brw.bale_id AND brw.weight_recipient = 'RE_WEIGHT'
+                        JOIN bale_sacks bs ON pd.bale_id = bs.bale_id AND bs.sack_type_selector = 'BUYER'
+                        JOIN grade g on pd.grade_id = g.id
+                        JOIN variety v ON g.variety_id = v.id
+                        WHERE vta.area_id = :areaId
+                        AND g.variety_id IN (:varietyId)
+                        AND pm.purchase_date BETWEEN TO_DATE(:fromDate, 'yyyy-MM-dd') AND TO_DATE(:toDate, 'yyyy-MM-dd')
+                        GROUP BY vta.zone_id, vta.zone_name, v.variety_name
+                        ORDER BY vta.zone_id

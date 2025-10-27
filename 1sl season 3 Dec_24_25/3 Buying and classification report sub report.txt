@@ -1,0 +1,145 @@
+--purchase part
+select  pu.varietyName,
+        pu.areaId,
+        pu.areaName,
+        pu.gradeName,
+        pu.nosOfBale,
+        pu.weight,
+        case when tw.total_weight > 0 then (pu.weight/tw.total_weight) * 100 else 0 end contribution
+from (select v.variety_name                     varietyName,
+             vta.area_id                        areaId,
+             vta.area_Name                      areaName,
+             g.grade_name                       gradeName,
+             cast(count(pd.bale_id) as integer) nosOfBale,
+             sum(pd.weight) as                  weight
+      from purchase_main pm
+               join purchase_details pd on pm.id = pd.purchase_main_id
+               join bale b on pd.bale_id = b.id
+                        and b.id in (
+              select distinct b.id
+              from bale b
+                       JOIN (select * from bale_grade where grade_provider = 'CLASSIFIER') bg
+                            ON b.id = bg.bale_id
+                       JOIN (select * from grade where season_id = :seasonId AND grade_provider = 'CLASSIFIER') g
+                            ON bg.grade_id = g.id
+                       JOIN variety v
+                            ON g.variety_id = v.id
+                       JOIN (select distinct area_id, area_name from v_teritory_all) vta
+                            ON g.area_id = vta.area_id
+                                AND case when :areaId is not null then vta.area_id = :areaId else true end
+                                AND g.variety_id = :varietyId
+                       JOIN (select *
+                             from bale_weight
+                             where cast(add_date_time as date) BETWEEN to_date(:fromDate, 'YYYY-MM-DD') AND to_date(:toDate, 'YYYY-MM-DD')
+                               AND weight_recipient not in ('PURCHASE', 'RE_WEIGHT')) bcw
+                            ON b.id = bcw.bale_id
+                       LEFT JOIN (select * from bale_sacks where sack_type_selector = 'CLASSIFIER') cbs
+                                 ON b.id = cbs.bale_id)
+               join farmer_contact fc on (fc.id = pm.farmer_contact_id and fc.season_id = :seasonId)
+               join farmer f on pm.farmer_id = f.id
+               join v_territory_all vta on f.territory_id = vta.vill_id
+               join bale_weight brw on pd.bale_id = brw.bale_id and brw.weight_recipient = 'RE_WEIGHT'
+               join bale_sacks bs on pd.bale_id = bs.bale_id and bs.sack_type_selector = 'BUYER'
+               join bale_grade bg on pd.bale_id = bg.bale_id and bg.grade_provider = 'BUYER'
+               join grade g on bg.grade_id = g.id
+               join variety v on g.variety_id = v.id
+      where case when :areaId is not null then vta.area_id = :areaId else true end
+        and g.variety_id = :varietyId
+      group by v.variety_name, vta.area_id, vta.area_Name, g.grade_name
+     )pu
+         cross join
+     (select
+          sum(pd.weight) as total_weight
+      from purchase_main pm
+               join purchase_details pd on pm.id = pd.purchase_main_id
+               join bale b on pd.bale_id = b.id
+          and b.id in (
+              select distinct b.id
+              from bale b
+                       JOIN (select * from bale_grade where grade_provider = 'CLASSIFIER') bg
+                            ON b.id = bg.bale_id
+                       JOIN (select * from grade where season_id = :seasonId AND grade_provider = 'CLASSIFIER') g
+                            ON bg.grade_id = g.id
+                       JOIN variety v
+                            ON g.variety_id = v.id
+                       JOIN (select distinct area_id, area_name from v_teritory_all) vta
+                            ON g.area_id = vta.area_id
+                                AND case when :areaId is not null then vta.area_id = :areaId else true end
+                                AND g.variety_id = :varietyId
+                       JOIN (select *
+                             from bale_weight
+                             where cast(add_date_time as date) BETWEEN to_date(:fromDate, 'YYYY-MM-DD') AND to_date(:toDate, 'YYYY-MM-DD')
+                               AND weight_recipient not in ('PURCHASE', 'RE_WEIGHT')) bcw
+                            ON b.id = bcw.bale_id
+                       LEFT JOIN (select * from bale_sacks where sack_type_selector = 'CLASSIFIER') cbs
+                                 ON b.id = cbs.bale_id)
+               join farmer_contact fc on (fc.id = pm.farmer_contact_id and fc.season_id =:seasonId)
+               join farmer f on pm.farmer_id = f.id
+               join v_territory_all vta on f.territory_id = vta.vill_id
+               join bale_weight brw on pd.bale_id=brw.bale_id and brw.weight_recipient='RE_WEIGHT'
+               join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+               join bale_grade bg on pd.bale_id=bg.bale_id and bg.grade_provider='BUYER'
+               join grade g on bg.grade_id = g.id
+               join variety v on g.variety_id = v.id
+      where   case when :areaId is not null then vta.area_id=:areaId else true end
+        and     g.variety_id = :varietyId) tw
+order by areaId, gradeName
+
+;
+--classification part
+select
+    cl.varietyName,
+    cl.areaId,
+    cl.areaName,
+    cl.gradeName,
+    cl.baleCount,
+    cl.weight,
+    case when tw.total_weight > 0 then (cl.weight/tw.total_weight) * 100 else 0 end contribution
+from
+    (
+        select v.variety_name                                                          varietyName,
+               vta.area_id                                                             areaId,
+               vta.area_name                                                           areaName,
+               g.grade_name                                                            gradeName,
+               cast(COUNT(bg.bale_id) as integer)                                      baleCount,
+               SUM(bcw.weight - (cbs.sacks_weight + coalesce(cbs.extra_weight, 0))) as weight
+        from bale b
+                 JOIN (select * from bale_grade where grade_provider = 'CLASSIFIER') bg
+                      ON b.id = bg.bale_id
+                 JOIN (select * from grade where season_id = :seasonId AND grade_provider = 'CLASSIFIER') g
+                      ON bg.grade_id = g.id
+                 JOIN variety v
+                      ON g.variety_id = v.id
+                 JOIN (select distinct area_id, area_name from v_teritory_all) vta
+                      ON g.area_id = vta.area_id
+                          AND case when :areaId is not null then vta.area_id = :areaId else true end
+                          AND g.variety_id = :varietyId
+                 JOIN (select *
+                       from bale_weight
+                       where cast(add_date_time as date) BETWEEN to_date(:fromDate, 'YYYY-MM-DD') AND to_date(:toDate, 'YYYY-MM-DD')
+                         AND weight_recipient not in ('PURCHASE', 'RE_WEIGHT')) bcw
+                      ON b.id = bcw.bale_id
+                 LEFT JOIN (select * from bale_sacks where sack_type_selector = 'CLASSIFIER') cbs
+                           ON b.id = cbs.bale_id
+        group by v.variety_name, vta.area_id, vta.area_name, g.grade_name) cl
+        cross join (select
+                        SUM(bcw.weight - (cbs.sacks_weight + coalesce(cbs.extra_weight, 0))) as total_weight
+                    from bale b
+                             JOIN (select * from bale_grade where grade_provider = 'CLASSIFIER') bg
+                                  ON b.id = bg.bale_id
+                             JOIN (select * from grade where season_id = :seasonId AND grade_provider = 'CLASSIFIER') g
+                                  ON bg.grade_id = g.id
+                             JOIN variety v
+                                  ON g.variety_id = v.id
+                             JOIN (select distinct area_id, area_name from v_teritory_all) vta
+                                  ON g.area_id = vta.area_id
+                                      AND case when :areaId is not null then vta.area_id = :areaId else true end
+                                      AND g.variety_id = :varietyId
+                             JOIN (select *
+                                   from bale_weight
+                                   where cast(add_date_time as date) BETWEEN to_date(:fromDate, 'YYYY-MM-DD') AND to_date(:toDate, 'YYYY-MM-DD')
+                                     AND weight_recipient not in ('PURCHASE', 'RE_WEIGHT')) bcw
+                                  ON b.id = bcw.bale_id
+                             LEFT JOIN (select * from bale_sacks where sack_type_selector = 'CLASSIFIER') cbs
+                                       ON b.id = cbs.bale_id) tw
+order by areaId, gradeName

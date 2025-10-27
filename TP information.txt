@@ -1,0 +1,33 @@
+select
+        f.farmer_reg_number farmerRegId,
+        tp.tp_no tpNo,
+        f.farmer_name farmerName,
+        f.farmer_image farmerImage,
+        f.farmer_father_name fathersName,
+        vt.sub_area_name subAreaName,
+        vt.vill_name villName,
+        COALESCE (bc.center_name,'N/A') centerName,
+        tp.tp_issue_date tpIssueDate,
+        tp.tp_sales_date purchaseDate,
+        tp.bale_count nosBale,
+        b.bank_name bankName,
+        t.thana_name thanaName,
+        d.district_name districtName,
+        fbc.account_number accountNumber,
+        fc.land_acreage acr
+from    transit_pass tp
+JOIN    farmer_contact fc on tp.farmer_contact_id=fc.id
+JOIN    farmer f on fc.farmer_id=f.id
+JOIN    v_territory_all vt on f.territory_id=vt.vill_id
+JOIN    farmer_bank_account fbc on f.id = fbc.farmer_id
+JOIN    bank_branch bb on fbc.bank_branch_id=bb.id
+JOIN    bank b on bb.bank_id=b.id
+JOIN    post_office po on f.post_office_id=po.id
+JOIN    unions u on po.union_id = u.id
+JOIN    thana t on u.thana_id = t.id
+JOIN    district d on t.district_id = d.id
+LEFT    JOIN buying_center bc on vt.zone_id=bc.zone_id
+where   tp.batch_number=:batchNumber
+order   by f.farmer_reg_number,tp.tp_no
+
+

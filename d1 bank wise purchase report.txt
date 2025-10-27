@@ -1,0 +1,34 @@
+select  f.farmer_reg_number regNo,
+        f.farmer_name farmerName,
+        f.farmer_father_name ffName,
+        v.area_id areaId,
+        v.area_name areaName,
+        v.zone_id zoneId,
+        v.zone_name zoneName,
+        v.village_id villageId,
+        v.village_name villageName,
+        b.id bankId,
+        b.bank_name bankName,
+        bb.id branchId,
+        bb.branch_name branchName,
+        pm.purchase_no voucherNo,
+        fba.account_number accountNo,
+        pm.purchase_date,
+        pm.add_date purchaseDate,
+        pm.payment_date paymentDate,
+        pm.grand_total amount,
+        pm.loan_deduct loanDeduct,
+        pm.net_pay netPay
+from    farmer f
+JOIN    farmer_bank_account fba on f.id = fba.farmer_id
+JOIN    bank_branch bb on bb.id=fba.bank_branch_id
+join    bank b on b.id=bb.bank_id
+JOIN    purchase_main pm on f.id=pm.farmer_id
+join    v_teritory_all v on f.territory_id=v.village_id
+where   area_id=:areaId
+and     zone_id=:zoneId
+and     b.id = :bankId
+and     bb.id = :branchId
+and     pm.purchase_date between :puFromDate and :puToDate
+and     pm.payment_date between :paFromDate and :paToDate
+order by  v.area_id,v.zone_id,v.village_id,b.id,bb.id,f.farmer_reg_number,pm.purchase_date,pm.payment_date

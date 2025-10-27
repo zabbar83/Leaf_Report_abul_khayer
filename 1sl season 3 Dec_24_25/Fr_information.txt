@@ -1,0 +1,45 @@
+select  v.area_id,
+        v.area_name,
+        v.zone_id,
+        v.zone_name,
+        v.sub_area_id,
+        v.sub_area_name,
+        ut1.fr_name as fr_Name,
+        v.farmer_count,
+        v.regDone reg_Done,
+        coalesce(pf.pending_farmer,0) as pending_farmer,
+        coalesce(agr.agreement_done,0) as agreement_done,
+        coalesce(pagr.pending_agreement,0) as pending_agreement
+from    (select area_id,area_name,zone_id,zone_name,sub_area_id,sub_area_name ,count( f.id) farmer_count,
+                sum(case when f.mod_date >= '2024-07-01 00:00:00.000000' or f.add_date >= '2024-07-01 00:00:00.000000' then 1 else 0 end) regDone
+         from v_territory_all v1
+                  left join farmer f on v1.vill_id=f.territory_id
+         group by area_id, area_name, zone_id, zone_name, sub_area_id, sub_area_name) v
+            left JOIN    (select  u.user_id,u.user_name,un.fr_name,ut.territory_id
+                          from    users u
+                                      JOIN    users_roles ur on u.user_id = ur.users_user_id and ur.roles_id=13
+                              and u.user_id not in (52,54)
+                                      JOIN    users_territory ut on u.user_id = ut.users_id
+                                      join user_new un on ut.territory_id=un.sub_area_id) ut1
+                         on v.sub_area_id=ut1.territory_id
+            left join (select  sub_area_id,count(id) pending_farmer
+                       from farmer_buffer
+                                join v_territory_all on territory_id=vill_id
+                       where approval_status = 'PENDING'
+                       group by sub_area_id) pf on v.sub_area_id=pf.sub_area_id
+            left join (select  v.sub_area_id,count(fc.id) agreement_done
+                       from    farmer_contact fc
+                                   JOIN    farmer f on fc.farmer_id = f.id
+                           and     fc.season_id=3
+                                   join    v_territory_all v on f.territory_id=v.vill_id
+                       group by v.sub_area_id) agr on v.sub_area_id=agr.sub_area_id
+            left join (select  v.sub_area_id,count(fcb.id) pending_agreement
+                       from    public.farmer_contract_buffer fcb
+                                   JOIN    farmer f on fcb.farmer_id = f.id
+                           and     fcb.season_id=3
+                           and     fcb.approval_status='PENDING'
+                                   join    v_territory_all v on f.territory_id=v.vill_id
+                       group by v.sub_area_id
+) pagr on v.sub_area_id=pagr.sub_area_id
+order by area_id,zone_id,sub_area_id,ut1.user_id
+;

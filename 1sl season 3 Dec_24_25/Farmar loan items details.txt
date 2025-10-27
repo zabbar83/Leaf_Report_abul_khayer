@@ -1,0 +1,113 @@
+select
+    vta.area_id,
+    vta.area_name,
+    vta.zone_id ,
+    vta.zone_name,
+    vta.sub_area_id,
+    vta.sub_area_name,
+    vta.village_id,
+    vta.village_name,
+    f.farmer_reg_number ,
+    f.farmer_name,
+    f.mobile_no,
+    f.nid,
+    fc.land_acreage acre,
+    sum(case when i.id =6 then fld.total_amount else 0 end) loanDueTk,
+    sum(case when i.id =711 then fld.quantity else 0 end) seedKg,
+    MAX(case when i.id =711 then i.items_rate else 0 end) seedRate,
+    sum(case when i.id =711 then fld.total_amount else 0 end) seedTk,
+
+    sum(case when i.id =712 then fld.quantity else 0 end) polytheneKg,
+    MAX(case when i.id =712 then i.items_rate else 0 end) polytheneRate,
+    sum(case when i.id =712 then fld.total_amount else 0 end) polytheneTk,
+
+    sum(case when i.id =713 then fld.quantity else 0 end) coromilKg,
+    MAX(case when i.id =713 then i.items_rate else 0 end) coromilRate,
+    sum(case when i.id =713 then fld.total_amount else 0 end) coromilTk,
+
+    sum(case when i.id =714 then fld.quantity else 0 end) theovitKg,
+    MAX(case when i.id =714 then i.items_rate else 0 end) theovitRate,
+    sum(case when i.id =714 then fld.total_amount else 0 end) theovitTk,
+
+    sum(case when i.id =715 then fld.quantity else 0 end) quickPtashKg,
+    MAX(case when i.id =715 then i.items_rate else 0 end) quickPtashRate,
+    sum(case when i.id =715 then fld.total_amount else 0 end) quickPtashKg,
+
+    sum(case when i.id =716 then fld.quantity else 0 end) dapBagKg50,
+    MAX(case when i.id =716 then i.items_rate else 0 end) dapBagRate,
+    sum(case when i.id =716 then fld.total_amount else 0 end) dapTk,
+
+    sum(case when i.id =717 then fld.quantity else 0 end) ureaBagKg50,
+    MAX(case when i.id =717 then i.items_rate else 0 end) ureaBagRate,
+    sum(case when i.id =717 then fld.total_amount else 0 end) ureaTk,
+
+    sum(case when i.id =718 then fld.quantity else 0 end) tarpoulinPcs,
+    MAX(case when i.id =718 then i.items_rate else 0 end) tarpoulinRate,
+    sum(case when i.id =718 then fld.total_amount else 0 end) tarpoulinTk,
+
+    sum(case when i.id =719 then fld.quantity else 0 end) filterNetYard,
+    MAX(case when i.id =719 then i.items_rate else 0 end) filterNetRate,
+    sum(case when i.id =719 then fld.total_amount else 0 end) filterNetTk,
+
+    sum(case when i.id =720 then fld.quantity else 0 end) corozimKg,
+    MAX(case when i.id =720 then i.items_rate else 0 end) corozimRate,
+    sum(case when i.id =720 then fld.total_amount else 0 end) corozimTk,
+
+    sum(case when i.id =721 then fld.quantity else 0 end) amisterTopLtr,
+    MAX(case when i.id =721 then i.items_rate else 0 end) amisterTopRate,
+    sum(case when i.id =721 then fld.total_amount else 0 end) amisterTopTk,
+
+    sum(case when i.id =722 then fld.quantity else 0 end) procalemKg,
+    MAX(case when i.id =722 then i.items_rate else 0 end) procalemRate,
+    sum(case when i.id =722 then fld.total_amount else 0 end) procalemTk,
+
+    sum(case when i.id =723 then fld.quantity else 0 end) ektaraKg,
+    MAX(case when i.id =723 then i.items_rate else 0 end) ektaraRate,
+    sum(case when i.id =723 then fld.total_amount else 0 end) ektaraTk,
+
+    sum(case when i.id =724 then fld.quantity else 0 end) suckerPluckerLtr,
+    MAX(case when i.id =724 then i.items_rate else 0 end) suckerPluckerRate,
+    sum(case when i.id =724 then fld.total_amount else 0 end) suckerPluckerTk,
+
+    sum(case when i.id =725 then fld.quantity else 0 end) pspBagKg50,
+    MAX(case when i.id =725 then i.items_rate else 0 end) pspBagRate,
+    sum(case when i.id =725 then fld.total_amount else 0 end) pspTk,
+
+    sum(case when i.id =726 then fld.quantity else 0 end) sopBagKg50,
+    MAX(case when i.id =726 then i.items_rate else 0 end) sopBagRate,
+    sum(case when i.id =726 then fld.total_amount else 0 end) sopTk,
+
+    sum(case when i.id =727 then fld.quantity else 0 end) gpSheetKg,
+    MAX(case when i.id =727 then i.items_rate else 0 end) gpSheetRate,
+    sum(case when i.id =727 then fld.total_amount else 0 end) gpSheetTk,
+
+    sum(case when i.id =728 then fld.quantity else 0 end) hygrometerPcs,
+    MAX(case when i.id =728 then i.items_rate else 0 end) hygrometerRate,
+    sum(case when i.id =728 then fld.total_amount else 0 end) hygrometerTk,
+
+    sum(case when i.id =729 then fld.quantity else 0 end) phanomamonaTrapPcs,
+    MAX(case when i.id =729 then i.items_rate else 0 end) phanomamonaTrapRate,
+    sum(case when i.id =729 then fld.total_amount else 0 end) phanomamonaTrapTk,
+
+    sum(case when i.id =730 then fld.total_amount else 0 end) loanAdjustTk,
+
+    sum(case when i.id =731 then fld.total_amount else 0 end) advPaymentTk,
+
+    sum(case when i.id =732 then fld.quantity else 0 end) handGlovesPair,
+    MAX(case when i.id =732 then i.items_rate else 0 end) handGlovesRate,
+    sum(case when i.id =732 then fld.total_amount else 0 end) handGlovesTk,
+
+    sum(case when i.id =733 then fld.quantity else 0 end) cashLoanTk
+
+from    v_teritory_all vta
+            join farmer f on vta.village_id = f.territory_id
+    AND case when :areaId is not null then vta.area_id=:areaId else true end
+    AND case when :zoneId is not null then vta.zone_id=:zoneId else true end
+            JOIN farmer_contact fc on f.id = fc.farmer_id
+    AND     fc.season_id=:seasonId
+            JOIN farmer_loan_main flm on fc.id = flm.farmer_contact_id
+            JOIN farmer_loan_details fld on flm.id = fld.loan_main_id
+            JOIN items i on fld.items_id = i.id
+group   by vta.area_id,vta.area_name,vta.zone_id ,vta.zone_name,vta.sub_area_id,vta.sub_area_name,
+           vta.village_id,vta.village_name,f.farmer_reg_number ,f.farmer_name,f.mobile_no,f.nid,fc.land_acreage
+order by area_id, zone_id, sub_area_id, village_id

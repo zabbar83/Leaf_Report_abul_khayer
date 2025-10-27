@@ -1,0 +1,19 @@
+select  d.id depotId,
+        d.depot_name depotName,
+        g.grade_name gradeName,
+        count(bw.bale_id) nosofbale,
+        sum(bw.weight) - sum(bs.sacks_weight + coalesce(bs.extra_weight,0)) as weight
+from buying_center_stock bcs
+JOIN bale_weight bw on bcs.bale_id=bw.bale_id
+    AND  bw.weight_recipient IN ('CLASSIFICATION_FIRST','CLASSIFICATION_SECOND')
+    AND  bcs.in_out_status IN ('IN')
+    AND  bcs.received_status IN ('FRESH','REVISE_BALE')
+         join bale_grade bg on bw.bale_id = bg.bale_id and bg.grade_provider = 'CLASSIFIER'
+         join grade g on bg.grade_id = g.id and g.grade_provider = 'CLASSIFIER'
+         LEFT JOIN bale_sacks bs on bw.bale_id=bs.bale_id and bs.sack_type_selector='CLASSIFIER'
+         JOIN buying_center bc on bcs.buying_center_id = bc.id
+         JOIN depot d on bc.depot_id = d.id
+    AND  d.area_id IN (:areaId) -- optional from backend 
+    AND  bc.id IN (:centerId) -- optional from backend 
+group by d.id, d.depot_name, g.id, g.grade_name
+order by d.id, g.id

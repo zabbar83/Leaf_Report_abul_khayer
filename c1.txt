@@ -1,0 +1,46 @@
+select  a.areaId,a.areaName,a.zone_id,a.zone_name,a.buyingDate,a.buyerCode,a.buyingQr,a.godownId,a.godownName,
+        a.purGradeName,coalesce(a.purWeight,0)purWeight,coalesce(b.reWeight,0)reWeight,coalesce(a.purWeight,0)-coalesce(b.reWeight,0) variance
+from (select  v.area_id areaId,v.area_name areaName,v.zone_id,v.zone_name,pm.purchase_date buyingDate,
+        case when g.grade_provider='BUYER' then u.user_name else 'N/A' end buyerCode,
+        b.bale_code buyingQr,
+         bc.id godownId,
+         bc.center_name godownName,
+        case when bg.grade_provider='BUYER' then g.grade_name else 'N/A' end purGradeName,
+        (case when bw.weight_recipient='PURCHASE' then bw.weight else 0 end)-bs.sacks_weight purWeight
+from    purchase_main pm
+JOIN    purchase_details pd on pm.id=pd.purchase_main_id
+join    bale b on b.id=pd.bale_id
+join    bale_weight bw on bw.bale_id=pd.bale_id
+join    (select bag.* from bale_grade bag where bag.grade_provider='BUYER')bg on b.id=bg.bale_id
+join    grade g on g.id=pd.grade_id
+join    users u on bg.added_by_user_id=u.user_id
+join    buying_center bc on pm.buying_center_id = bc.id
+join    (select distinct area_id,area_name,zone_id,zone_name from v_territory_all) v on bc.zone_id=v.zone_id
+left    join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+where   pm.purchase_date between :fromDate and :toDate
+and     v.area_id=:areaId
+and     v.zone_id=:zoneId
+and     bg.grade_provider='BUYER'
+and     bw.weight_recipient='PURCHASE'
+order by v.area_id,v.zone_id,pm.purchase_date,bg.added_by_user_id,b.bale_code
+    )a
+Left join
+(select
+        b.bale_code buyingQr,
+        pd.weight reWeight
+from    purchase_main pm
+JOIN    purchase_details pd on pm.id=pd.purchase_main_id
+join    bale b on b.id=pd.bale_id
+join    bale_weight bw on bw.bale_id=pd.bale_id
+join    (select bag.* from bale_grade bag where bag.grade_provider='BUYER')bg on b.id=bg.bale_id
+join    grade g on g.id=pd.grade_id
+join    buying_center bc on pm.buying_center_id = bc.id
+join    (select distinct area_id,area_name,zone_id,zone_name from v_territory_all) v on bc.zone_id=v.zone_id
+left    join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+where   pm.purchase_date between :fromDate and :toDate
+and     v.area_id=:areaId
+and     v.zone_id=:zoneId
+and     bg.grade_provider='BUYER'
+and     bw.weight_recipient='RE_WEIGHT')b
+on a.buyingQr=b.buyingQr
+order by a.areaId,a.zone_id,a.buyingDate,a.buyerCode,b.buyingQr

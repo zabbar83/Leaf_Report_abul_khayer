@@ -1,0 +1,83 @@
+select  a.areaId,
+        a.areaName,
+        a.zoneId,
+        a.zoneName,
+        a.purGradeName,
+        COALESCE(b.claGradeName,'N/A')claGradeName,
+        COALESCE(sum(a.purKg),0)purKg,
+        COALESCE(sum(a.purRate),0)purRate,
+        sum(case when bale_id is not null then 1 else 0 end)purBaleCount,
+        COALESCE(sum(a.purTotal),0)purTotal,
+        COALESCE(sum(b.claKg),0)claKg,
+        COALESCE(sum(b.claRate),0)claRate,
+        COALESCE(sum(b.cla_bale_id),0)claBaleCount,
+        COALESCE(sum(b.claTotal),0)claTotal,
+        a.varietyName
+from
+    (select  distinct v.area_id areaId,
+             v.area_name areaName,
+        v.zone_id zoneId,
+        v.zone_name zoneName,
+        pm.purchase_date AS buyingDate,
+        b.bale_code buyingQr,
+        CASE WHEN bg.grade_provider='BUYER' THEN bg.added_by_user_id END AS buyerCode,
+        CASE WHEN bg.grade_provider='BUYER' THEN g.grade_name ELSE 'N/A' END AS purGradeName,
+        CASE WHEN bg.grade_provider='BUYER' THEN pd.weight ELSE 0 END AS purKg,
+        CASE WHEN bg.grade_provider='BUYER' THEN g.grade_rate ELSE 0 END AS purRate,
+        CASE WHEN bg.grade_provider='BUYER' THEN pd.weight * g.grade_rate ELSE 0 END AS purTotal,
+        pd.bale_id,
+        COALESCE(b.rebale_status,'N/A') AS rebale_status1,
+        va.variety_name varietyName
+from    purchase_main pm
+JOIN    purchase_details pd on pm.id=pd.purchase_main_id
+join    bale b on b.id=pd.bale_id
+join    bale_weight bw on bw.bale_id=pd.bale_id
+and     bw.weight_recipient='PURCHASE'
+join    bale_grade bg on b.id=bg.bale_id
+and     bg.grade_provider='BUYER'
+join    grade g on g.id=bg.grade_id
+join    farmer f on pm.farmer_id = f.id
+join    v_territory_all v on f.territory_id=v.vill_id
+join    variety va on pm.variety_id = va.id
+WHERE   pm.purchase_date between :fromDate and :toDate
+and   case when :areaId is not null then v.area_id=:areaId else true end
+and   case when :zoneId is not null then v.zone_id=:zoneId else true end
+and   case when :subAreaId is not null then v.sub_area_id=:subAreaId else true end
+and   case when :villId is not null then v.vill_id=:villId else true end
+)a
+left join
+(select  distinct v.area_id areaId,
+         v.area_name areaName,
+         v.zone_id zoneId,
+        v.zone_name zoneName,
+        b.bale_code buyingQr,
+        CASE WHEN bg.grade_provider='CLASSIFIER' THEN TO_CHAR(bg.add_date_time,'yyyy-mm-dd') ELSE 'N/A' END AS claDate,
+        CASE WHEN bg.grade_provider='CLASSIFIER' THEN bg.added_by_user_id ELSE 0  END AS claCode,
+        CASE WHEN bg.grade_provider='CLASSIFIER' THEN g.grade_name ELSE 'N/A' END AS claGradeName,
+        COALESCE(CASE WHEN bg.grade_provider='CLASSIFIER' THEN bw.weight ELSE 0 END,0)-COALESCE(bs.sacks_weight,0) AS claKg,
+        CASE WHEN bg.grade_provider='CLASSIFIER' THEN g.grade_rate ELSE 0 END AS claRate,
+        (COALESCE(CASE WHEN bg.grade_provider='CLASSIFIER' THEN bw.weight ELSE 0 END,0)-COALESCE(bs.sacks_weight,0)) * g.grade_rate  AS claTotal,
+        case when bw.weight_recipient = 'CLASSIFICATION_FIRST' and bw.bale_id is not null then 1 else 0 end cla_bale_id,
+        COALESCE(b.rebale_status,'N/A') AS rebale_status2,
+        va.variety_name varietyId2
+from    purchase_main pm
+JOIN    purchase_details pd on pm.id=pd.purchase_main_id
+join    bale b on b.id=pd.bale_id
+join    bale_weight bw on bw.bale_id=pd.bale_id
+and     bw.weight_recipient='CLASSIFICATION_FIRST'
+join    bale_grade bg on b.id=bg.bale_id
+join    grade g on g.id=bg.grade_id
+join    farmer f on pm.farmer_id = f.id
+join    v_territory_all v on f.territory_id=v.vill_id
+join    variety va on pm.variety_id = va.id
+left join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='CLASSIFIER'
+WHERE   pm.purchase_date between :fromDate and :toDate
+and   case when :areaId is not null then v.area_id=:areaId else true end
+and   case when :zoneId is not null then v.zone_id=:zoneId else true end
+and   case when :subAreaId is not null then v.sub_area_id=:subAreaId else true end
+and   case when :villId is not null then v.vill_id=:villId else true end
+and     bg.grade_provider='CLASSIFIER'
+)b
+on      a.buyingQr=b.buyingQr
+group by a.areaId,a.areaName,a.zoneId,a.zoneName,a.purGradeName,b.claGradeName,a.varietyName
+order   by a.areaId,a.zoneId

@@ -1,0 +1,31 @@
+select  vta.zone_id          zoneId,
+        vta.zone_name        zoneName,
+        vta.sub_area_id      subAreaId,
+        vta.sub_area_name      subAreaName,
+        vta.vill_id        villageId,
+        vta.vill_name        villageName,
+        pm.purchase_no       vouNo,
+        f.farmer_reg_number  regNo,
+        f.farmer_name        farmerName,
+        f.farmer_father_name fatherName,
+        count(Pd.bale_id) bale,
+        sum(bw.weight-bs.sacks_weight) buyerWeight,
+        sum(pd.weight)      reWeight,
+        pm.grand_total amount,
+        pm.loan_deduct  loanDeduct,
+        pm.net_pay      netPay,
+        cast( fc.land_acreage as numeric) acr
+from purchase_main pm
+join purchase_details pd on pm.id = pd.purchase_main_id
+join farmer_contact fc on (fc.id = pm.farmer_contact_id and fc.season_id = (2))
+join farmer f on pm.farmer_id = f.id
+join v_territory_all vta on f.territory_id = vta.vill_id
+left join bale_weight bw on pd.bale_id=bw.bale_id and bw.weight_recipient='PURCHASE'
+left join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+where vta.area_id = (2)
+--and   vta.zone_id=20
+and pm.purchase_date between TO_DATE('2024-04-20','YYYY-MM-DD') and TO_DATE ('2024-04-20','YYYY-MM-DD')
+group by vta.zone_name, f.farmer_reg_number, f.farmer_name, f.farmer_father_name,
+cast( fc.land_acreage as numeric),vta.vill_name, pm.purchase_no, vta.zone_id, vta.sub_area_id,vta.sub_area_name,
+        vta.vill_id, PM.total_weight, pm.grand_total,pm.loan_deduct,pm.net_pay
+order by vta.zone_id,sub_area_id

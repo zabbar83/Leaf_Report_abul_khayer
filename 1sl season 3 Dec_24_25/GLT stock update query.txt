@@ -1,0 +1,16 @@
+select  v.variety_name varietyName,
+        g.grade_name gradeName,
+        count(bw.bale_id) nosofBale,
+        sum(bw.weight) - sum(bs.sacks_weight + coalesce(bs.extra_weight,0)) as weight
+from    factory_stock fs
+join    bale_weight bw on fs.bale_id=bw.bale_id
+    AND fs.in_out_status='IN'
+    AND     bw.weight_recipient IN ('CLASSIFICATION_FIRST','CLASSIFICATION_SECOND')
+            JOIN    bale_grade bg on bw.bale_id=bg.bale_id
+    AND     bg.grade_provider='CLASSIFIER'
+            JOIN    grade g on bg.grade_id = g.id
+    AND     g.grade_provider='CLASSIFIER'
+            LEFT    JOIN bale_sacks bs on bw.bale_id=bs.bale_id and bs.sack_type_selector='CLASSIFIER'
+            JOIN    variety v on g.variety_id = v.id
+group by v.variety_name, g.grade_name
+order by v.variety_name, g.grade_name

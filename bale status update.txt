@@ -1,0 +1,101 @@
+select  farmerId,
+        farmerName,
+        baleCode,
+        case
+            when a.status='Bale_registered' then 'BALE REGISTERED'
+            when a.status='REJECTED' then 'REJECTED'
+            when a.status='Grade_submitted' then 'GRADE DONE'
+            when a.status='PURCHASE' then 'WEIGHT DONE'
+            when a.status='RE_WEIGHT' then 'RE WEIGHT DONE'
+            when a.status='IN' then 'ADDED TO STORE'
+            when a.status='OUT_FOR_CLASSIFY' then 'OUT FOR CLASSIFY'
+            when a.status='CLASSIFICATION_FIRST' then 'CLASSIFIED'
+        else a.status end status,
+        coalesce(reject_message,' ') rejectRemarks
+From (select t1.farmerId,
+             t1.farmerName,
+             t1.baleCode,
+             t1.status,
+             t1.reject_message,
+             t2.id,
+             RANK() OVER (PARTITION BY t1.baleCode ORDER BY t2.id DESC) rank
+      from (select f.id                                                                                     farmerId,
+                   f.farmer_name                                                                            farmerName,
+                   b.bale_code                                                                              baleCode,
+                   case when to_char(b.add_date_time, 'yyyy-mm-dd') = :targetDate then 'Bale_registered' end status,
+                   b.reject_message
+            from bale b
+                     JOIN transit_pass tp on b.transit_pass_id = tp.id
+                     JOIN farmer f on tp.farmer_id = f.id
+            where to_char(b.add_date_time, 'yyyy-mm-dd') = :targetDate
+            and (b.bale_accept_status != 'REJECTED' or b.bale_accept_status IS NULL)
+            union all
+            select f.id                                                                                      farmerId,
+                   f.farmer_name                                                                             farmerName,
+                   b.bale_code                                                                               baleCode,
+                   case when to_char(bg.add_date_time, 'yyyy-mm-dd') = :targetDate then 'Grade_submitted' end status,
+                   b.reject_message
+            from bale b
+                     JOIN transit_pass tp on b.transit_pass_id = tp.id
+                     JOIN farmer f on tp.farmer_id = f.id
+                     JOIN bale_grade bg on b.id = bg.bale_id
+            and to_char(b.add_date_time, 'yyyy-mm-dd') = to_char(bg.add_date_time, 'yyyy-mm-dd')
+            where to_char(b.add_date_time, 'yyyy-mm-dd') = :targetDate
+            and (b.bale_accept_status != 'REJECTED' or b.bale_accept_status IS NULL)
+            union all
+            select f.id                                                                                        farmerId,
+                   f.farmer_name                                                                               farmerName,
+                   b.bale_code                                                                                 baleCode,
+                   case when to_char(bw.add_date_time, 'yyyy-mm-dd') = :targetDate then bw.weight_recipient end status,
+                   b.reject_message
+            from bale b
+                     JOIN transit_pass tp on b.transit_pass_id = tp.id
+                     JOIN farmer f on tp.farmer_id = f.id
+                     JOIN bale_weight bw on b.id = bw.bale_id
+            and to_char(b.add_date_time, 'yyyy-mm-dd') = to_char(bw.add_date_time, 'yyyy-mm-dd')
+            where to_char(b.add_date_time, 'yyyy-mm-dd') = :targetDate
+                and (b.bale_accept_status != 'REJECTED' or b.bale_accept_status IS NULL)
+            union all
+            select f.id                                                                                       farmerId,
+                   f.farmer_name                                                                              farmerName,
+                   b.bale_code                                                                                baleCode,
+                   case when to_char(bcs.add_date_time, 'yyyy-mm-dd') = :targetDate then bcs.in_out_status end status,
+                   b.reject_message
+            from bale b
+                     JOIN transit_pass tp on b.transit_pass_id = tp.id
+                     JOIN farmer f on tp.farmer_id = f.id
+                     JOIN buying_center_stock bcs on b.id = bcs.bale_id
+            and to_char(b.add_date_time, 'yyyy-mm-dd') = to_char(bcs.add_date_time, 'yyyy-mm-dd')
+            where to_char(b.add_date_time, 'yyyy-mm-dd') = :targetDate
+                and (b.bale_accept_status != 'REJECTED' or b.bale_accept_status IS NULL)
+            union all
+            select f.id                                                                                     farmerId,
+                   f.farmer_name                                                                            farmerName,
+                   b.bale_code                                                                              baleCode,
+                   b.bale_accept_status status,
+                   b.reject_message
+            from bale b
+                     JOIN transit_pass tp on b.transit_pass_id = tp.id
+                     JOIN farmer f on tp.farmer_id = f.id
+            where to_char(b.add_date_time, 'yyyy-mm-dd') = :targetDate
+            and (b.bale_accept_status = 'REJECTED')) t1
+               JOIN
+           (select 1 id, 'Bale_registered' status
+            union all
+            select 2, 'REJECTED' status
+            union all
+            select 3, 'Grade_submitted' status
+            union all
+            select 4, 'PURCHASE' status
+            union all
+            select 5 id, 'RE_WEIGHT' status
+            union all
+            select 6, 'IN' status
+            union all
+            select 7, 'OUT_FOR_CLASSIFY' status
+            union all
+            select 8, 'CLASSIFICATION_FIRST' status
+            ) t2
+           on t1.status = t2.status)a
+where  a.rank=1
+order by a.farmerId,a.baleCode

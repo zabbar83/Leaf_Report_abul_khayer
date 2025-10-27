@@ -1,0 +1,25 @@
+select
+    bb.id,
+    bb.branch_name branchName,
+    bb.routing_number routingNumber,
+    fba.account_number accountNumber,
+    f.farmer_name farmerName,
+    sum(pm.grand_total) - abs(loan_payment) as grandTotal
+from    purchase_main pm
+            JOIN    farmer_contact fc on pm.farmer_contact_id = fc.id
+    AND     pm.purchase_date <= TO_DATE(:date, 'yyyy-MM-dd')
+            JOIN    farmer f on fc.farmer_id = f.id
+            JOIN    farmer_bank_account fba on f.id = fba.farmer_id
+            JOIN    bank_branch bb on fba.bank_branch_id = bb.id
+            JOIN    bank b on bb.bank_id = b.id
+            JOIN    v_territory_all vta on vta.vill_id = f.territory_id
+            JOIN (select  farmer_contact_id,
+                          sum(case when loan_amount <0 then loan_amount else 0 end) loan_payment
+                  from    farmer_loan_main fm
+                              JOIN    farmer_contact fc on fm.farmer_contact_id=fc.id
+                      AND     fm.loan_date <= TO_DATE(:date, 'yyyy-MM-dd')
+                  group by farmer_contact_id) fl
+                 ON fc.id=fl.farmer_contact_id
+where     b.id=:bankId
+group   by bb.id,bb.branch_name, bb.routing_number, fba.account_number, f.farmer_name,loan_payment
+order   by bb.id

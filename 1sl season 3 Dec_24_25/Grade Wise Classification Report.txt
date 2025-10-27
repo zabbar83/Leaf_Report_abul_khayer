@@ -1,0 +1,24 @@
+-- Classifier grade wise weight
+select
+    vta.area_id areaId,
+    vta.area_name areaName,
+    v.variety_name varietyName,
+    g.grade_name grade,
+    COUNT(bg.bale_id) baleCount,
+    SUM(bcw.weight - (cbs.sacks_weight + coalesce(cbs.extra_weight,0))) as weight
+from bale b
+         JOIN (select * from bale_grade where grade_provider = 'CLASSIFIER') bg
+              ON b.id = bg.bale_id
+         JOIN (select * from grade where season_id = 3 AND grade_provider = 'CLASSIFIER') g
+              ON bg.grade_id = g.id
+         JOIN variety v
+              ON g.variety_id = v.id
+         JOIN (select distinct area_id, area_name from v_teritory_all) vta
+              ON g.area_id = vta.area_id
+                  AND case when :areaId is not null then vta.area_id = :areaId else true end
+         JOIN (select * from bale_weight where cast(add_date_time as date) BETWEEN to_date(:fromDate,'YYYY-MM-DD') AND to_date(:toDate,'YYYY-MM-DD') AND weight_recipient not in('PURCHASE', 'RE_WEIGHT')) bcw
+              ON b.id = bcw.bale_id
+         LEFT JOIN (select * from bale_sacks where sack_type_selector = 'CLASSIFIER') cbs
+                   ON b.id = cbs.bale_id
+group by vta.area_id, vta.area_name, v.variety_name, g.grade_name
+ORDER BY vta.area_id, g.grade_name

@@ -1,0 +1,23 @@
+select  b.bank_name bankName,
+        bb.id branchId,
+        bb.branch_name branchName,
+        sum(pd.bale_id) baleId,
+        sum(pd.weight) reWeight,
+        sum(pm.grand_total) amount,
+        sum(pm.loan_deduct) loanDeduct,
+        sum(pm.net_pay) netPay
+from    farmer f
+JOIN    farmer_bank_account fba on f.id = fba.farmer_id
+JOIN    bank_branch bb on bb.id=fba.bank_branch_id
+join    bank b on b.id=bb.bank_id
+JOIN    purchase_main pm on f.id=pm.farmer_id
+JOIN    (select  purchase_main_id,COUNT(bale_id) bale_id, SUM(weight) weight from purchase_details p
+                join purchase_main m on p.purchase_main_id=m.id
+                where  m.payment_date between :fromDate and :toDate
+        group by purchase_main_id
+) pd on pm.id = pd.purchase_main_id
+join    v_territory_all v on f.territory_id=v.vill_id
+where   pm.payment_date between :fromDate and :toDate
+and     bb.id = :branchName
+group by b.bank_name,bb.id,bb.branch_name
+order by b.bank_name,bb.id

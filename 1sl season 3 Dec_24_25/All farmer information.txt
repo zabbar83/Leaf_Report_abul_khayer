@@ -1,0 +1,44 @@
+select distinct on (area_id, zone_id, sub_area_id, village_id,f.id)
+       vta.area_id,
+       vta.area_name,
+       vta.zone_id ,
+       vta.zone_name,
+       vta.sub_area_id,
+       vta.sub_area_name,
+       f.farmer_reg_number ,
+       f.farmer_name,
+       f.mobile_no,
+       case when f.is_active='TRUE' then 'ACTIVE' else 'INACTIVE' end active_status,
+       f.identity_type,
+       f.nid,
+       vta.village_name,
+       div.division_name,
+       d.district_name,
+       t.thana_name,
+       u.union_name,
+       po.post_office_name,
+       b.bank_name,
+       bb.branch_name,
+       case when fbc.is_agent_banking='true' then 'AGENT_BANK' else 'CORE_BANK' end agent_banking_status,
+       case when f.granter_id is not null then 'FARMER'
+            when f.non_farmer_granter_id is not null then 'NON FARMER'
+            when f.granter_id is null and f.non_farmer_granter_id is null then 'NO GRANTER'
+       end as granter_type,
+       coalesce(case when f.granter_id is null then nonFarmerGranter.granter_name else farmerGranter.farmer_name end,'N/A') as granter_name,
+       coalesce(farmerGranter.farmer_reg_number,'N/A') as farmer_reg_number,
+       case when fc.season_id=3 then 'YES' else 'NO' end agreement_status,
+       case when fc.season_id=3 then fc.land_acreage else 0 end acre
+from v_teritory_all vta
+         join farmer f on vta.village_id = f.territory_id
+         left JOIN farmer_contact fc on f.id = fc.farmer_id
+         left JOIN post_office po on f.post_office_id = po.id
+         left JOIN unions u on po.union_id = u.id
+         left JOIN thana t on u.thana_id = t.id
+         left JOIN district d on t.district_id = d.id
+         left JOIN division div on d.division_id = div.id
+         left JOIN farmer_bank_account fbc on f.id = fbc.farmer_id
+         left JOIN bank_branch bb on fbc.bank_branch_id = bb.id
+         left JOIN bank b on bb.bank_id = b.id
+         left JOIN farmer farmerGranter on f.granter_id = farmerGranter.id
+         left JOIN farmer_granter nonFarmerGranter on f.non_farmer_granter_id = nonFarmerGranter.id
+order by area_id, zone_id, sub_area_id, village_id;

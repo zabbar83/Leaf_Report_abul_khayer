@@ -1,0 +1,54 @@
+select  g.grade_name gradeName,
+        chalan_date challanDate,
+        vehicle_reg_no regNo,
+        driver_mobile_no mobileNo,
+        fromDepot,
+        toDepot,
+        chalan_no chalanNo,
+        bale_code baleCode ,
+        weight weight
+from
+    (select
+        bale_id,
+        bale_code,
+        weight,
+        vehicle_reg_no,
+        driver_mobile_no,
+        chalan_no,
+        chalan_date,
+        fromDepot,
+        case when toDepot is not null then toDepot when factory_name is not null then factory_name else 'N/A' end toDepot,
+        RANK() OVER (PARTITION BY a.bale_code ORDER BY b.id DESC) rank
+from
+    (select   btim.bale_id,bw.weight_recipient,b.bale_code,bw.weight,t.vehicle_reg_no,t.driver_mobile_no,
+              bc.center_name fromDepot,factory_name,bc1.center_name toDepot,bti.chalan_no,bti.chalan_date
+from bale_transfer_info bti
+JOIN bale_transfer_item btim ON bti.id=btim.transfer_id
+join bale_weight bw on btim.bale_id=bw.bale_id
+join transport t on bti.transport_id = t.id
+join buying_center bc on bti.from_buying_center_id = bc.id
+left join buying_center bc1 on bti.to_buying_center_id = bc1.id
+join bale b on btim.bale_id=b.id
+left join factory f on bti.factory_id=f.id
+where bti.chalan_no=:chalanNo
+)a
+join
+(select  1 id,'PURCHASE' status
+union all
+select  2 id,'RE_WEIGHT' status
+union all
+select  3 id,'CLASSIFICATION_FIRST' status
+union all
+select  4 id,'CLASSIFICATION_SECOND' status)b
+on a.weight_recipient=b.status)c
+join   (select  x.bale_id,x.grade_id
+        from(select  a.bale_id,a.grade_id,
+        RANK() OVER (PARTITION BY a.bale_id ORDER BY b.id DESC) rank
+        from(select bale_id,grade_id,grade_provider from bale_grade)a
+        join
+        (select 1 id, 'BUYER' status union all select 2, 'CLASSIFIER' status)b
+        on a.grade_provider=b.status)x
+        where x.rank=1) bg
+        on c.bale_id=bg.bale_id
+join    grade g on bg.grade_id = g.id
+where rank=1

@@ -1,0 +1,22 @@
+SELECT
+        bti.chalan_date chalanDate,
+        vta.area_id areaId,
+        vta.area_name areaName,
+        t.id transportId,
+        t.vehicle_reg_no vehicleReg,
+        count(btim.bale_id) baleCount,
+        fbc.id fromBcId,
+        fbc.center_name fromBcName,
+        case when tbc.id is not null then tbc.id else bti.factory_id end toBcId,
+        case when tbc.id is not null then tbc.center_name else f.factory_name end toBcName
+FROM    bale_transfer_info bti
+JOIN    bale_transfer_item btim ON bti.id=btim.transfer_id
+AND     bti.chalan_date between :fromDate and :toDate
+JOIN    transport t on t.id = bti.transport_id
+JOIN    buying_center fbc on bti.from_buying_center_id = fbc.id
+LEFT    JOIN buying_center tbc on bti.to_buying_center_id = tbc.id
+JOIN    (select distinct area_id,area_name,zone_id,zone_name from v_territory_all) vta on fbc.zone_id=vta.zone_id
+LEFT    JOIN factory f on bti.factory_id = f.id
+GROUP   BY bti.chalan_date, vta.area_id,vta.area_name,t.id, t.vehicle_reg_no,
+           fbc.id, fbc.center_name, tbc.id,bti.factory_id, tbc.center_name,f.factory_name
+ORDER   BY vta.area_id, bti.chalan_date, t.vehicle_reg_no

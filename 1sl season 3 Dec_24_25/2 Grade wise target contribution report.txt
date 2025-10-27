@@ -1,0 +1,85 @@
+select  tar.variety_name,
+        tar.grade_id,
+        tar.grade_name,
+        tar.quantity,
+        tar.contribution,
+        pur.nosOfBale,
+        pur.weight,
+        pur.contribution,
+        tar.quantity - pur.weight variationKg,
+        tar.contribution - pur.contribution variationContri
+from (
+select  variety_name,
+        grade_id,
+        grade_name,
+        quantity,
+        case when tt.total_quantity > 0 then (t.quantity/tt.total_quantity) * 100 else 0 end contribution
+from (select v.variety_name,
+             g.id              as grade_id,
+             g.grade_name,
+             sum(gwt.quantity) as quantity
+      from grade g
+               JOIN grade_wise_target gwt on g.id = gwt.grade_id
+               JOIN variety v on g.variety_id = v.id
+      where g.variety_id = :varietyId
+        and g.season_id = :seasonId
+        and case when :areaId is not null then g.area_id = :areaId else true end
+      group by v.variety_name, g.id, g.grade_name)t
+cross join
+    (select sum(quantity) total_quantity
+     from grade g
+              JOIN grade_wise_target gwt on g.id = gwt.grade_id
+              JOIN variety v on g.variety_id = v.id
+     where g.variety_id = :varietyId
+       and g.season_id = :seasonId
+       and case when :areaId is not null then g.area_id = :areaId else true end) tt)tar
+LEFT JOIN
+    (select
+         pu.varietyName,
+         pu.areaId,
+         pu.areaName,
+         pu.grade_id,
+         pu.gradeName,
+         pu.nosOfBale,
+         pu.weight,
+         case when tw.total_weight > 0 then (pu.weight/tw.total_weight) * 100 else 0 end contribution
+     from (select v.variety_name                     varietyName,
+                  vta.area_id                        areaId,
+                  vta.area_Name                      areaName,
+                  g.id as grade_id,
+                  g.grade_name                       gradeName,
+                  cast(count(pd.bale_id) as integer) nosOfBale,
+                  sum(pd.weight) as                  weight
+           from purchase_main pm
+                    join purchase_details pd on pm.id = pd.purchase_main_id
+                    join farmer_contact fc on (fc.id = pm.farmer_contact_id and fc.season_id = :seasonId)
+                    join farmer f on pm.farmer_id = f.id
+                    join v_territory_all vta on f.territory_id = vta.vill_id
+                    join bale_weight brw on pd.bale_id = brw.bale_id and brw.weight_recipient = 'RE_WEIGHT'
+                    join bale_sacks bs on pd.bale_id = bs.bale_id and bs.sack_type_selector = 'BUYER'
+                    join bale_grade bg on pd.bale_id = bg.bale_id and bg.grade_provider = 'BUYER'
+                    join grade g on bg.grade_id = g.id
+                    join variety v on g.variety_id = v.id
+           where case when :areaId is not null then vta.area_id = :areaId else true end
+             and g.variety_id = :varietyId
+             -- and pm.purchase_date between :fromDate and :toDate
+           group by v.variety_name, vta.area_id, vta.area_Name, g.id,g.grade_name)pu
+              cross join
+          (select
+               sum(pd.weight) as total_weight
+           from purchase_main pm
+                    join purchase_details pd on pm.id = pd.purchase_main_id
+                    join farmer_contact fc on (fc.id = pm.farmer_contact_id and fc.season_id =:seasonId)
+                    join farmer f on pm.farmer_id = f.id
+                    join v_territory_all vta on f.territory_id = vta.vill_id
+                    join bale_weight brw on pd.bale_id=brw.bale_id and brw.weight_recipient='RE_WEIGHT'
+                    join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+                    join bale_grade bg on pd.bale_id=bg.bale_id and bg.grade_provider='BUYER'
+                    join grade g on bg.grade_id = g.id
+                    join variety v on g.variety_id = v.id
+           where   case when :areaId is not null then vta.area_id=:areaId else true end
+             and     g.variety_id = :varietyId
+             -- and     pm.purchase_date between :fromDate and :toDate
+)tw)pur
+ON tar.grade_id=pur.grade_id
+order by tar.grade_id

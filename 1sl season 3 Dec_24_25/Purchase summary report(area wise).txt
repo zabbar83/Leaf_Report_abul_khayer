@@ -1,0 +1,16 @@
+select vta.area_id areaId,
+       vta.area_name area,
+       v.variety_name varietyName,
+       sum(pd.amount) as amount,
+       sum(pd.weight) as weight
+from v_teritory_all vta
+         join farmer far on far.territory_id=vta.village_id
+         join purchase_main pm on far.id = pm.farmer_id
+         join purchase_details pd on pm.id = pd.purchase_main_id
+         join grade g on pd.grade_id = g.id
+         join farmer_contact fc on fc.id = pm.farmer_contact_id
+         join variety v on g.variety_id = v.id
+where fc.season_id in (:seasonIds)
+group by  vta.area_id,
+          vta.area_name,v.variety_name
+order by vta.area_id

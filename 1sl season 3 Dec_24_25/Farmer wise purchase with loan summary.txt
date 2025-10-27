@@ -1,0 +1,43 @@
+select  vta.zone_id          zoneId,
+        vta.zone_name        zoneName,
+        vta.sub_area_id      subAreaId,
+        vta.sub_area_name     subAreaName,
+        vta.vill_id villId,
+        vta.vill_name        village,
+        f.farmer_reg_number  regNo,
+        f.id farmerId,
+        f.farmer_name        farmerName,
+        f.farmer_father_name fatherName,
+        cast( fc.land_acreage as numeric) acre,
+        cast(count(Pd.bale_id) as integer) nosofBale,
+        coalesce(sum(pd.weight),0) buyerWeight,
+        coalesce(sum(brw.weight) - sum(bs.sacks_weight + bs.extra_weight),0) buyingReWeight,
+        coalesce(sum(brw.weight) - sum(bs.sacks_weight + bs.extra_weight),0) - coalesce(sum(pd.weight),0) difference,
+        flm.loan as loan,
+        abs(flm.loan_payment) realiasBalance ,
+        flm.loan_balance as loanBalance,
+        coalesce(sum(pd.amount),0) totalAmount,
+        coalesce(sum(pd.amount) - abs(flm.loan_payment),0) netPay
+from     farmer f
+             JOIN farmer_contact fc on (f.id = fc.farmer_id and fc.season_id = :seasonId)
+             LEFT JOIN purchase_main pm on fc.farmer_id=pm.farmer_id
+             LEFT JOIN purchase_details pd on pm.id = pd.purchase_main_id
+             LEFT JOIN    (select  farmer_contact_id,
+                                   sum(case when loan_amount >0 then loan_amount else 0 end) loan,
+                                   sum(case when loan_amount <0 then loan_amount else 0 end) loan_payment,
+                                   sum(case when loan_amount >0 then loan_amount else 0 end) - abs(sum(case when loan_amount <0 then loan_amount else 0 end)) loan_balance
+                           from    farmer_loan_main fm
+                                       JOIN    farmer_contact fc on fm.farmer_contact_id=fc.id
+                               AND     fc.season_id = :seasonId
+                           group by farmer_contact_id) flm on fc.id=flm.farmer_contact_id
+             LEFT JOIN bale b on pd.bale_id=b.id
+             join v_territory_all vta on f.territory_id = vta.vill_id
+             left join bale_weight bw on pd.bale_id=bw.bale_id and bw.weight_recipient='PURCHASE'
+             left join bale_weight brw on b.id=brw.bale_id and brw.weight_recipient='RE_WEIGHT'
+             left join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+where case when :areaId is not null then vta.area_id=:areaId else true end
+  and   case when :zoneId is not null then vta.zone_id=:zoneId else true end
+  and   case when :subAreaId is not null then vta.sub_area_id=:subAreaId else true end
+  and   case when :villId is not null then vta.vill_id=:villId else true end
+group by vta.zone_id, vta.sub_area_id, vta.zone_name, vta.sub_area_name,vta.vill_id, vta.vill_name, f.farmer_reg_number, f.id,f.farmer_name, f.farmer_father_name,fc.land_acreage,flm.loan,flm.loan_payment,flm.loan_balance
+order by vta.zone_id, vta.sub_area_id, vta.vill_id, f.id

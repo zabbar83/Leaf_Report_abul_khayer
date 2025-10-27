@@ -1,0 +1,20 @@
+select  v.variety_name varietyName,
+        cast(fs.add_date_time as date) date,
+        g.id gradeId,
+        g.grade_name gradeName,
+        cast(count(bw.bale_id) as integer) nosofBale,
+        sum(bw.weight) - sum(bs.sacks_weight + coalesce(bs.extra_weight,0)) as weight
+from    factory_stock fs
+            join    bale_weight bw on fs.bale_id=bw.bale_id
+    AND     cast(fs.add_date_time as date) between :fromDate and :toDate
+    AND     fs.in_out_status='OUT'
+    AND     bw.weight_recipient IN ('CLASSIFICATION_FIRST','CLASSIFICATION_SECOND')
+            JOIN    bale_grade bg on bw.bale_id=bg.bale_id
+    AND     bg.grade_provider='CLASSIFIER'
+            JOIN    grade g on bg.grade_id = g.id
+    AND     g.grade_provider='CLASSIFIER'
+            LEFT    JOIN bale_sacks bs on bw.bale_id=bs.bale_id and bs.sack_type_selector='CLASSIFIER'
+            JOIN    variety v on g.variety_id = v.id
+    AND     v.id=:varietyId
+group by v.variety_name, cast(fs.add_date_time as date),g.id,g.grade_name
+order by cast(fs.add_date_time as date), g.id

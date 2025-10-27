@@ -1,0 +1,32 @@
+select  g.id,
+        v.variety_name varietyName,
+        g.grade_name gradeName,
+        count(case when bcs.in_out_status = 'IN' then bw.bale_id else null end) inStockBale,
+        sum(case when bcs.in_out_status = 'IN' then bw.weight else 0 end) - sum(case when bcs.in_out_status = 'IN' then bs.sacks_weight + coalesce(bs.extra_weight,0) else 0 end) as inStockWeight,
+        count(case when bcs.in_out_status = 'OUT_TRANSFER' then bw.bale_id else null end) inTransitBale,
+        sum(case when bcs.in_out_status = 'OUT_TRANSFER' then bw.weight else 0 end) - sum(case when bcs.in_out_status = 'OUT_TRANSFER' then bs.sacks_weight + coalesce(bs.extra_weight,0) else 0 end) as inTransitWeight
+from    (select *, 1 rank from buying_center_stock where in_out_status = 'IN' and received_status IN ('FRESH','REVISE_BALE') and cast(add_date_time as date) between :fromDate and :toDate
+         union all
+         select * from (select *,
+                               row_number() over (partition by bale_id order by bale_id, add_date_time desc) rank
+                        from buying_center_stock
+                        where in_out_status = 'OUT_TRANSFER'
+                          and bale_id not in(select bale_id from buying_center_stock where in_out_status = 'IN')
+                          and received_status IN ('FRESH', 'REVISE_BALE')
+                          and cast(add_date_time as date) between :fromDate and :toDate
+                       ) bcs2
+         where bcs2.rank = 1
+        ) bcs
+            JOIN bale_weight bw on bcs.bale_id=bw.bale_id
+    AND  bw.weight_recipient IN ('CLASSIFICATION_FIRST','CLASSIFICATION_SECOND')
+            join bale_grade bg on bw.bale_id = bg.bale_id and bg.grade_provider = 'CLASSIFIER'
+            join grade g on bg.grade_id = g.id and g.grade_provider = 'CLASSIFIER' and g.season_id = :seasonId
+            LEFT JOIN bale_sacks bs on bw.bale_id=bs.bale_id and bs.sack_type_selector='CLASSIFIER'
+            JOIN buying_center bc on bcs.buying_center_id = bc.id
+            JOIN depot d on bc.depot_id = d.id
+            JOIN variety v on g.variety_id = v.id
+    AND  v.id IN (:varietyId)
+    AND  d.area_id =:areaId
+group by g.id,v.variety_name,g.grade_name
+order by g.id
+;

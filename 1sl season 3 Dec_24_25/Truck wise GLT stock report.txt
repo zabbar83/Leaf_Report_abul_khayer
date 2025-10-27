@@ -1,0 +1,21 @@
+select
+    cast(btim.add_date as date) transferDate,
+    t.vehicle_reg_no truckNumber,
+    v.variety_name varietyName,
+    g.grade_name gradeName,
+    count(bw.bale_id) nosofBale,
+    sum(bw.weight) - sum(bs.sacks_weight + coalesce(bs.extra_weight,0)) as weight
+from    bale_transfer_info bti
+            JOIN    bale_transfer_item btim ON bti.id=btim.transfer_id
+            join transport t on t.id = bti.transport_id
+            join    bale_weight bw on btim.bale_id=bw.bale_id
+    AND     cast(btim.add_date as date) between :fromDate and :toDate
+    AND     bw.weight_recipient IN ('CLASSIFICATION_FIRST','CLASSIFICATION_SECOND')
+            JOIN    bale_grade bg on bw.bale_id=bg.bale_id
+    AND     bg.grade_provider='CLASSIFIER'
+            JOIN    grade g on bg.grade_id = g.id
+    AND     g.grade_provider='CLASSIFIER'
+            LEFT    JOIN bale_sacks bs on bw.bale_id=bs.bale_id and bs.sack_type_selector='CLASSIFIER'
+            JOIN    variety v on g.variety_id = v.id
+group by cast(btim.add_date as date),t.vehicle_reg_no,v.variety_name, g.grade_name
+order by t.vehicle_reg_no, cast(btim.add_date as date), g.grade_name

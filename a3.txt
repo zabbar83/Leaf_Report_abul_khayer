@@ -1,0 +1,22 @@
+select  v.id varityId,
+        g.grade_name gradeName,
+        g.grade_rate rate,
+        count(Pd.bale_id) bale,
+        sum(bw.weight-bs.sacks_weight) weight,
+        sum(pd.weight) reWeight,
+        sum(pd.amount) amount
+from grade g
+join purchase_details pd on g.id = pd.grade_id
+join purchase_main pm on pd.purchase_main_id = pm.id
+JOIN variety V ON g.variety_id = V.id
+join farmer f on pm.farmer_id = f.id
+join v_territory_all vta on vta.vill_id = f.territory_id
+left join farmer_contact fc on f.id = fc.farmer_id
+left join season s on fc.season_id = s.id
+left join bale_weight bw on pd.bale_id=bw.bale_id and bw.weight_recipient='PURCHASE'
+left join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+where vta.area_id = (2)
+and V.id=3
+and pm.purchase_date between TO_DATE('2024-04-14','YYYY-MM-DD') and TO_DATE ('2024-04-18','YYYY-MM-DD')
+and s.id = (2)
+group by v.id, g.grade_name, g.grade_rate

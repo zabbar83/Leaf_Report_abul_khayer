@@ -1,0 +1,45 @@
+select
+    vta.area_id areaId,
+    vta.area_name areaName,
+    vta.zone_id zoneId,
+    vta.zone_name zoneName,
+    vta.sub_area_id subAreaId,
+    vta.sub_area_name subAreaName,
+    vta.vill_id villageId,
+    vta.vill_name villageName,
+    f.farmer_reg_number farmerReg,
+    f.farmer_name farmerName,
+    b.id as bankId,
+    b.bank_name bankName,
+    bb.id branchId,
+    bb.branch_name branchName,
+    bb.routing_number routingNumber,
+    fba.account_number accountNumber,
+    pm.grand_total ,
+    pm.loan_deduct loanDeduct,
+    pm.loan_balance loanBalance,
+    pm.net_pay grandTotal
+from    purchase_main pm
+            JOIN    farmer_contact fc
+                    on pm.farmer_contact_id = fc.id
+                        AND pm.purchase_date = TO_DATE(:date, 'yyyy-MM-dd')
+                        AND fc.season_id = :seasonId
+            JOIN    farmer f
+                    on fc.farmer_id = f.id
+            JOIN    farmer_bank_account fba
+                    on f.id = fba.farmer_id
+            JOIN    bank_branch bb
+                    on fba.bank_branch_id = bb.id
+            JOIN    bank b
+                    on bb.bank_id = b.id
+            JOIN    v_territory_all vta
+                    on vta.vill_id = f.territory_id
+WHERE   b.id = :bankId
+  AND     (
+    :territoryId = 0
+        OR vta.vill_id = :territoryId
+        OR vta.sub_area_id = :territoryId
+        OR vta.zone_id = :territoryId
+        OR vta.area_id = :territoryId
+    )
+ORDER   BY b.id, bb.id, vta.area_id, vta.zone_id, vta.sub_area_id, vta.vill_id, f.farmer_reg_number

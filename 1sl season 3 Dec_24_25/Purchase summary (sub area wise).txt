@@ -1,0 +1,31 @@
+select v.area_id,
+                   v.area_name,
+                   v.zone_id zoneId,
+                   v.zone_name zoneName,
+                   v.sub_area_id subAreaId,
+                   v.sub_area_name subArea,
+                   v.vill_id villageId,
+                   v.vill_name village,
+                   f.farmer_name farmer,
+                   f.farmer_reg_number farReg,
+                   count(d.bale_id)              bale,
+                   sum(d.actual_weight)        kg,
+                   sum(d.amount)               amount,
+                   sum(distinct p.loan_deduct) loanDeduct,
+                   sum(distinct p.net_pay)     netPay
+            from purchase_main p,
+                 purchase_details d,
+                 v_territory_all v,
+                 farmer f,
+                 farmer_contact fc
+            where f.territory_id = v.vill_id
+              and p.id = d.purchase_main_id
+              and p.farmer_id = f.id
+              and fc.farmer_id = f.id
+              and fc.season_id in (:seasonIds)
+              and v.area_id in (:areaId)
+            and p.purchase_date
+                BETWEEN to_date(:fromDate,'yyyy-mm-dd') AND to_date(:toDate,'yyyy-mm-dd')
+            group by v.area_id, v.area_name, v.zone_id, v.zone_name, v.sub_area_id, v.sub_area_name, v.vill_id, v.vill_name,
+                     f.farmer_name, f.farmer_reg_number
+            order by v.area_id, v.zone_id, v.sub_area_id, v.vill_id

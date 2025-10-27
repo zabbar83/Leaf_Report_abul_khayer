@@ -1,0 +1,31 @@
+select  bc.center_name buyingCenterName,
+        vta.zone_id          zoneId,
+        vta.zone_name        zoneName,
+        vta.sub_area_id      subAreaId,
+        vta.sub_area_name    subAreaName,
+        vta.vill_name        village,
+        pm.purchase_no       vouNo,
+        f.farmer_reg_number  regNo,
+        f.farmer_name        farmerName,
+        f.farmer_father_name fatherName,
+        v.variety_name varietyName,
+        b.bale_code baleCode,
+        Pd.bale_id baleId,
+        bw.weight-bs.sacks_weight buyerWeight,
+        pd.weight      reWeight
+from    purchase_main pm
+         join purchase_details pd on pm.id = pd.purchase_main_id
+         join bale b on pd.bale_id = b.id
+         join farmer_contact fc on (fc.id = pm.farmer_contact_id and fc.season_id =:seasonId)
+         join farmer f on pm.farmer_id = f.id
+         join v_territory_all vta on f.territory_id = vta.vill_id
+         left join bale_weight bw on pd.bale_id=bw.bale_id and bw.weight_recipient='PURCHASE'
+         left join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+         join variety v on fc.variety_id = v.id
+         join buying_center bc on bc.id = pm.buying_center_id
+where   case when :areaId is not null then vta.area_id=:areaId else true end
+  and   case when :zoneId is not null then vta.zone_id=:zoneId else true end
+  and   case when :subAreaId is not null then vta.sub_area_id=:subAreaId else true end
+  and   case when :villId is not null then vta.vill_id=:villId else true end
+  and pm.purchase_date=:targetDate
+order by vta.zone_id,pm.purchase_no,f.farmer_reg_number,b.bale_code,Pd.bale_id

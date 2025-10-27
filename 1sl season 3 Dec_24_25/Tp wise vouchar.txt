@@ -1,0 +1,61 @@
+SELECT
+    cast(tp.tp_no as numeric) AS tpNo,
+    f.farmer_name AS farmerName,
+    f.nid AS farmerNid,
+    f.farmer_father_name AS farmerFatherName,
+    vta.village_name AS villageName,
+    vta.zone_name AS zoneName,
+    bc.center_name AS centerName,
+    f.farmer_reg_number AS farmerRegNumber,
+    CASE WHEN g.grade_provider = 'BUYER' THEN g.grade_provider ELSE 'N/A' END AS buyerName,
+    pm.purchase_no AS purchaseNo,
+    pm.purchase_date AS purchaseDate,
+    pm.payment_date AS paymentDate,
+    fba.account_number AS accountNumber,
+    bb.branch_name AS branchName,
+    vta.sub_area_name AS subAreaName,
+    g.grade_name AS gradeName,
+    g.grade_rate AS gradeRate,
+    b.bale_accept_status buyerStatus,
+    pd.weight AS weight,
+    bw.weight - (bs.sacks_weight + coalesce(bs.extra_weight,0)) reWeight,
+    b.remarks,
+    pd.amount AS amount,
+    pm.grand_total AS grandTotal,
+    pm.loan_deduct AS loanDeduct,
+    pm.net_pay AS netPay,
+    pm.loan_balance AS loanBalance,
+    CASE WHEN g.grade_provider='BUYER' THEN bg.added_by_user_id END AS buyerCode,
+    u.user_name AS buyerName,
+    b.bale_code qrCode
+FROM
+    purchase_main pm
+        JOIN
+    purchase_details pd ON pm.id = pd.purchase_main_id
+        JOIN
+    farmer_contact fc on pm.farmer_contact_id = fc.id AND season_id= :seasonId
+        JOIN
+    farmer f ON fc.farmer_id = f.id
+        JOIN
+    farmer_bank_account fba ON f.id = fba.farmer_id
+        JOIN
+    bank_branch bb ON fba.bank_branch_id = bb.id
+        JOIN
+    v_teritory_all vta ON f.territory_id = vta.village_id
+        JOIN
+    buying_center bc ON pm.buying_center_id = bc.id
+        JOIN
+    grade g ON g.id = pd.grade_id
+        JOIN
+    bale b ON b.id = pd.bale_id
+        JOIN
+    (SELECT bag.* FROM bale_grade bag WHERE bag.grade_provider='BUYER') bg ON b.id = bg.bale_id
+        JOIN
+    users u ON u.user_id = bg.added_by_user_id
+        JOIN
+    transit_pass tp on pm.tp_no = tp.id AND tp.id=:tpId
+        LEFT JOIN
+    bale_weight bw on pd.bale_id=bw.bale_id and bw.weight_recipient='PURCHASE'
+        LEFT JOIN
+    bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+--order by b.bale_code,g.id

@@ -1,0 +1,22 @@
+
+select  vta.area_id areaId,
+	vta.area_name areaName,
+	vta.zone_id          zoneId,
+        vta.zone_name        zoneName,
+        count( distinct pd.bale_id) totalBaleCount,
+        coalesce(sum(pd.weight),0) buyerWeight,
+        coalesce(sum(brw.weight) - sum((bs.sacks_weight + bs.extra_weight)),0) reWeight,
+        coalesce(sum(brw.weight) - sum((bs.sacks_weight + bs.extra_weight)),0) - coalesce(sum(pd.weight),0) difference
+from purchase_main pm
+         join purchase_details pd on pm.id = pd.purchase_main_id
+         join bale b on pd.bale_id = b.id
+         join farmer_contact fc on (fc.id = pm.farmer_contact_id and fc.season_id =:seasonId)
+         join farmer f on pm.farmer_id = f.id
+         join v_territory_all vta on f.territory_id = vta.vill_id
+         left join bale_weight bw on pd.bale_id=bw.bale_id and bw.weight_recipient='PURCHASE'
+         left join bale_weight brw on b.id=brw.bale_id and brw.weight_recipient='RE_WEIGHT'
+         left join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+where case when :areaId is not null then vta.area_id=:areaId else true end
+  AND   pm.purchase_date BETWEEN TO_DATE(:fromDate, 'yyyy-MM-dd') AND TO_DATE(:toDate,'yyyy-MM-dd')
+group by vta.area_id,vta.area_name,vta.zone_id, vta.zone_name
+order by vta.area_id,vta.zone_id

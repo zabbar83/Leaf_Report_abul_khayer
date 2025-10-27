@@ -1,0 +1,24 @@
+select  vta.zone_id          zone_Id,
+        vta.zone_name        zone_Name,
+        f.farmer_reg_number farmer_id,
+        f.farmer_name farmer_name,
+        b.bale_code bale_code,
+        case when bw.weight_recipient='PURCHASE' then bw.add_date_time end weight_date,
+        pd.add_date Re_weight_date,
+        bw.weight-bs.sacks_weight Weight,
+        pd.weight      re_Weight,
+        (bw.weight-bs.sacks_weight)-(pd.weight)  variance
+from purchase_main pm
+join purchase_details pd on pm.id = pd.purchase_main_id
+join farmer_contact fc on (fc.id = pm.farmer_contact_id and fc.season_id =:seasonId)
+join farmer f on pm.farmer_id = f.id
+join v_territory_all vta on f.territory_id = vta.vill_id
+join bale_weight bw on pd.bale_id=bw.bale_id and bw.weight_recipient='PURCHASE'
+join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+join bale b on b.id=bw.bale_id
+where case when :areaId is not null then vta.area_id=:areaId else true end
+and case when :zoneId is not null then vta.zone_id=:zoneId else true end
+and case when :subAreaId is not null then vta.sub_area_id=:subAreaId else true end
+and case when :villageId is not null then vta.vill_id=:villageId else true end
+and pm.purchase_date between TO_DATE(:fromDate,'YYYY-MM-DD') and TO_DATE (:toDate,'YYYY-MM-DD')
+order by vta.zone_id,f.farmer_reg_number,b.bale_code,bw.add_date_time

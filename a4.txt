@@ -1,0 +1,29 @@
+select
+        vta.area_id areaId,
+        vta.area_name areaName,
+        vta.zone_id zoneId,
+        vta.zone_name zoneName,
+        vta.sub_area_id subAreaId,
+        vta.sub_area_name subAreaName,
+        vta.vill_id villId,
+        vta.vill_name villName,
+        f.farmer_reg_number farmerRegId,
+        f.farmer_name farmerName,
+        f.farmer_father_name fatherName,
+        --coalesce(max(case when loan_amount < 0 then loan_date end)::text,'N/A') loanDate,
+	coalesce(to_char(max(case when loan_amount < 0 then loan_date end),'yyyy-mm-dd'),'N/A') loanDate,
+        sum(case when loan_amount > 0 then loan_amount else 0 end) loan,
+        abs(sum(case when loan_amount < 0 then loan_amount else 0 end)) payment,
+        sum(case when loan_amount > 0 then loan_amount else 0 end)-
+        abs(sum(case when loan_amount < 0 then loan_amount else 0 end)) loanBalance
+ from farmer_loan_main flm
+          join farmer_contact fc on flm.farmer_contact_id = fc.id and fc.season_id = :seasonId
+          join farmer f on fc.farmer_id = f.id
+          join v_territory_all vta on f.territory_id = vta.vill_id
+ where case when :areaId is not null then vta.area_id = :areaId else true end
+      and case when :zoneId is not null then vta.zone_id = :zoneId else true end
+      and case when :subAreaId is not null then vta.sub_area_id =:subAreaId else true end
+      and case when :villageId is not null then vta.vill_id =:villageId else true end
+ group by vta.area_id, vta.area_name, vta.zone_id, vta.zone_name, vta.sub_area_id,
+          vta.sub_area_name, vta.vill_id, vta.vill_name, f.farmer_reg_number, f.farmer_name, f.farmer_father_name
+order by vta.area_id,vta.zone_id,vta.sub_area_id,vta.vill_id,f.farmer_reg_number

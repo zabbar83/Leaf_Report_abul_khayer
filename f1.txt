@@ -1,0 +1,14 @@
+select  distinct v.zone_id,
+        case when g.grade_provider='BUYER' then bg.added_by_user_id else 0 end buyerCode,
+        u.user_name buyerName,
+        b.bale_code buyingQr,
+        pm.purchase_date buyingDate
+from    purchase_main pm
+JOIN    purchase_details pd on pm.id=pd.purchase_main_id
+join    bale b on b.id=pd.bale_id
+join    bale_weight bw on bw.id=pd.bale_id
+join    bale_grade bg on b.id=bg.bale_id
+join    grade g on g.id=pd.grade_id
+join    buying_center bc on pm.buying_center_id = bc.id
+join    v_teritory_all v on bc.zone_id=v.area_id
+join    users u on u.user_id=bg.added_by_user_id

@@ -1,0 +1,26 @@
+select
+    v.variety_name varietyName,
+    g.grade_name gradeName,
+    count(pd.bale_id) nosOFBale,
+    sum(pd.weight) as weight,
+    sum(brw.weight - (bs.sacks_weight + bs.extra_weight)) reWeight,
+    sum((brw.weight - (bs.sacks_weight + bs.extra_weight)) - pd.weight) difference
+from purchase_main pm
+         join purchase_details pd on pm.id = pd.purchase_main_id
+	 and pd.bale_id not in (select id from bale where bale_accept_status ='REJECTED')
+         join farmer_contact fc on (fc.id = pm.farmer_contact_id and fc.season_id =:seasonId)
+         join farmer f on pm.farmer_id = f.id
+         join v_territory_all vta on f.territory_id = vta.vill_id
+         join bale_weight brw on pd.bale_id=brw.bale_id and brw.weight_recipient='RE_WEIGHT'
+         join bale_sacks bs on pd.bale_id=bs.bale_id and bs.sack_type_selector='BUYER'
+         join bale_grade bg on pd.bale_id=bg.bale_id and bg.grade_provider='BUYER'
+         join grade g on bg.grade_id = g.id
+         join variety v on g.variety_id = v.id
+where   case when :areaId is not null then vta.area_id=:areaId else true end
+  and   case when :zoneId is not null then vta.zone_id=:zoneId else true end
+  and   case when :subAreaId is not null then vta.sub_area_id=:subAreaId else true end
+  and   case when :villId is not null then vta.vill_id=:villId else true end
+  and   g.variety_id in (:varietyId)
+  and   pm.purchase_date=:targetDate
+group   by v.variety_name,g.grade_name
+order   by g.grade_name

@@ -1,0 +1,20 @@
+select
+    d.depot_name depotName,
+    cast( coalesce(count(bw.bale_id),0)AS INTEGER) inStockBale,
+    coalesce(sum(weight),0) as inStockWeight
+from depot d
+         JOIN buying_center bc on d.id=bc.depot_id
+    AND  case when :areaId is not null then d.area_id = :areaId else true end
+         LEFT JOIN buying_center_stock bcs on bc.id = bcs.buying_center_id
+         LEFT JOIN bale b on bcs.bale_id = b.id
+    AND  b.bale_accept_status != 'REJECTED'
+    AND  bcs.in_out_status NOT IN ('OUT_TRANSFER')
+         LEFT JOIN (select bale_id,weight
+                    from (select  bale_id,
+                                  rank () over(partition by bale_id order by id desc) rank,
+                                  weight
+                          from bale_weight
+                          where weight_recipient not in ('RE_WEIGHT'))rnk
+                    where rnk.rank=1) bw on b.id = bw.bale_id
+group by d.id,d.depot_name
+order by d.id
