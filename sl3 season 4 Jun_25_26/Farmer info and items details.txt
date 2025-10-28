@@ -1,0 +1,52 @@
+Select
+        fa.season_name              AS cropYear,
+        vta.area_id                 AS areaId,
+        vta.area_name                 AS areaName,
+        vta.zone_id                 AS zoneId,
+        vta.zone_name                 AS zoneName,
+        vta.sub_area_id             AS subAreaId,
+        vta.sub_area_name             AS subAreaName,
+        vta.village_id              AS villageId,
+        vta.village_name              AS villageName,
+        f.farmer_reg_number             AS farmerRegNum,
+        f.farmer_name                 AS farmerName,
+        f.farmer_father_name          AS fatherName,
+        f.mobile_no                   AS contactNumber,
+        f.nid                           AS nidNumber,
+        f.category                    AS category,
+        case when f.is_active='true' then 'ACTIVE' else 'INACTIVE' end AS farmerStatus,
+        fa.land_acreage             AS cropAcre,
+        v.variety_name              AS varietyCode,
+        d.division_name               AS divisionName,
+        dis.district_name             AS districtName,
+        t.thana_name                  AS thanaName,
+        u.union_name                  AS unionName,
+        b.bank_name                    AS bankName,
+        bb.branch_name                  AS branchName,
+        fba.account_number              AS bankAccNumber,
+        coalesce(flm.loan_amount,0)     AS ciAmount
+FROM    farmer f
+LEFT    JOIN farmer_agreement fa on f.id = fa.farmer_id
+        AND  fa.season_name IN (
+        SELECT
+            fiscal_year
+        FROM    season s
+        where   s.id = :seasonId
+        )
+LEFT    JOIN farmer_bank_account fba on fba.farmer_id = f.id
+LEFT    JOIN bank_branch bb on fba.bank_branch_id = bb.id
+LEFT    JOIN bank b on bb.bank_id = b.id
+INNER   JOIN v_teritory_all vta ON vta.village_id = f.territory_id
+AND     (case when :areaId is not null then vta.area_id = :areaId else true end)
+AND     (case when :zoneId is not null then vta.zone_id = :zoneId else true end)
+AND     (case when :subAreaId is not null then vta.sub_area_id = :subAreaId else true end)
+AND     (case when :villageId is not null then vta.village_id = :villageId else true end)
+INNER   JOIN post_office po ON po.id = f.post_office_id
+INNER   JOIN unions u ON u.id = po.union_id
+INNER   JOIN thana t ON t.id = u.thana_id
+INNER   JOIN district dis ON dis.id = t.district_id
+INNER   JOIN division d ON d.id = dis.division_id
+INNER   JOIN variety v ON fa.variety_name=v.variety_name
+LEFT    JOIN farmer_loan_requests flr ON fa.id=flr.farmer_agreement_id
+LEFT    JOIN farmer_loan_main flm ON flr.id = flm.farmer_loan_request_id
+ORDER   BY vta.area_id, vta.zone_id, vta.sub_area_id, vta.village_id, f.farmer_reg_number
