@@ -1,0 +1,42 @@
+select
+    fa.area_id,
+    fa.area_name,
+    fa.zone_id,
+    fa.zone_name,
+    fa.sub_area_id,
+    fa.sub_area_name,
+    fa.village_id,
+    fa.village_name,
+    fa.farmer_id,
+    fa.farmer_name,
+    :fromPurchase fromPurchaseDate,
+    :toPurchase toPurchase,
+    pmln.realizationAmount,
+    pmln.balanceAmount,
+    pmln.ciAmount
+from
+    (select
+         agreement_id,
+         farmer_id,
+         realizationAmount,
+         balanceAmount,
+         coalesce(sum(flm.loan_amount),0) ciAmount
+     from
+         (select  agreement_id,
+                  farmer_id,
+                  sum(loan_deduct) realizationAmount,
+                  sum(loan_balance) balanceAmount
+          from    purchase_main
+          where   purchase_date between :fromPurchase and :toPurchase
+          group by agreement_id, farmer_id
+         )pm
+             JOIN    farmer_loan_requests flr ON pm.agreement_id=flr.farmer_agreement_id
+             JOIN    farmer_loan_main flm ON flr.id = flm.farmer_loan_request_id
+     group by agreement_id,farmer_id,realizationAmount,balanceAmount
+    )pmln
+        JOIN farmer_agreement fa ON pmln.farmer_id=fa.farmer_id
+        AND     (case when :areaId is not null then fa.area_id = :areaId else true end)
+        AND     (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
+        AND     (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
+        AND     (case when :villageId is not null then fa.village_id = :villageId else true end)
+Order  by fa.area_id,fa.zone_id,fa.sub_area_id,fa.village_id,fa.farmer_id
