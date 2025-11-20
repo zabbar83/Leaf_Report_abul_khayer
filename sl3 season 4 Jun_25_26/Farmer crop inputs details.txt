@@ -17,24 +17,25 @@ Select  fa.season_name              AS cropYear,
         fa.variety_name              AS varietyCode,
         li.item_name                AS itemsName,
         li.unit                     AS umo,
-        fld.items_rate              AS unitPrice,
+        lir.rate              AS unitPrice,
         fld.quantity              AS unitQty,
         fld.total_amount            totalLoanAmount
 FROM    (select * from farmer_agreement
-                  Where season_name IN (
-                            SELECT
-                                fiscal_year
-                            FROM    season s
-                            where   s.id = :seasonId
-                            )
-                    AND     (case when :areaId is not null then area_id = :areaId else true end)
-                    AND     (case when :zoneId is not null then zone_id = :zoneId else true end)
-                    AND     (case when :subAreaId is not null then sub_area_id = :subAreaId else true end)
-                    AND     (case when :villageId is not null then village_id = :villageId else true end)
-                  ) fa
-INNER    JOIN farmer f ON f.id=fa.farmer_id
-LEFT    JOIN farmer_loan_requests flr ON fa.id=flr.farmer_agreement_id
-LEFT    JOIN farmer_loan_main flm ON flr.id = flm.farmer_loan_request_id
-LEFT    JOIN farmer_loan_details fld ON flm.id = fld.loan_main_id
-LEFT    JOIN loan_items li ON fld.items_id = li.id
+         Where season_name IN (
+             SELECT
+                 fiscal_year
+             FROM    season s
+             where   s.id = :seasonId
+         )
+           AND     (case when :areaId is not null then area_id = :areaId else true end)
+           AND     (case when :zoneId is not null then zone_id = :zoneId else true end)
+           AND     (case when :subAreaId is not null then sub_area_id = :subAreaId else true end)
+           AND     (case when :villageId is not null then village_id = :villageId else true end)
+        ) fa
+            INNER    JOIN farmer f ON f.id=fa.farmer_id
+            JOIN farmer_loan_requests flr ON fa.id=flr.farmer_agreement_id
+            JOIN farmer_loan_main flm ON flr.id = flm.farmer_loan_request_id
+            JOIN farmer_loan_details fld ON flm.id = fld.loan_main_id
+            JOIN loan_items li ON fld.loan_item_id = li.id
+            JOIN loan_items_rate lir ON li.id = lir.loan_item_id
 ORDER   BY fa.area_id, fa.zone_id, fa.sub_area_id, fa.village_id, fa.farmer_reg_number

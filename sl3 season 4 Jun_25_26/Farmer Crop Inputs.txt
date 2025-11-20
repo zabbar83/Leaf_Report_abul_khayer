@@ -37,6 +37,6 @@ FROM    (select * from farmer_agreement
            AND     (case when :villageId is not null then village_id = :villageId else true end)
         ) fa
             INNER    JOIN farmer f ON f.id=fa.farmer_id
-            LEFT    JOIN farmer_loan_requests flr ON fa.id=flr.farmer_agreement_id
-            LEFT    JOIN farmer_loan_main flm ON flr.id = flm.farmer_loan_request_id
+            JOIN farmer_loan_requests flr ON fa.id=flr.farmer_agreement_id
+            JOIN farmer_loan_main flm ON flr.id = flm.farmer_loan_request_id
 ORDER   BY fa.area_id, fa.zone_id, fa.sub_area_id, fa.village_id, fa.farmer_reg_number
