@@ -1,4 +1,3 @@
-
 select
         fa.zone_id,
         fa.zone_name,
@@ -20,11 +19,6 @@ select
         count(distinct case when li.id=2 then fa.farmer_id end) cashLoanDueFarmer,
         sum(case when li.id=2 then fld.quantity else 0 end) cashLoanDueQty,
         sum(case when li.id=2 then fa.land_acreage else 0 end) cashLoanDueAcre,
-
--- 3 Loan Adjustment
-        count(distinct case when li.id=3 then fa.farmer_id end) loanAdjustmentFarmer,
-        sum(case when li.id=3 then fld.quantity else 0 end) loanAdjustmentQty,
-        sum(case when li.id=3 then fa.land_acreage else 0 end) loanAdjustmentAcre,
 
 -- 4 2' Side Pipe
         count(distinct case when li.id=4 then fa.farmer_id end) twoSidePipeFarmer,
@@ -186,10 +180,6 @@ select
         sum(case when li.id=35 then fld.quantity else 0 end) sop25Qty,
         sum(case when li.id=35 then fa.land_acreage else 0 end) sop25Acre,
 
--- 36 SOP (50 Kg)
-        count(distinct case when li.id=36 then fa.farmer_id end) sop50Farmer,
-        sum(case when li.id=36 then fld.quantity else 0 end) sop50Qty,
-        sum(case when li.id=36 then fa.land_acreage else 0 end) sop50Acre,
 
 -- 37 Sucker Plucker
         count(distinct case when li.id=37 then fa.farmer_id end) suckerPluckerFarmer,
