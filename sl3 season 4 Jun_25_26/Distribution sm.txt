@@ -1,230 +1,222 @@
 select
-        fa.zone_id,
-        fa.zone_name,
-        fa.sub_area_id,
-        fa.sub_area_name,
-        count(distinct fa.farmer_id) farmerCount,
-        sum(land_acreage) acre,
-        count(distinct case when li.id=1 then fa.farmer_id else null end) cashFarmer,
-        sum(case when li.id=1 then fld.quantity else 0 end) cashQty,
-        sum(case when li.id=1 then fa.land_acreage else 0 end) cashAcre,
+    fa.zone_id,
+    fa.zone_name,
+    fa.sub_area_id,
+    fa.sub_area_name,
+    count(distinct fa.farmer_id) farmerCount,
+    sum(land_acreage) acre,
+
+    count(distinct case when li.id=1 then fa.farmer_id end) cashFarmer,
+    sum(case when li.id=1 then fld.quantity else 0 end) cashQty,
+    sum(case when li.id=1 then fa.land_acreage else 0 end) cashAcre,
 
 
--- 1 Cash
-        count(distinct case when li.id=1 then fa.farmer_id end) cashFarmer,
-        sum(case when li.id=1 then fld.quantity else 0 end) cashQty,
-        sum(case when li.id=1 then fa.land_acreage else 0 end) cashAcre,
-
--- 2 Cash Loan (Due)
-        count(distinct case when li.id=2 then fa.farmer_id end) cashLoanDueFarmer,
-        sum(case when li.id=2 then fld.quantity else 0 end) cashLoanDueQty,
-        sum(case when li.id=2 then fa.land_acreage else 0 end) cashLoanDueAcre,
-
--- 4 2' Side Pipe
-        count(distinct case when li.id=4 then fa.farmer_id end) twoSidePipeFarmer,
-        sum(case when li.id=4 then fld.quantity else 0 end) twoSidePipeQty,
-        sum(case when li.id=4 then fa.land_acreage else 0 end) twoSidePipeAcre,
-
--- 5 3' Main Pipe
-        count(distinct case when li.id=5 then fa.farmer_id end) threeMainPipeFarmer,
-        sum(case when li.id=5 then fld.quantity else 0 end) threeMainPipeQty,
-        sum(case when li.id=5 then fa.land_acreage else 0 end) threeMainPipeAcre,
-
--- 6 3' Side Pipe
-        count(distinct case when li.id=6 then fa.farmer_id end) threeSidePipeFarmer,
-        sum(case when li.id=6 then fld.quantity else 0 end) threeSidePipeQty,
-        sum(case when li.id=6 then fa.land_acreage else 0 end) threeSidePipeAcre,
-
--- 7 5' Side Pipe
-        count(distinct case when li.id=7 then fa.farmer_id end) fiveSidePipeFarmer,
-        sum(case when li.id=7 then fld.quantity else 0 end) fiveSidePipeQty,
-        sum(case when li.id=7 then fa.land_acreage else 0 end) fiveSidePipeAcre,
-
--- 8 6' Main Pipe
-        count(distinct case when li.id=8 then fa.farmer_id end) sixMainPipeFarmer,
-        sum(case when li.id=8 then fld.quantity else 0 end) sixMainPipeQty,
-        sum(case when li.id=8 then fa.land_acreage else 0 end) sixMainPipeAcre,
-
--- 9 6' Side Pipe
-        count(distinct case when li.id=9 then fa.farmer_id end) sixSidePipeFarmer,
-        sum(case when li.id=9 then fld.quantity else 0 end) sixSidePipeQty,
-        sum(case when li.id=9 then fa.land_acreage else 0 end) sixSidePipeAcre,
-
--- 10 Actara
-        count(distinct case when li.id=10 then fa.farmer_id end) actaraFarmer,
-        sum(case when li.id=10 then fld.quantity else 0 end) actaraQty,
-        sum(case when li.id=10 then fa.land_acreage else 0 end) actaraAcre,
-
--- 11 Amister Top
-        count(distinct case when li.id=11 then fa.farmer_id end) amisterTopFarmer,
-        sum(case when li.id=11 then fld.quantity else 0 end) amisterTopQty,
-        sum(case when li.id=11 then fa.land_acreage else 0 end) amisterTopAcre,
-
--- 12 Band
-        count(distinct case when li.id=12 then fa.farmer_id end) bandFarmer,
-        sum(case when li.id=12 then fld.quantity else 0 end) bandQty,
-        sum(case when li.id=12 then fa.land_acreage else 0 end) bandAcre,
-
--- 13 Band-T
-        count(distinct case when li.id=13 then fa.farmer_id end) bandTFarmer,
-        sum(case when li.id=13 then fld.quantity else 0 end) bandTQty,
-        sum(case when li.id=13 then fa.land_acreage else 0 end) bandTAcre,
-
--- 14 Center-T
-        count(distinct case when li.id=14 then fa.farmer_id end) centerTFarmer,
-        sum(case when li.id=14 then fld.quantity else 0 end) centerTQty,
-        sum(case when li.id=14 then fa.land_acreage else 0 end) centerTAcre,
-
--- 15 Coromil
-        count(distinct case when li.id=15 then fa.farmer_id end) coromilFarmer,
-        sum(case when li.id=15 then fld.quantity else 0 end) coromilQty,
-        sum(case when li.id=15 then fa.land_acreage else 0 end) coromilAcre,
-
--- 16 DAP
-        count(distinct case when li.id=16 then fa.farmer_id end) dapFarmer,
-        sum(case when li.id=16 then fld.quantity else 0 end) dapQty,
-        sum(case when li.id=16 then fa.land_acreage else 0 end) dapAcre,
-
--- 17 DAP (Cash)
-        count(distinct case when li.id=17 then fa.farmer_id end) dapCashFarmer,
-        sum(case when li.id=17 then fld.quantity else 0 end) dapCashQty,
-        sum(case when li.id=17 then fa.land_acreage else 0 end) dapCashAcre,
-
--- 18 Filter Net
-        count(distinct case when li.id=18 then fa.farmer_id end) filterNetFarmer,
-        sum(case when li.id=18 then fld.quantity else 0 end) filterNetQty,
-        sum(case when li.id=18 then fa.land_acreage else 0 end) filterNetAcre,
-
--- 19 G.P. Sheet
-        count(distinct case when li.id=19 then fa.farmer_id end) gpSheetFarmer,
-        sum(case when li.id=19 then fld.quantity else 0 end) gpSheetQty,
-        sum(case when li.id=19 then fa.land_acreage else 0 end) gpSheetAcre,
-
--- 20 Hand Gloves
-        count(distinct case when li.id=20 then fa.farmer_id end) handGlovesFarmer,
-        sum(case when li.id=20 then fld.quantity else 0 end) handGlovesQty,
-        sum(case when li.id=20 then fa.land_acreage else 0 end) handGlovesAcre,
-
--- 21 Hygrocurometer
-        count(distinct case when li.id=21 then fa.farmer_id end) hygrocurometerFarmer,
-        sum(case when li.id=21 then fld.quantity else 0 end) hygrocurometerQty,
-        sum(case when li.id=21 then fa.land_acreage else 0 end) hygrocurometerAcre,
-
--- 22 Jute Twine
-        count(distinct case when li.id=22 then fa.farmer_id end) juteTwineFarmer,
-        sum(case when li.id=22 then fld.quantity else 0 end) juteTwineQty,
-        sum(case when li.id=22 then fa.land_acreage else 0 end) juteTwineAcre,
-
--- 23 Mancozeb
-        count(distinct case when li.id=23 then fa.farmer_id end) mancozebFarmer,
-        sum(case when li.id=23 then fld.quantity else 0 end) mancozebQty,
-        sum(case when li.id=23 then fa.land_acreage else 0 end) mancozebAcre,
-
--- 24 Pheromone Trap
-        count(distinct case when li.id=24 then fa.farmer_id end) pheromoneTrapFarmer,
-        sum(case when li.id=24 then fld.quantity else 0 end) pheromoneTrapQty,
-        sum(case when li.id=24 then fa.land_acreage else 0 end) pheromoneTrapAcre,
-
--- 25 Polythene
-        count(distinct case when li.id=25 then fa.farmer_id end) polytheneFarmer,
-        sum(case when li.id=25 then fld.quantity else 0 end) polytheneQty,
-        sum(case when li.id=25 then fa.land_acreage else 0 end) polytheneAcre,
-
--- 26 PPE
-        count(distinct case when li.id=26 then fa.farmer_id end) ppeFarmer,
-        sum(case when li.id=26 then fld.quantity else 0 end) ppeQty,
-        sum(case when li.id=26 then fa.land_acreage else 0 end) ppeAcre,
-
--- 27 Proclaim
-        count(distinct case when li.id=27 then fa.farmer_id end) proclaimFarmer,
-        sum(case when li.id=27 then fld.quantity else 0 end) proclaimQty,
-        sum(case when li.id=27 then fa.land_acreage else 0 end) proclaimAcre,
-
--- 28 Quick Potash
-        count(distinct case when li.id=28 then fa.farmer_id end) quickPotashFarmer,
-        sum(case when li.id=28 then fld.quantity else 0 end) quickPotashQty,
-        sum(case when li.id=28 then fa.land_acreage else 0 end) quickPotashAcre,
-
--- 29 Redomil
-        count(distinct case when li.id=29 then fa.farmer_id end) redomilFarmer,
-        sum(case when li.id=29 then fld.quantity else 0 end) redomilQty,
-        sum(case when li.id=29 then fa.land_acreage else 0 end) redomilAcre,
-
--- 30 Seed (Burley)
-        count(distinct case when li.id=30 then fa.farmer_id end) seedBurleyFarmer,
-        sum(case when li.id=30 then fld.quantity else 0 end) seedBurleyQty,
-        sum(case when li.id=30 then fa.land_acreage else 0 end) seedBurleyAcre,
-
--- 31 Seed (Can Sowing)
-        count(distinct case when li.id=31 then fa.farmer_id end) seedCanSowingFarmer,
-        sum(case when li.id=31 then fld.quantity else 0 end) seedCanSowingQty,
-        sum(case when li.id=31 then fa.land_acreage else 0 end) seedCanSowingAcre,
-
--- 32 Seed (PVH-2310)
-        count(distinct case when li.id=32 then fa.farmer_id end) seedPVH2310Farmer,
-        sum(case when li.id=32 then fld.quantity else 0 end) seedPVH2310Qty,
-        sum(case when li.id=32 then fa.land_acreage else 0 end) seedPVH2310Acre,
-
--- 33 Seedbed (Cash)
-        count(distinct case when li.id=33 then fa.farmer_id end) seedbedCashFarmer,
-        sum(case when li.id=33 then fld.quantity else 0 end) seedbedCashQty,
-        sum(case when li.id=33 then fa.land_acreage else 0 end) seedbedCashAcre,
-
--- 34 Side-T
-        count(distinct case when li.id=34 then fa.farmer_id end) sideTFarmer,
-        sum(case when li.id=34 then fld.quantity else 0 end) sideTQty,
-        sum(case when li.id=34 then fa.land_acreage else 0 end) sideTAcre,
-
--- 35 SOP (25 Kg)
-        count(distinct case when li.id=35 then fa.farmer_id end) sop25Farmer,
-        sum(case when li.id=35 then fld.quantity else 0 end) sop25Qty,
-        sum(case when li.id=35 then fa.land_acreage else 0 end) sop25Acre,
+    count(distinct case when li.id=2 then fa.farmer_id end) cashLoanDueFarmer,
+    sum(case when li.id=2 then fld.quantity else 0 end) cashLoanDueQty,
+    sum(case when li.id=2 then fa.land_acreage else 0 end) cashLoanDueAcre,
 
 
--- 37 Sucker Plucker
-        count(distinct case when li.id=37 then fa.farmer_id end) suckerPluckerFarmer,
-        sum(case when li.id=37 then fld.quantity else 0 end) suckerPluckerQty,
-        sum(case when li.id=37 then fa.land_acreage else 0 end) suckerPluckerAcre,
+    count(distinct case when li.id=4 then fa.farmer_id end) twoSidePipeFarmer,
+    sum(case when li.id=4 then fld.quantity else 0 end) twoSidePipeQty,
+    sum(case when li.id=4 then fa.land_acreage else 0 end) twoSidePipeAcre,
 
--- 38 SUCKERICIDE
-        count(distinct case when li.id=38 then fa.farmer_id end) suckericideFarmer,
-        sum(case when li.id=38 then fld.quantity else 0 end) suckericideQty,
-        sum(case when li.id=38 then fa.land_acreage else 0 end) suckericideAcre,
 
--- 39 Tarpaulin
-        count(distinct case when li.id=39 then fa.farmer_id end) tarpaulinFarmer,
-        sum(case when li.id=39 then fld.quantity else 0 end) tarpaulinQty,
-        sum(case when li.id=39 then fa.land_acreage else 0 end) tarpaulinAcre,
+    count(distinct case when li.id=5 then fa.farmer_id end) threeMainPipeFarmer,
+    sum(case when li.id=5 then fld.quantity else 0 end) threeMainPipeQty,
+    sum(case when li.id=5 then fa.land_acreage else 0 end) threeMainPipeAcre,
 
--- 40 Thiovit
-        count(distinct case when li.id=40 then fa.farmer_id end) thiovitFarmer,
-        sum(case when li.id=40 then fld.quantity else 0 end) thiovitQty,
-        sum(case when li.id=40 then fa.land_acreage else 0 end) thiovitAcre,
 
--- 41 Trichoderma
-        count(distinct case when li.id=41 then fa.farmer_id end) trichodermaFarmer,
-        sum(case when li.id=41 then fld.quantity else 0 end) trichodermaQty,
-        sum(case when li.id=41 then fa.land_acreage else 0 end) trichodermaAcre,
+    count(distinct case when li.id=6 then fa.farmer_id end) threeSidePipeFarmer,
+    sum(case when li.id=6 then fld.quantity else 0 end) threeSidePipeQty,
+    sum(case when li.id=6 then fa.land_acreage else 0 end) threeSidePipeAcre,
 
--- 42 TSP
-        count(distinct case when li.id=42 then fa.farmer_id end) tspFarmer,
-        sum(case when li.id=42 then fld.quantity else 0 end) tspQty,
-        sum(case when li.id=42 then fa.land_acreage else 0 end) tspAcre,
 
--- 43 TSP (Cash)
-        count(distinct case when li.id=43 then fa.farmer_id end) tspCashFarmer,
-        sum(case when li.id=43 then fld.quantity else 0 end) tspCashQty,
-        sum(case when li.id=43 then fa.land_acreage else 0 end) tspCashAcre,
+    count(distinct case when li.id=7 then fa.farmer_id end) fiveSidePipeFarmer,
+    sum(case when li.id=7 then fld.quantity else 0 end) fiveSidePipeQty,
+    sum(case when li.id=7 then fa.land_acreage else 0 end) fiveSidePipeAcre,
 
--- 44 UREA
-        count(distinct case when li.id=44 then fa.farmer_id end) ureaFarmer,
-        sum(case when li.id=44 then fld.quantity else 0 end) ureaQty,
-        sum(case when li.id=44 then fa.land_acreage else 0 end) ureaAcre,
 
--- 45 UREA (Cash)
-        count(distinct case when li.id=45 then fa.farmer_id end) ureaCashFarmer,
-        sum(case when li.id=45 then fld.quantity else 0 end) ureaCashQty,
-        sum(case when li.id=45 then fa.land_acreage else 0 end) ureaCashAcre
+    count(distinct case when li.id=8 then fa.farmer_id end) sixMainPipeFarmer,
+    sum(case when li.id=8 then fld.quantity else 0 end) sixMainPipeQty,
+    sum(case when li.id=8 then fa.land_acreage else 0 end) sixMainPipeAcre,
+
+
+    count(distinct case when li.id=9 then fa.farmer_id end) sixSidePipeFarmer,
+    sum(case when li.id=9 then fld.quantity else 0 end) sixSidePipeQty,
+    sum(case when li.id=9 then fa.land_acreage else 0 end) sixSidePipeAcre,
+
+
+    count(distinct case when li.id=10 then fa.farmer_id end) actaraFarmer,
+    sum(case when li.id=10 then fld.quantity else 0 end) actaraQty,
+    sum(case when li.id=10 then fa.land_acreage else 0 end) actaraAcre,
+
+
+    count(distinct case when li.id=11 then fa.farmer_id end) amisterTopFarmer,
+    sum(case when li.id=11 then fld.quantity else 0 end) amisterTopQty,
+    sum(case when li.id=11 then fa.land_acreage else 0 end) amisterTopAcre,
+
+
+    count(distinct case when li.id=12 then fa.farmer_id end) bandFarmer,
+    sum(case when li.id=12 then fld.quantity else 0 end) bandQty,
+    sum(case when li.id=12 then fa.land_acreage else 0 end) bandAcre,
+
+
+    count(distinct case when li.id=13 then fa.farmer_id end) bandtFarmer,
+    sum(case when li.id=13 then fld.quantity else 0 end) bandtQty,
+    sum(case when li.id=13 then fa.land_acreage else 0 end) bandtAcre,
+
+
+    count(distinct case when li.id=14 then fa.farmer_id end) centertFarmer,
+    sum(case when li.id=14 then fld.quantity else 0 end) centertQty,
+    sum(case when li.id=14 then fa.land_acreage else 0 end) centertAcre,
+
+
+    count(distinct case when li.id=15 then fa.farmer_id end) coromilFarmer,
+    sum(case when li.id=15 then fld.quantity else 0 end) coromilQty,
+    sum(case when li.id=15 then fa.land_acreage else 0 end) coromilAcre,
+
+
+    count(distinct case when li.id=16 then fa.farmer_id end) dapFarmer,
+    sum(case when li.id=16 then fld.quantity else 0 end) dapQty,
+    sum(case when li.id=16 then fa.land_acreage else 0 end) dapAcre,
+
+
+    count(distinct case when li.id=17 then fa.farmer_id end) dapCashFarmer,
+    sum(case when li.id=17 then fld.quantity else 0 end) dapCashQty,
+    sum(case when li.id=17 then fa.land_acreage else 0 end) dapCashAcre,
+
+
+    count(distinct case when li.id=18 then fa.farmer_id end) filterNetFarmer,
+    sum(case when li.id=18 then fld.quantity else 0 end) filterNetQty,
+    sum(case when li.id=18 then fa.land_acreage else 0 end) filterNetAcre,
+
+
+    count(distinct case when li.id=19 then fa.farmer_id end) gpSheetFarmer,
+    sum(case when li.id=19 then fld.quantity else 0 end) gpSheetQty,
+    sum(case when li.id=19 then fa.land_acreage else 0 end) gpSheetAcre,
+
+
+    count(distinct case when li.id=20 then fa.farmer_id end) handGlovesFarmer,
+    sum(case when li.id=20 then fld.quantity else 0 end) handGlovesQty,
+    sum(case when li.id=20 then fa.land_acreage else 0 end) handGlovesAcre,
+
+
+    count(distinct case when li.id=21 then fa.farmer_id end) hygrocurometerFarmer,
+    sum(case when li.id=21 then fld.quantity else 0 end) hygrocurometerQty,
+    sum(case when li.id=21 then fa.land_acreage else 0 end) hygrocurometerAcre,
+
+    count(distinct case when li.id=22 then fa.farmer_id end) juteTwineFarmer,
+    sum(case when li.id=22 then fld.quantity else 0 end) juteTwineQty,
+    sum(case when li.id=22 then fa.land_acreage else 0 end) juteTwineAcre,
+
+
+    count(distinct case when li.id=23 then fa.farmer_id end) mancozebFarmer,
+    sum(case when li.id=23 then fld.quantity else 0 end) mancozebQty,
+    sum(case when li.id=23 then fa.land_acreage else 0 end) mancozebAcre,
+
+
+    count(distinct case when li.id=24 then fa.farmer_id end) pheromoneTrapFarmer,
+    sum(case when li.id=24 then fld.quantity else 0 end) pheromoneTrapQty,
+    sum(case when li.id=24 then fa.land_acreage else 0 end) pheromoneTrapAcre,
+
+
+    count(distinct case when li.id=25 then fa.farmer_id end) polytheneFarmer,
+    sum(case when li.id=25 then fld.quantity else 0 end) polytheneQty,
+    sum(case when li.id=25 then fa.land_acreage else 0 end) polytheneAcre,
+
+
+    count(distinct case when li.id=26 then fa.farmer_id end) ppeFarmer,
+    sum(case when li.id=26 then fld.quantity else 0 end) ppeQty,
+    sum(case when li.id=26 then fa.land_acreage else 0 end) ppeAcre,
+
+
+    count(distinct case when li.id=27 then fa.farmer_id end) proclaimFarmer,
+    sum(case when li.id=27 then fld.quantity else 0 end) proclaimQty,
+    sum(case when li.id=27 then fa.land_acreage else 0 end) proclaimAcre,
+
+    count(distinct case when li.id=28 then fa.farmer_id end) quickPotashFarmer,
+    sum(case when li.id=28 then fld.quantity else 0 end) quickPotashQty,
+    sum(case when li.id=28 then fa.land_acreage else 0 end) quickPotashAcre,
+
+
+    count(distinct case when li.id=29 then fa.farmer_id end) redomilFarmer,
+    sum(case when li.id=29 then fld.quantity else 0 end) redomilQty,
+    sum(case when li.id=29 then fa.land_acreage else 0 end) redomilAcre,
+
+
+    count(distinct case when li.id=30 then fa.farmer_id end) seedBurleyFarmer,
+    sum(case when li.id=30 then fld.quantity else 0 end) seedBurleyQty,
+    sum(case when li.id=30 then fa.land_acreage else 0 end) seedBurleyAcre,
+
+
+    count(distinct case when li.id=31 then fa.farmer_id end) seedCanSowingFarmer,
+    sum(case when li.id=31 then fld.quantity else 0 end) seedCanSowingQty,
+    sum(case when li.id=31 then fa.land_acreage else 0 end) seedCanSowingAcre,
+
+
+    count(distinct case when li.id=32 then fa.farmer_id end) seedPvhFarmer,
+    sum(case when li.id=32 then fld.quantity else 0 end) seedPvhQty,
+    sum(case when li.id=32 then fa.land_acreage else 0 end) seedPvhAcre,
+
+
+    count(distinct case when li.id=33 then fa.farmer_id end) seedbedCashFarmer,
+    sum(case when li.id=33 then fld.quantity else 0 end) seedbedCashQty,
+    sum(case when li.id=33 then fa.land_acreage else 0 end) seedbedCashAcre,
+
+    count(distinct case when li.id=34 then fa.farmer_id end) sidetFarmer,
+    sum(case when li.id=34 then fld.quantity else 0 end) sidetQty,
+    sum(case when li.id=34 then fa.land_acreage else 0 end) sidetAcre,
+
+
+    count(distinct case when li.id=35 then fa.farmer_id end) sop25Farmer,
+    sum(case when li.id=35 then fld.quantity else 0 end) sop25Qty,
+    sum(case when li.id=35 then fa.land_acreage else 0 end) sop25Acre,
+
+
+
+    count(distinct case when li.id=37 then fa.farmer_id end) suckerPluckerFarmer,
+    sum(case when li.id=37 then fld.quantity else 0 end) suckerPluckerQty,
+    sum(case when li.id=37 then fa.land_acreage else 0 end) suckerPluckerAcre,
+
+
+    count(distinct case when li.id=38 then fa.farmer_id end) suckericideFarmer,
+    sum(case when li.id=38 then fld.quantity else 0 end) suckericideQty,
+    sum(case when li.id=38 then fa.land_acreage else 0 end) suckericideAcre,
+
+
+    count(distinct case when li.id=39 then fa.farmer_id end) tarpaulinFarmer,
+    sum(case when li.id=39 then fld.quantity else 0 end) tarpaulinQty,
+    sum(case when li.id=39 then fa.land_acreage else 0 end) tarpaulinAcre,
+
+
+    count(distinct case when li.id=40 then fa.farmer_id end) thiovitFarmer,
+    sum(case when li.id=40 then fld.quantity else 0 end) thiovitQty,
+    sum(case when li.id=40 then fa.land_acreage else 0 end) thiovitAcre,
+
+
+    count(distinct case when li.id=41 then fa.farmer_id end) trichodermaFarmer,
+    sum(case when li.id=41 then fld.quantity else 0 end) trichodermaQty,
+    sum(case when li.id=41 then fa.land_acreage else 0 end) trichodermaAcre,
+
+
+    count(distinct case when li.id=42 then fa.farmer_id end) tspFarmer,
+    sum(case when li.id=42 then fld.quantity else 0 end) tspQty,
+    sum(case when li.id=42 then fa.land_acreage else 0 end) tspAcre,
+
+
+    count(distinct case when li.id=43 then fa.farmer_id end) tspCashFarmer,
+    sum(case when li.id=43 then fld.quantity else 0 end) tspCashQty,
+    sum(case when li.id=43 then fa.land_acreage else 0 end) tspCashAcre,
+
+
+    count(distinct case when li.id=44 then fa.farmer_id end) ureaFarmer,
+    sum(case when li.id=44 then fld.quantity else 0 end) ureaQty,
+    sum(case when li.id=44 then fa.land_acreage else 0 end) ureaAcre,
+
+
+    count(distinct case when li.id=45 then fa.farmer_id end) ureaCashFarmer,
+    sum(case when li.id=45 then fld.quantity else 0 end) ureaCashQty,
+    sum(case when li.id=45 then fa.land_acreage else 0 end) ureaCashAcre
 from    (select *
          from farmer_agreement
          where season_name = (select fiscal_year
@@ -232,16 +224,16 @@ from    (select *
                               where id = (select cast(attribute_value as numeric)
                                           from global_setting
                                           where attribute_name = 'REGISTRATION_SEASON'))
-         ) fa
-join    farmer f on fa.farmer_id=f.id
-AND     (case when :areaId is not null then fa.area_id = :areaId else true end)
-AND     (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
-and     f.is_active='true'
-join    farmer_loan_requests flr on fa.id=flr.farmer_agreement_id
-and     flr.approval_status='APPROVED'
-join    farmer_loan_main flm on flr.id = flm.farmer_loan_request_id
-and     flm.loan_date between :formDate and :toDate
-join    farmer_loan_details fld on flm.id = fld.loan_main_id
-join    loan_items li on fld.loan_item_id = li.id
+        ) fa
+            join    farmer f on fa.farmer_id=f.id
+    AND     (case when :areaId is not null then fa.area_id = :areaId else true end)
+    AND     (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
+    and     f.is_active='true'
+            join    farmer_loan_requests flr on fa.id=flr.farmer_agreement_id
+    and     flr.approval_status='APPROVED'
+            join    farmer_loan_main flm on flr.id = flm.farmer_loan_request_id
+    and     flm.loan_date between :fromDate and :toDate
+    join    farmer_loan_details fld on flm.id = fld.loan_main_id
+    join    loan_items li on fld.loan_item_id = li.id
 group by fa.zone_id, fa.zone_name, fa.sub_area_id, fa.sub_area_name
 order by fa.zone_id, fa.sub_area_id
