@@ -1,6 +1,0 @@
-select *
-from farmer_agreement,farmer_loan_details,farmer_loan_main,loan_items,items
-;
-
-select *
-from depot_li_disbursement,depot_li_disbursement_item,depot_li_inventory
