@@ -1,4 +1,4 @@
-Select  fa.season_name              AS cropYear,
+Select  distinct fa.season_name              AS cropYear,
         fa.area_id                 AS areaId,
         fa.area_name                 AS areaName,
         fa.zone_id                 AS zoneId,
