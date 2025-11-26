@@ -229,11 +229,11 @@ from    (select *
     AND     (case when :areaId is not null then fa.area_id = :areaId else true end)
     AND     (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
     and     f.is_active='true'
-            join    farmer_loan_requests flr on fa.id=flr.farmer_agreement_id
+            left join    farmer_loan_requests flr on fa.id=flr.farmer_agreement_id
     and     flr.approval_status='APPROVED'
-            join    farmer_loan_main flm on flr.id = flm.farmer_loan_request_id
+            left join    farmer_loan_main flm on flr.id = flm.farmer_loan_request_id
     and     flm.loan_date between :fromDate and :toDate
-    join    farmer_loan_details fld on flm.id = fld.loan_main_id
-    join    loan_items li on fld.loan_item_id = li.id
+    join    left farmer_loan_details fld on flm.id = fld.loan_main_id
+    join    left loan_items li on fld.loan_item_id = li.id
 group by fa.zone_id, fa.zone_name, fa.sub_area_id, fa.sub_area_name
 order by fa.zone_id, fa.sub_area_id
