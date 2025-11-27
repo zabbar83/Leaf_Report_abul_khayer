@@ -72,17 +72,17 @@ select d.id                                                                     
        sum(distinct case when dd.loan_item_id = 12 then dd.disbursedQnt else 0 end)      as bandDisQnt,
        sum(distinct case when dli.loan_item_id = 12 then dli.quantity else 0 end)        as bandStockQ,
 
-       sum(case when dldi.loan_item_id = 13 then dldi.depot_receive_quantity else 0 end) as bandTRecQty,
-       0                                                                                 as bandTdRecQty,
-       sum(case when dldi.loan_item_id = 13 then dldi.depot_receive_quantity else 0 end) as bandTRecTot,
-       sum(distinct case when dd.loan_item_id = 13 then dd.disbursedQnt else 0 end)      as bandTDisQnt,
-       sum(distinct case when dli.loan_item_id = 13 then dli.quantity else 0 end)        as bandTStockQ,
+       sum(case when dldi.loan_item_id = 13 then dldi.depot_receive_quantity else 0 end) as bandtRecQty,
+       0                                                                                 as bandtdRecQty,
+       sum(case when dldi.loan_item_id = 13 then dldi.depot_receive_quantity else 0 end) as bandtRecTot,
+       sum(distinct case when dd.loan_item_id = 13 then dd.disbursedQnt else 0 end)      as bandtDisQnt,
+       sum(distinct case when dli.loan_item_id = 13 then dli.quantity else 0 end)        as bandtStockQ,
 
-       sum(case when dldi.loan_item_id = 14 then dldi.depot_receive_quantity else 0 end) as centerTRecQty,
-       0                                                                                 as centerTdRecQty,
-       sum(case when dldi.loan_item_id = 14 then dldi.depot_receive_quantity else 0 end) as centerTRecTot,
-       sum(distinct case when dd.loan_item_id = 14 then dd.disbursedQnt else 0 end)      as centerTDisQnt,
-       sum(distinct case when dli.loan_item_id = 14 then dli.quantity else 0 end)        as centerTStockQ,
+       sum(case when dldi.loan_item_id = 14 then dldi.depot_receive_quantity else 0 end) as centertRecQty,
+       0                                                                                 as centertdRecQty,
+       sum(case when dldi.loan_item_id = 14 then dldi.depot_receive_quantity else 0 end) as centertRecTot,
+       sum(distinct case when dd.loan_item_id = 14 then dd.disbursedQnt else 0 end)      as centertDisQnt,
+       sum(distinct case when dli.loan_item_id = 14 then dli.quantity else 0 end)        as centertStockQ,
 
        sum(case when dldi.loan_item_id = 15 then dldi.depot_receive_quantity else 0 end) as coromilRecQty,
        0                                                                                 as coromildRecQty,
@@ -186,11 +186,11 @@ select d.id                                                                     
        sum(distinct case when dd.loan_item_id = 31 then dd.disbursedQnt else 0 end)      as seedCanDisQnt,
        sum(distinct case when dli.loan_item_id = 31 then dli.quantity else 0 end)        as seedCanStockQ,
 
-       sum(case when dldi.loan_item_id = 32 then dldi.depot_receive_quantity else 0 end) as seedPVHRecQty,
-       0                                                                                 as seedPVHdRecQty,
-       sum(case when dldi.loan_item_id = 32 then dldi.depot_receive_quantity else 0 end) as seedPVHRecTot,
-       sum(distinct case when dd.loan_item_id = 32 then dd.disbursedQnt else 0 end)      as seedPVHDisQnt,
-       sum(distinct case when dli.loan_item_id = 32 then dli.quantity else 0 end)        as seedPVHStockQ,
+       sum(case when dldi.loan_item_id = 32 then dldi.depot_receive_quantity else 0 end) as seedPvhRecQty,
+       0                                                                                 as seedPvhdRecQty,
+       sum(case when dldi.loan_item_id = 32 then dldi.depot_receive_quantity else 0 end) as seedPvhRecTot,
+       sum(distinct case when dd.loan_item_id = 32 then dd.disbursedQnt else 0 end)      as seedPvhDisQnt,
+       sum(distinct case when dli.loan_item_id = 32 then dli.quantity else 0 end)        as seedPvhStockQ,
 
        sum(case when dldi.loan_item_id = 33 then dldi.depot_receive_quantity else 0 end) as seedbedRecQty,
        0                                                                                 as seedbeddRecQty,
@@ -198,11 +198,11 @@ select d.id                                                                     
        sum(distinct case when dd.loan_item_id = 33 then dd.disbursedQnt else 0 end)      as seedbedDisQnt,
        sum(distinct case when dli.loan_item_id = 33 then dli.quantity else 0 end)        as seedbedStockQ,
 
-       sum(case when dldi.loan_item_id = 34 then dldi.depot_receive_quantity else 0 end) as sideTRecQty,
-       0                                                                                 as sideTdRecQty,
-       sum(case when dldi.loan_item_id = 34 then dldi.depot_receive_quantity else 0 end) as sideTRecTot,
-       sum(distinct case when dd.loan_item_id = 34 then dd.disbursedQnt else 0 end)      as sideTDisQnt,
-       sum(distinct case when dli.loan_item_id = 34 then dli.quantity else 0 end)        as sideTStockQ,
+       sum(case when dldi.loan_item_id = 34 then dldi.depot_receive_quantity else 0 end) as sidetRecQty,
+       0                                                                                 as sidetdRecQty,
+       sum(case when dldi.loan_item_id = 34 then dldi.depot_receive_quantity else 0 end) as sidetRecTot,
+       sum(distinct case when dd.loan_item_id = 34 then dd.disbursedQnt else 0 end)      as sidetDisQnt,
+       sum(distinct case when dli.loan_item_id = 34 then dli.quantity else 0 end)        as sidetStockQ,
 
        sum(case when dldi.loan_item_id = 35 then dldi.depot_receive_quantity else 0 end) as sop25RecQty,
        0                                                                                 as sop25dRecQty,
@@ -272,7 +272,7 @@ select d.id                                                                     
 
 from depot d
          join depot_li_disbursement dld on d.id = dld.to_depot_id
-         and (case when :areaId is not null then d.area_id=:areaId else true end)
+    and (case when :areaId is not null then d.area_id=:areaId else true end)
          join depot_li_disbursement_item dldi on dld.id = dldi.depot_li_disbursement_id
          join depot_li_inventory dli on dld.to_depot_id = dli.depot_id and dldi.loan_item_id = dli.loan_item_id
          left join (select dt.id                        depotId,
@@ -297,7 +297,7 @@ from depot d
                                             join depot_territory dt on vta.zone_id = dt.territory_id
                                             join depot d on dt.depot_id = d.id
                                        and (case when :areaId is not null then d.area_id=:areaId else true end)
-                                   ) dt on fa.zone_id = dt.zone_id
+                    ) dt on fa.zone_id = dt.zone_id
                     group by dt.id, fa.zone_id, flri.loan_item_id) dd
                    on dli.depot_id = dd.depotId and dli.loan_item_id = dd.loan_item_id
 group by d.id, d.depot_name
