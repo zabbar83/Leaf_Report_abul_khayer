@@ -1,303 +1,302 @@
-select d.id                                                                              as depotId,
+select d.depot_id                                                                              as depotId,
        d.depot_name                                                                      as depotName,
-       sum(case when dldi.loan_item_id = 1 then dldi.depot_receive_quantity else 0 end)  as cashRecQty,
-       0                                                                                 as cashdRecQty,
-       sum(case when dldi.loan_item_id = 1 then dldi.depot_receive_quantity else 0 end)  as cashRecTot,
-       sum(distinct case when dd.loan_item_id = 1 then dd.disbursedQnt else 0 end)       as cashDisQnt,
-       sum(distinct case when dli.loan_item_id = 1 then dli.quantity else 0 end)         as cashStock,
 
-       sum(case when dldi.loan_item_id = 2 then dldi.depot_receive_quantity else 0 end)  as cashLoanRecQty,
-       0                                                                                 as cashLoandRecQty,
-       sum(case when dldi.loan_item_id = 2 then dldi.depot_receive_quantity else 0 end)  as cashLoanRecTot,
-       sum(distinct case when dd.loan_item_id = 2 then dd.disbursedQnt else 0 end)       as cashLoanDisQnt,
-       sum(distinct case when dli.loan_item_id = 2 then dli.quantity else 0 end)         as cashLoanStock,
+       sum(case when d.loan_item_id = 4 then daRec.dRecQntfArea else 0 end)  as pipe2SideRecQty,
+       coalesce(sum(case when d.loan_item_id = 4 then ddRec.dtdRecQnt else 0 end),0) as pipe2SidedRecQty,
+       sum(case when d.loan_item_id = 4 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end)  as pipe2SideRecTot,
+       sum(distinct case when d.loan_item_id = 4 then farDis.fDistributionStk else 0 end)       as pipe2SideDisQnt,
+       sum(distinct case when d.loan_item_id = 4 then dis.depotInvStock else 0 end)         as pipe2SideStock,
 
-       sum(case when dldi.loan_item_id = 3 then dldi.depot_receive_quantity else 0 end)  as loanAdjRecQty,
-       0                                                                                 as loanAdjdRecQty,
-       sum(case when dldi.loan_item_id = 3 then dldi.depot_receive_quantity else 0 end)  as loanAdjRecTot,
-       sum(distinct case when dd.loan_item_id = 3 then dd.disbursedQnt else 0 end)       as loanAdjDisQnt,
-       sum(distinct case when dli.loan_item_id = 3 then dli.quantity else 0 end)         as loanAdjStock,
+       sum(case when d.loan_item_id = 5 then daRec.dRecQntfArea else 0 end)  as pipe3MainRecQty,
+       coalesce(sum(case when d.loan_item_id = 5 then ddRec.dtdRecQnt else 0 end),0) as pipe3MaindRecQty,
+       sum(case when d.loan_item_id = 5 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end)  as pipe3MainRecTot,
+       sum(distinct case when d.loan_item_id = 5 then farDis.fDistributionStk else 0 end)       as pipe3MainDisQnt,
+       sum(distinct case when d.loan_item_id = 5 then dis.depotInvStock else 0 end)         as pipe3MainStock,
 
-       sum(case when dldi.loan_item_id = 4 then dldi.depot_receive_quantity else 0 end)  as pipe2SideRecQty,
-       0                                                                                 as pipe2SidedRecQty,
-       sum(case when dldi.loan_item_id = 4 then dldi.depot_receive_quantity else 0 end)  as pipe2SideRecTot,
-       sum(distinct case when dd.loan_item_id = 4 then dd.disbursedQnt else 0 end)       as pipe2SideDisQnt,
-       sum(distinct case when dli.loan_item_id = 4 then dli.quantity else 0 end)         as pipe2SideStock,
+       sum(case when d.loan_item_id = 6 then daRec.dRecQntfArea else 0 end)  as pipe3SideRecQty,
+       coalesce(sum(case when d.loan_item_id = 6 then ddRec.dtdRecQnt else 0 end),0) as pipe3SidedRecQty,
+       sum(case when d.loan_item_id = 6 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end)  as pipe3SideRecTot,
+       sum(distinct case when d.loan_item_id = 6 then farDis.fDistributionStk else 0 end)       as pipe3SideDisQnt,
+       sum(distinct case when d.loan_item_id = 6 then dis.depotInvStock else 0 end)         as pipe3SideStock,
 
-       sum(case when dldi.loan_item_id = 5 then dldi.depot_receive_quantity else 0 end)  as pipe3MainRecQty,
-       0                                                                                 as pipe3MaindRecQty,
-       sum(case when dldi.loan_item_id = 5 then dldi.depot_receive_quantity else 0 end)  as pipe3MainRecTot,
-       sum(distinct case when dd.loan_item_id = 5 then dd.disbursedQnt else 0 end)       as pipe3MainDisQnt,
-       sum(distinct case when dli.loan_item_id = 5 then dli.quantity else 0 end)         as pipe3MainStock,
+       sum(case when d.loan_item_id = 7 then daRec.dRecQntfArea else 0 end)  as pipe5SideRecQty,
+       coalesce(sum(case when d.loan_item_id = 7 then ddRec.dtdRecQnt else 0 end),0) as pipe5SidedRecQty,
+       sum(case when d.loan_item_id = 7 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end)  as pipe5SideRecTot,
+       sum(distinct case when d.loan_item_id = 7 then farDis.fDistributionStk else 0 end)       as pipe5SideDisQnt,
+       sum(distinct case when d.loan_item_id = 7 then dis.depotInvStock else 0 end)         as pipe5SideStock,
 
-       sum(case when dldi.loan_item_id = 6 then dldi.depot_receive_quantity else 0 end)  as pipe3SideRecQty,
-       0                                                                                 as pipe3SidedRecQty,
-       sum(case when dldi.loan_item_id = 6 then dldi.depot_receive_quantity else 0 end)  as pipe3SideRecTot,
-       sum(distinct case when dd.loan_item_id = 6 then dd.disbursedQnt else 0 end)       as pipe3SideDisQnt,
-       sum(distinct case when dli.loan_item_id = 6 then dli.quantity else 0 end)         as pipe3SideStock,
+       sum(case when d.loan_item_id = 8 then daRec.dRecQntfArea else 0 end)  as pipe6MainRecQty,
+       coalesce(sum(case when d.loan_item_id = 8 then ddRec.dtdRecQnt else 0 end),0) as pipe6MaindRecQty,
+       sum(case when d.loan_item_id = 8 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end)  as pipe6MainRecTot,
+       sum(distinct case when d.loan_item_id = 8 then farDis.fDistributionStk else 0 end)       as pipe6MainDisQnt,
+       sum(distinct case when d.loan_item_id = 8 then dis.depotInvStock else 0 end)         as pipe6MainStock,
 
-       sum(case when dldi.loan_item_id = 7 then dldi.depot_receive_quantity else 0 end)  as pipe5SideRecQty,
-       0                                                                                 as pipe5SidedRecQty,
-       sum(case when dldi.loan_item_id = 7 then dldi.depot_receive_quantity else 0 end)  as pipe5SideRecTot,
-       sum(distinct case when dd.loan_item_id = 7 then dd.disbursedQnt else 0 end)       as pipe5SideDisQnt,
-       sum(distinct case when dli.loan_item_id = 7 then dli.quantity else 0 end)         as pipe5SideStock,
+       sum(case when d.loan_item_id = 9 then daRec.dRecQntfArea else 0 end)  as pipe6SideRecQty,
+       coalesce(sum(case when d.loan_item_id = 9 then ddRec.dtdRecQnt else 0 end),0) as pipe6SidedRecQty,
+       sum(case when d.loan_item_id = 9 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end)  as pipe6SideRecTot,
+       sum(distinct case when d.loan_item_id = 9 then farDis.fDistributionStk else 0 end)       as pipe6SideDisQnt,
+       sum(distinct case when d.loan_item_id = 9 then dis.depotInvStock else 0 end)         as pipe6SideStock,
 
-       sum(case when dldi.loan_item_id = 8 then dldi.depot_receive_quantity else 0 end)  as pipe6MainRecQty,
-       0                                                                                 as pipe6MaindRecQty,
-       sum(case when dldi.loan_item_id = 8 then dldi.depot_receive_quantity else 0 end)  as pipe6MainRecTot,
-       sum(distinct case when dd.loan_item_id = 8 then dd.disbursedQnt else 0 end)       as pipe6MainDisQnt,
-       sum(distinct case when dli.loan_item_id = 8 then dli.quantity else 0 end)         as pipe6MainStock,
+       sum(case when d.loan_item_id = 10 then daRec.dRecQntfArea else 0 end) as actaraRecQty,
+       coalesce(sum(case when d.loan_item_id = 10 then ddRec.dtdRecQnt else 0 end),0) as actaradRecQty,
+       sum(case when d.loan_item_id = 10 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as actaraRecTot,
+       sum(distinct case when d.loan_item_id = 10 then farDis.fDistributionStk else 0 end)      as actaraDisQnt,
+       sum(distinct case when d.loan_item_id = 10 then dis.depotInvStock else 0 end)        as actaraStock,
 
-       sum(case when dldi.loan_item_id = 9 then dldi.depot_receive_quantity else 0 end)  as pipe6SideRecQty,
-       0                                                                                 as pipe6SidedRecQty,
-       sum(case when dldi.loan_item_id = 9 then dldi.depot_receive_quantity else 0 end)  as pipe6SideRecTot,
-       sum(distinct case when dd.loan_item_id = 9 then dd.disbursedQnt else 0 end)       as pipe6SideDisQnt,
-       sum(distinct case when dli.loan_item_id = 9 then dli.quantity else 0 end)         as pipe6SideStock,
+       sum(case when d.loan_item_id = 11 then daRec.dRecQntfArea else 0 end) as amisterRecQty,
+       coalesce(sum(case when d.loan_item_id = 11 then ddRec.dtdRecQnt else 0 end),0) as amisterdRecQty,
+       sum(case when d.loan_item_id = 11 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as amisterRecTot,
+       sum(distinct case when d.loan_item_id = 11 then farDis.fDistributionStk else 0 end)      as amisterDisQnt,
+       sum(distinct case when d.loan_item_id = 11 then dis.depotInvStock else 0 end)        as amisterStock,
 
-       sum(case when dldi.loan_item_id = 10 then dldi.depot_receive_quantity else 0 end) as actaraRecQty,
-       0                                                                                 as actaradRecQty,
-       sum(case when dldi.loan_item_id = 10 then dldi.depot_receive_quantity else 0 end) as actaraRecTot,
-       sum(distinct case when dd.loan_item_id = 10 then dd.disbursedQnt else 0 end)      as actaraDisQnt,
-       sum(distinct case when dli.loan_item_id = 10 then dli.quantity else 0 end)        as actaraStock,
+       sum(case when d.loan_item_id = 12 then daRec.dRecQntfArea else 0 end) as bandRecQty,
+       coalesce(sum(case when d.loan_item_id = 12 then ddRec.dtdRecQnt else 0 end),0) as banddRecQty,
+       sum(case when d.loan_item_id = 12 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as bandRecTot,
+       sum(distinct case when d.loan_item_id = 12 then farDis.fDistributionStk else 0 end)      as bandDisQnt,
+       sum(distinct case when d.loan_item_id = 12 then dis.depotInvStock else 0 end)        as bandStock,
 
-       sum(case when dldi.loan_item_id = 11 then dldi.depot_receive_quantity else 0 end) as amisterRecQty,
-       0                                                                                 as amisterdRecQty,
-       sum(case when dldi.loan_item_id = 11 then dldi.depot_receive_quantity else 0 end) as amisterRecTot,
-       sum(distinct case when dd.loan_item_id = 11 then dd.disbursedQnt else 0 end)      as amisterDisQnt,
-       sum(distinct case when dli.loan_item_id = 11 then dli.quantity else 0 end)        as amisterStock,
+       sum(case when d.loan_item_id = 13 then daRec.dRecQntfArea else 0 end) as bandtRecQty,
+       coalesce(sum(case when d.loan_item_id = 13 then ddRec.dtdRecQnt else 0 end),0) as bandtdRecQty,
+       sum(case when d.loan_item_id = 13 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as bandtRecTot,
+       sum(distinct case when d.loan_item_id = 13 then farDis.fDistributionStk else 0 end)      as bandtDisQnt,
+       sum(distinct case when d.loan_item_id = 13 then dis.depotInvStock else 0 end)        as bandtStock,
 
-       sum(case when dldi.loan_item_id = 12 then dldi.depot_receive_quantity else 0 end) as bandRecQty,
-       0                                                                                 as banddRecQty,
-       sum(case when dldi.loan_item_id = 12 then dldi.depot_receive_quantity else 0 end) as bandRecTot,
-       sum(distinct case when dd.loan_item_id = 12 then dd.disbursedQnt else 0 end)      as bandDisQnt,
-       sum(distinct case when dli.loan_item_id = 12 then dli.quantity else 0 end)        as bandStock,
+       sum(case when d.loan_item_id = 14 then daRec.dRecQntfArea else 0 end) as centertRecQty,
+       coalesce(sum(case when d.loan_item_id = 14 then ddRec.dtdRecQnt else 0 end),0) as centertdRecQty,
+       sum(case when d.loan_item_id = 14 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as centertRecTot,
+       sum(distinct case when d.loan_item_id = 14 then farDis.fDistributionStk else 0 end)      as centertDisQnt,
+       sum(distinct case when d.loan_item_id = 14 then dis.depotInvStock else 0 end)        as centertStock,
 
-       sum(case when dldi.loan_item_id = 13 then dldi.depot_receive_quantity else 0 end) as bandtRecQty,
-       0                                                                                 as bandtdRecQty,
-       sum(case when dldi.loan_item_id = 13 then dldi.depot_receive_quantity else 0 end) as bandtRecTot,
-       sum(distinct case when dd.loan_item_id = 13 then dd.disbursedQnt else 0 end)      as bandtDisQnt,
-       sum(distinct case when dli.loan_item_id = 13 then dli.quantity else 0 end)        as bandtStock,
+       sum(case when d.loan_item_id = 15 then daRec.dRecQntfArea else 0 end) as coromilRecQty,
+       coalesce(sum(case when d.loan_item_id = 15 then ddRec.dtdRecQnt else 0 end),0) as coromildRecQty,
+       sum(case when d.loan_item_id = 15 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as coromilRecTot,
+       sum(distinct case when d.loan_item_id = 15 then farDis.fDistributionStk else 0 end)      as coromilDisQnt,
+       sum(distinct case when d.loan_item_id = 15 then dis.depotInvStock else 0 end)        as coromilStock,
 
-       sum(case when dldi.loan_item_id = 14 then dldi.depot_receive_quantity else 0 end) as centertRecQty,
-       0                                                                                 as centertdRecQty,
-       sum(case when dldi.loan_item_id = 14 then dldi.depot_receive_quantity else 0 end) as centertRecTot,
-       sum(distinct case when dd.loan_item_id = 14 then dd.disbursedQnt else 0 end)      as centertDisQnt,
-       sum(distinct case when dli.loan_item_id = 14 then dli.quantity else 0 end)        as centertStock,
+       sum(case when d.loan_item_id = 16 then daRec.dRecQntfArea else 0 end) as dapRecQty,
+       coalesce(sum(case when d.loan_item_id = 16 then ddRec.dtdRecQnt else 0 end),0) as dapdRecQty,
+       sum(case when d.loan_item_id = 16 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as dapRecTot,
+       sum(distinct case when d.loan_item_id = 16 then farDis.fDistributionStk else 0 end)      as dapDisQnt,
+       sum(distinct case when d.loan_item_id = 16 then dis.depotInvStock else 0 end)        as dapStock,
 
-       sum(case when dldi.loan_item_id = 15 then dldi.depot_receive_quantity else 0 end) as coromilRecQty,
-       0                                                                                 as coromildRecQty,
-       sum(case when dldi.loan_item_id = 15 then dldi.depot_receive_quantity else 0 end) as coromilRecTot,
-       sum(distinct case when dd.loan_item_id = 15 then dd.disbursedQnt else 0 end)      as coromilDisQnt,
-       sum(distinct case when dli.loan_item_id = 15 then dli.quantity else 0 end)        as coromilStock,
+       sum(case when d.loan_item_id = 17 then daRec.dRecQntfArea else 0 end) as dapCashRecQty,
+       coalesce(sum(case when d.loan_item_id = 17 then ddRec.dtdRecQnt else 0 end),0) as dapCashdRecQty,
+       sum(case when d.loan_item_id = 17 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as dapCashRecTot,
+       sum(distinct case when d.loan_item_id = 17 then farDis.fDistributionStk else 0 end)      as dapCashDisQnt,
+       sum(distinct case when d.loan_item_id = 17 then dis.depotInvStock else 0 end)        as dapCashStock,
 
-       sum(case when dldi.loan_item_id = 16 then dldi.depot_receive_quantity else 0 end) as dapRecQty,
-       0                                                                                 as dapdRecQty,
-       sum(case when dldi.loan_item_id = 16 then dldi.depot_receive_quantity else 0 end) as dapRecTot,
-       sum(distinct case when dd.loan_item_id = 16 then dd.disbursedQnt else 0 end)      as dapDisQnt,
-       sum(distinct case when dli.loan_item_id = 16 then dli.quantity else 0 end)        as dapStock,
+       sum(case when d.loan_item_id = 18 then daRec.dRecQntfArea else 0 end) as filternetRecQty,
+       coalesce(sum(case when d.loan_item_id = 18 then ddRec.dtdRecQnt else 0 end),0) as filternetdRecQty,
+       sum(case when d.loan_item_id = 18 then (coalesce((coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)),0)) else 0 end) as filternetRecTot,
+       sum(distinct case when d.loan_item_id = 18 then farDis.fDistributionStk else 0 end)      as filternetDisQnt,
+       sum(distinct case when d.loan_item_id = 18 then dis.depotInvStock else 0 end)        as filternetStock,
 
-       sum(case when dldi.loan_item_id = 17 then dldi.depot_receive_quantity else 0 end) as dapCashRecQty,
-       0                                                                                 as dapCashdRecQty,
-       sum(case when dldi.loan_item_id = 17 then dldi.depot_receive_quantity else 0 end) as dapCashRecTot,
-       sum(distinct case when dd.loan_item_id = 17 then dd.disbursedQnt else 0 end)      as dapCashDisQnt,
-       sum(distinct case when dli.loan_item_id = 17 then dli.quantity else 0 end)        as dapCashStock,
+       sum(case when d.loan_item_id = 19 then daRec.dRecQntfArea else 0 end) as gpsheetRecQty,
+       coalesce(sum(case when d.loan_item_id = 19 then ddRec.dtdRecQnt else 0 end),0) as gpsheetdRecQty,
+       sum(case when d.loan_item_id = 19 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as gpsheetRecTot,
+       sum(distinct case when d.loan_item_id = 19 then farDis.fDistributionStk else 0 end)      as gpsheetDisQnt,
+       sum(distinct case when d.loan_item_id = 19 then dis.depotInvStock else 0 end)        as gpsheetStock,
 
-       sum(case when dldi.loan_item_id = 18 then dldi.depot_receive_quantity else 0 end) as filternetRecQty,
-       0                                                                                 as filternetdRecQty,
-       sum(case when dldi.loan_item_id = 18 then dldi.depot_receive_quantity else 0 end) as filternetRecTot,
-       sum(distinct case when dd.loan_item_id = 18 then dd.disbursedQnt else 0 end)      as filternetDisQnt,
-       sum(distinct case when dli.loan_item_id = 18 then dli.quantity else 0 end)        as filternetStock,
+       sum(case when d.loan_item_id = 20 then daRec.dRecQntfArea else 0 end) as glovesRecQty,
+       coalesce(sum(case when d.loan_item_id = 20 then ddRec.dtdRecQnt else 0 end),0) as glovesdRecQty,
+       sum(case when d.loan_item_id = 20 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as glovesRecTot,
+       sum(distinct case when d.loan_item_id = 20 then farDis.fDistributionStk else 0 end)      as glovesDisQnt,
+       sum(distinct case when d.loan_item_id = 20 then dis.depotInvStock else 0 end)        as glovesStock,
 
-       sum(case when dldi.loan_item_id = 19 then dldi.depot_receive_quantity else 0 end) as gpsheetRecQty,
-       0                                                                                 as gpsheetdRecQty,
-       sum(case when dldi.loan_item_id = 19 then dldi.depot_receive_quantity else 0 end) as gpsheetRecTot,
-       sum(distinct case when dd.loan_item_id = 19 then dd.disbursedQnt else 0 end)      as gpsheetDisQnt,
-       sum(distinct case when dli.loan_item_id = 19 then dli.quantity else 0 end)        as gpsheetStock,
+       sum(case when d.loan_item_id = 21 then daRec.dRecQntfArea else 0 end) as hygroRecQty,
+       coalesce(sum(case when d.loan_item_id = 21 then ddRec.dtdRecQnt else 0 end),0) as hygrodRecQty,
+       sum(case when d.loan_item_id = 21 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as hygroRecTot,
+       sum(distinct case when d.loan_item_id = 21 then farDis.fDistributionStk else 0 end)      as hygroDisQnt,
+       sum(distinct case when d.loan_item_id = 21 then dis.depotInvStock else 0 end)        as hygroStock,
 
-       sum(case when dldi.loan_item_id = 20 then dldi.depot_receive_quantity else 0 end) as glovesRecQty,
-       0                                                                                 as glovesdRecQty,
-       sum(case when dldi.loan_item_id = 20 then dldi.depot_receive_quantity else 0 end) as glovesRecTot,
-       sum(distinct case when dd.loan_item_id = 20 then dd.disbursedQnt else 0 end)      as glovesDisQnt,
-       sum(distinct case when dli.loan_item_id = 20 then dli.quantity else 0 end)        as glovesStock,
+       sum(case when d.loan_item_id = 22 then daRec.dRecQntfArea else 0 end) as juteTwineRecQty,
+       coalesce(sum(case when d.loan_item_id = 22 then ddRec.dtdRecQnt else 0 end),0) as juteTwinedRecQty,
+       sum(case when d.loan_item_id = 22 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as juteTwineRecTot,
+       sum(distinct case when d.loan_item_id = 22 then farDis.fDistributionStk else 0 end)      as juteTwineDisQnt,
+       sum(distinct case when d.loan_item_id = 22 then dis.depotInvStock else 0 end)        as juteTwineStock,
 
-       sum(case when dldi.loan_item_id = 21 then dldi.depot_receive_quantity else 0 end) as hygroRecQty,
-       0                                                                                 as hygrodRecQty,
-       sum(case when dldi.loan_item_id = 21 then dldi.depot_receive_quantity else 0 end) as hygroRecTot,
-       sum(distinct case when dd.loan_item_id = 21 then dd.disbursedQnt else 0 end)      as hygroDisQnt,
-       sum(distinct case when dli.loan_item_id = 21 then dli.quantity else 0 end)        as hygroStock,
+       sum(case when d.loan_item_id = 23 then daRec.dRecQntfArea else 0 end) as mancozebRecQty,
+       coalesce(sum(case when d.loan_item_id = 23 then ddRec.dtdRecQnt else 0 end),0) as mancozebdRecQty,
+       sum(case when d.loan_item_id = 23 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as mancozebRecTot,
+       sum(distinct case when d.loan_item_id = 23 then farDis.fDistributionStk else 0 end)      as mancozebDisQnt,
+       sum(distinct case when d.loan_item_id = 23 then dis.depotInvStock else 0 end)        as mancozebStock,
 
-       sum(case when dldi.loan_item_id = 22 then dldi.depot_receive_quantity else 0 end) as juteTwineRecQty,
-       0                                                                                 as juteTwinedRecQty,
-       sum(case when dldi.loan_item_id = 22 then dldi.depot_receive_quantity else 0 end) as juteTwineRecTot,
-       sum(distinct case when dd.loan_item_id = 22 then dd.disbursedQnt else 0 end)      as juteTwineDisQnt,
-       sum(distinct case when dli.loan_item_id = 22 then dli.quantity else 0 end)        as juteTwineStock,
+       sum(case when d.loan_item_id = 24 then daRec.dRecQntfArea else 0 end) as pheromoneRecQty,
+       coalesce(sum(case when d.loan_item_id = 24 then ddRec.dtdRecQnt else 0 end),0) as pheromonedRecQty,
+       sum(case when d.loan_item_id = 24 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as pheromoneRecTot,
+       sum(distinct case when d.loan_item_id = 24 then farDis.fDistributionStk else 0 end)      as pheromoneDisQnt,
+       sum(distinct case when d.loan_item_id = 24 then dis.depotInvStock else 0 end)        as pheromoneStock,
 
-       sum(case when dldi.loan_item_id = 23 then dldi.depot_receive_quantity else 0 end) as mancozebRecQty,
-       0                                                                                 as mancozebdRecQty,
-       sum(case when dldi.loan_item_id = 23 then dldi.depot_receive_quantity else 0 end) as mancozebRecTot,
-       sum(distinct case when dd.loan_item_id = 23 then dd.disbursedQnt else 0 end)      as mancozebDisQnt,
-       sum(distinct case when dli.loan_item_id = 23 then dli.quantity else 0 end)        as mancozebStock,
+       sum(case when d.loan_item_id = 25 then daRec.dRecQntfArea else 0 end) as polyRecQty,
+       coalesce(sum(case when d.loan_item_id = 25 then ddRec.dtdRecQnt else 0 end),0) as polydRecQty,
+       sum(case when d.loan_item_id = 25 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as polyRecTot,
+       sum(distinct case when d.loan_item_id = 25 then farDis.fDistributionStk else 0 end)      as polyDisQnt,
+       sum(distinct case when d.loan_item_id = 25 then dis.depotInvStock else 0 end)        as polyStock,
 
-       sum(case when dldi.loan_item_id = 24 then dldi.depot_receive_quantity else 0 end) as pheromoneRecQty,
-       0                                                                                 as pheromonedRecQty,
-       sum(case when dldi.loan_item_id = 24 then dldi.depot_receive_quantity else 0 end) as pheromoneRecTot,
-       sum(distinct case when dd.loan_item_id = 24 then dd.disbursedQnt else 0 end)      as pheromoneDisQnt,
-       sum(distinct case when dli.loan_item_id = 24 then dli.quantity else 0 end)        as pheromoneStock,
+       sum(case when d.loan_item_id = 26 then daRec.dRecQntfArea else 0 end) as ppeRecQty,
+       coalesce(sum(case when d.loan_item_id = 26 then ddRec.dtdRecQnt else 0 end),0) as ppedRecQty,
+       sum(case when d.loan_item_id = 26 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as ppeRecTot,
+       sum(distinct case when d.loan_item_id = 26 then farDis.fDistributionStk else 0 end)      as ppeDisQnt,
+       sum(distinct case when d.loan_item_id = 26 then dis.depotInvStock else 0 end)        as ppeStock,
 
-       sum(case when dldi.loan_item_id = 25 then dldi.depot_receive_quantity else 0 end) as polyRecQty,
-       0                                                                                 as polydRecQty,
-       sum(case when dldi.loan_item_id = 25 then dldi.depot_receive_quantity else 0 end) as polyRecTot,
-       sum(distinct case when dd.loan_item_id = 25 then dd.disbursedQnt else 0 end)      as polyDisQnt,
-       sum(distinct case when dli.loan_item_id = 25 then dli.quantity else 0 end)        as polyStock,
+       sum(case when d.loan_item_id = 27 then daRec.dRecQntfArea else 0 end) as proclaimRecQty,
+       coalesce(sum(case when d.loan_item_id = 27 then ddRec.dtdRecQnt else 0 end),0) as proclaindRecQty,
+       sum(case when d.loan_item_id = 27 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as proclaimRecTot,
+       sum(distinct case when d.loan_item_id = 27 then farDis.fDistributionStk else 0 end)      as proclaimDisQnt,
+       sum(distinct case when d.loan_item_id = 27 then dis.depotInvStock else 0 end)        as proclaimStock,
 
-       sum(case when dldi.loan_item_id = 26 then dldi.depot_receive_quantity else 0 end) as ppeRecQty,
-       0                                                                                 as ppedRecQty,
-       sum(case when dldi.loan_item_id = 26 then dldi.depot_receive_quantity else 0 end) as ppeRecTot,
-       sum(distinct case when dd.loan_item_id = 26 then dd.disbursedQnt else 0 end)      as ppeDisQnt,
-       sum(distinct case when dli.loan_item_id = 26 then dli.quantity else 0 end)        as ppeStock,
+       sum(case when d.loan_item_id = 28 then daRec.dRecQntfArea else 0 end) as qpotashRecQty,
+       coalesce(sum(case when d.loan_item_id = 28 then ddRec.dtdRecQnt else 0 end),0) as qpotashdRecQty,
+       sum(case when d.loan_item_id = 28 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as qpotashRecTot,
+       sum(distinct case when d.loan_item_id = 28 then farDis.fDistributionStk else 0 end)      as qpotashDisQnt,
+       sum(distinct case when d.loan_item_id = 28 then dis.depotInvStock else 0 end)        as qpotashStock,
 
-       sum(case when dldi.loan_item_id = 27 then dldi.depot_receive_quantity else 0 end) as proclaimRecQty,
-       0                                                                                 as proclaindRecQty,
-       sum(case when dldi.loan_item_id = 27 then dldi.depot_receive_quantity else 0 end) as proclaimRecTot,
-       sum(distinct case when dd.loan_item_id = 27 then dd.disbursedQnt else 0 end)      as proclaimDisQnt,
-       sum(distinct case when dli.loan_item_id = 27 then dli.quantity else 0 end)        as proclaimStock,
+       sum(case when d.loan_item_id = 29 then daRec.dRecQntfArea else 0 end) as redomilRecQty,
+       coalesce(sum(case when d.loan_item_id = 29 then ddRec.dtdRecQnt else 0 end),0) as redomildRecQty,
+       sum(case when d.loan_item_id = 29 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as redomilRecTot,
+       sum(distinct case when d.loan_item_id = 29 then farDis.fDistributionStk else 0 end)      as redomilDisQnt,
+       sum(distinct case when d.loan_item_id = 29 then dis.depotInvStock else 0 end)        as redomilStock,
 
-       sum(case when dldi.loan_item_id = 28 then dldi.depot_receive_quantity else 0 end) as qpotashRecQty,
-       0                                                                                 as qpotashdRecQty,
-       sum(case when dldi.loan_item_id = 28 then dldi.depot_receive_quantity else 0 end) as qpotashRecTot,
-       sum(distinct case when dd.loan_item_id = 28 then dd.disbursedQnt else 0 end)      as qpotashDisQnt,
-       sum(distinct case when dli.loan_item_id = 28 then dli.quantity else 0 end)        as qpotashStock,
+       sum(case when d.loan_item_id = 30 then daRec.dRecQntfArea else 0 end) as seedBurleyRecQty,
+       coalesce(sum(case when d.loan_item_id = 30 then ddRec.dtdRecQnt else 0 end),0) as seedBurleydRecQty,
+       sum(case when d.loan_item_id = 30 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as seedBurleyRecTot,
+       sum(distinct case when d.loan_item_id = 30 then farDis.fDistributionStk else 0 end)      as seedBurleyDisQnt,
+       sum(distinct case when d.loan_item_id = 30 then dis.depotInvStock else 0 end)        as seedBurleyStock,
 
-       sum(case when dldi.loan_item_id = 29 then dldi.depot_receive_quantity else 0 end) as redomilRecQty,
-       0                                                                                 as redomildRecQty,
-       sum(case when dldi.loan_item_id = 29 then dldi.depot_receive_quantity else 0 end) as redomilRecTot,
-       sum(distinct case when dd.loan_item_id = 29 then dd.disbursedQnt else 0 end)      as redomilDisQnt,
-       sum(distinct case when dli.loan_item_id = 29 then dli.quantity else 0 end)        as redomilStock,
+       sum(case when d.loan_item_id = 31 then daRec.dRecQntfArea else 0 end) as seedCanRecQty,
+       coalesce(sum(case when d.loan_item_id = 31 then ddRec.dtdRecQnt else 0 end),0) as seedCandRecQty,
+       sum(case when d.loan_item_id = 31 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as seedCanRecTot,
+       sum(distinct case when d.loan_item_id = 31 then farDis.fDistributionStk else 0 end)      as seedCanDisQnt,
+       sum(distinct case when d.loan_item_id = 31 then dis.depotInvStock else 0 end)        as seedCanStock,
 
-       sum(case when dldi.loan_item_id = 30 then dldi.depot_receive_quantity else 0 end) as seedBurleyRecQty,
-       0                                                                                 as seedBurleydRecQty,
-       sum(case when dldi.loan_item_id = 30 then dldi.depot_receive_quantity else 0 end) as seedBurleyRecTot,
-       sum(distinct case when dd.loan_item_id = 30 then dd.disbursedQnt else 0 end)      as seedBurleyDisQnt,
-       sum(distinct case when dli.loan_item_id = 30 then dli.quantity else 0 end)        as seedBurleyStock,
+       sum(case when d.loan_item_id = 32 then daRec.dRecQntfArea else 0 end) as seedPvhRecQty,
+       coalesce(sum(case when d.loan_item_id = 32 then ddRec.dtdRecQnt else 0 end),0) as seedPvhdRecQty,
+       sum(case when d.loan_item_id = 32 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as seedPvhRecTot,
+       sum(distinct case when d.loan_item_id = 32 then farDis.fDistributionStk else 0 end)      as seedPvhDisQnt,
+       sum(distinct case when d.loan_item_id = 32 then dis.depotInvStock else 0 end)        as seedPvhStock,
 
-       sum(case when dldi.loan_item_id = 31 then dldi.depot_receive_quantity else 0 end) as seedCanRecQty,
-       0                                                                                 as seedCandRecQty,
-       sum(case when dldi.loan_item_id = 31 then dldi.depot_receive_quantity else 0 end) as seedCanRecTot,
-       sum(distinct case when dd.loan_item_id = 31 then dd.disbursedQnt else 0 end)      as seedCanDisQnt,
-       sum(distinct case when dli.loan_item_id = 31 then dli.quantity else 0 end)        as seedCanStock,
+       sum(case when d.loan_item_id = 33 then daRec.dRecQntfArea else 0 end) as seedbedRecQty,
+       coalesce(sum(case when d.loan_item_id = 33 then ddRec.dtdRecQnt else 0 end),0) as seedbeddRecQty,
+       sum(case when d.loan_item_id = 33 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as seedbedRecTot,
+       sum(distinct case when d.loan_item_id = 33 then farDis.fDistributionStk else 0 end)      as seedbedDisQnt,
+       sum(distinct case when d.loan_item_id = 33 then dis.depotInvStock else 0 end)        as seedbedStock,
 
-       sum(case when dldi.loan_item_id = 32 then dldi.depot_receive_quantity else 0 end) as seedPvhRecQty,
-       0                                                                                 as seedPvhdRecQty,
-       sum(case when dldi.loan_item_id = 32 then dldi.depot_receive_quantity else 0 end) as seedPvhRecTot,
-       sum(distinct case when dd.loan_item_id = 32 then dd.disbursedQnt else 0 end)      as seedPvhDisQnt,
-       sum(distinct case when dli.loan_item_id = 32 then dli.quantity else 0 end)        as seedPvhStock,
+       sum(case when d.loan_item_id = 34 then daRec.dRecQntfArea else 0 end) as sidetRecQty,
+       coalesce(sum(case when d.loan_item_id = 34 then ddRec.dtdRecQnt else 0 end),0) as sidetdRecQty,
+       sum(case when d.loan_item_id = 34 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as sidetRecTot,
+       sum(distinct case when d.loan_item_id = 34 then farDis.fDistributionStk else 0 end)      as sidetDisQnt,
+       sum(distinct case when d.loan_item_id = 34 then dis.depotInvStock else 0 end)        as sidetStock,
 
-       sum(case when dldi.loan_item_id = 33 then dldi.depot_receive_quantity else 0 end) as seedbedRecQty,
-       0                                                                                 as seedbeddRecQty,
-       sum(case when dldi.loan_item_id = 33 then dldi.depot_receive_quantity else 0 end) as seedbedRecTot,
-       sum(distinct case when dd.loan_item_id = 33 then dd.disbursedQnt else 0 end)      as seedbedDisQnt,
-       sum(distinct case when dli.loan_item_id = 33 then dli.quantity else 0 end)        as seedbedStock,
+       sum(case when d.loan_item_id = 35 then daRec.dRecQntfArea else 0 end) as sop25RecQty,
+       coalesce(sum(case when d.loan_item_id = 35 then ddRec.dtdRecQnt else 0 end),0) as sop25dRecQty,
+       sum(case when d.loan_item_id = 35 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as sop25RecTot,
+       sum(distinct case when d.loan_item_id = 35 then farDis.fDistributionStk else 0 end)      as sop25DisQnt,
+       sum(distinct case when d.loan_item_id = 35 then dis.depotInvStock else 0 end)        as sop25Stock,
 
-       sum(case when dldi.loan_item_id = 34 then dldi.depot_receive_quantity else 0 end) as sidetRecQty,
-       0                                                                                 as sidetdRecQty,
-       sum(case when dldi.loan_item_id = 34 then dldi.depot_receive_quantity else 0 end) as sidetRecTot,
-       sum(distinct case when dd.loan_item_id = 34 then dd.disbursedQnt else 0 end)      as sidetDisQnt,
-       sum(distinct case when dli.loan_item_id = 34 then dli.quantity else 0 end)        as sidetStock,
+       sum(case when d.loan_item_id = 37 then daRec.dRecQntfArea else 0 end) as suckerRecQty,
+       coalesce(sum(case when d.loan_item_id = 37 then ddRec.dtdRecQnt else 0 end),0) as suckerdRecQty,
+       sum(case when d.loan_item_id = 37 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as suckerRecTot,
+       sum(distinct case when d.loan_item_id = 37 then farDis.fDistributionStk else 0 end)      as suckerDisQnt,
+       sum(distinct case when d.loan_item_id = 37 then dis.depotInvStock else 0 end)        as suckerStock,
 
-       sum(case when dldi.loan_item_id = 35 then dldi.depot_receive_quantity else 0 end) as sop25RecQty,
-       0                                                                                 as sop25dRecQty,
-       sum(case when dldi.loan_item_id = 35 then dldi.depot_receive_quantity else 0 end) as sop25RecTot,
-       sum(distinct case when dd.loan_item_id = 35 then dd.disbursedQnt else 0 end)      as sop25DisQnt,
-       sum(distinct case when dli.loan_item_id = 35 then dli.quantity else 0 end)        as sop25Stock,
+       sum(case when d.loan_item_id = 38 then daRec.dRecQntfArea else 0 end) as suckericideRecQty,
+       coalesce(sum(case when d.loan_item_id = 38 then ddRec.dtdRecQnt else 0 end),0) as suckericidedRecQty,
+       sum(case when d.loan_item_id = 38 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as suckericideRecTot,
+       sum(distinct case when d.loan_item_id = 38 then farDis.fDistributionStk else 0 end)      as suckericideDisQnt,
+       sum(distinct case when d.loan_item_id = 38 then dis.depotInvStock else 0 end)        as suckericideStock,
 
-       sum(case when dldi.loan_item_id = 36 then dldi.depot_receive_quantity else 0 end) as sop50RecQty,
-       0                                                                                 as sop50dRecQty,
-       sum(case when dldi.loan_item_id = 36 then dldi.depot_receive_quantity else 0 end) as sop50RecTot,
-       sum(distinct case when dd.loan_item_id = 36 then dd.disbursedQnt else 0 end)      as sop50DisQnt,
-       sum(distinct case when dli.loan_item_id = 36 then dli.quantity else 0 end)        as sop50Stock,
+       sum(case when d.loan_item_id = 39 then daRec.dRecQntfArea else 0 end) as tarpRecQty,
+       coalesce(sum(case when d.loan_item_id = 39 then ddRec.dtdRecQnt else 0 end),0) as tarpdRecQty,
+       sum(case when d.loan_item_id = 39 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as tarpRecTot,
+       sum(distinct case when d.loan_item_id = 39 then farDis.fDistributionStk else 0 end)      as tarpDisQnt,
+       sum(distinct case when d.loan_item_id = 39 then dis.depotInvStock else 0 end)        as tarpStock,
 
-       sum(case when dldi.loan_item_id = 37 then dldi.depot_receive_quantity else 0 end) as suckerRecQty,
-       0                                                                                 as suckerdRecQty,
-       sum(case when dldi.loan_item_id = 37 then dldi.depot_receive_quantity else 0 end) as suckerRecTot,
-       sum(distinct case when dd.loan_item_id = 37 then dd.disbursedQnt else 0 end)      as suckerDisQnt,
-       sum(distinct case when dli.loan_item_id = 37 then dli.quantity else 0 end)        as suckerStock,
+       sum(case when d.loan_item_id = 40 then daRec.dRecQntfArea else 0 end) as thiovitRecQty,
+       coalesce(sum(case when d.loan_item_id = 40 then ddRec.dtdRecQnt else 0 end),0) as thiovitdRecQty,
+       sum(case when d.loan_item_id = 40 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as thiovitRecTot,
+       sum(distinct case when d.loan_item_id = 40 then farDis.fDistributionStk else 0 end)      as thiovitDisQnt,
+       sum(distinct case when d.loan_item_id = 40 then dis.depotInvStock else 0 end)        as thiovitStock,
 
-       sum(case when dldi.loan_item_id = 38 then dldi.depot_receive_quantity else 0 end) as suckericideRecQty,
-       0                                                                                 as suckericidedRecQty,
-       sum(case when dldi.loan_item_id = 38 then dldi.depot_receive_quantity else 0 end) as suckericideRecTot,
-       sum(distinct case when dd.loan_item_id = 38 then dd.disbursedQnt else 0 end)      as suckericideDisQnt,
-       sum(distinct case when dli.loan_item_id = 38 then dli.quantity else 0 end)        as suckericideStock,
+       sum(case when d.loan_item_id = 41 then daRec.dRecQntfArea else 0 end) as trichoRecQty,
+       coalesce(sum(case when d.loan_item_id = 41 then ddRec.dtdRecQnt else 0 end),0) as trichodRecQty,
+       sum(case when d.loan_item_id = 41 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as trichoRecTot,
+       sum(distinct case when d.loan_item_id = 41 then farDis.fDistributionStk else 0 end)      as trichoDisQnt,
+       sum(distinct case when d.loan_item_id = 41 then dis.depotInvStock else 0 end)        as trichoStock,
 
-       sum(case when dldi.loan_item_id = 39 then dldi.depot_receive_quantity else 0 end) as tarpRecQty,
-       0                                                                                 as tarpdRecQty,
-       sum(case when dldi.loan_item_id = 39 then dldi.depot_receive_quantity else 0 end) as tarpRecTot,
-       sum(distinct case when dd.loan_item_id = 39 then dd.disbursedQnt else 0 end)      as tarpDisQnt,
-       sum(distinct case when dli.loan_item_id = 39 then dli.quantity else 0 end)        as tarpStock,
+       sum(case when d.loan_item_id = 42 then daRec.dRecQntfArea else 0 end) as tspRecQty,
+       coalesce(sum(case when d.loan_item_id = 42 then ddRec.dtdRecQnt else 0 end),0) as tspdRecQty,
+       sum(case when d.loan_item_id = 42 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as tspRecTot,
+       sum(distinct case when d.loan_item_id = 42 then farDis.fDistributionStk else 0 end)      as tspDisQnt,
+       sum(distinct case when d.loan_item_id = 42 then dis.depotInvStock else 0 end)        as tspStock,
 
-       sum(case when dldi.loan_item_id = 40 then dldi.depot_receive_quantity else 0 end) as thiovitRecQty,
-       0                                                                                 as thiovitdRecQty,
-       sum(case when dldi.loan_item_id = 40 then dldi.depot_receive_quantity else 0 end) as thiovitRecTot,
-       sum(distinct case when dd.loan_item_id = 40 then dd.disbursedQnt else 0 end)      as thiovitDisQnt,
-       sum(distinct case when dli.loan_item_id = 40 then dli.quantity else 0 end)        as thiovitStock,
+       sum(case when d.loan_item_id = 43 then daRec.dRecQntfArea else 0 end) as tspCashRecQty,
+       coalesce(sum(case when d.loan_item_id = 43 then ddRec.dtdRecQnt else 0 end),0) as tspCashdRecQty,
+       sum(case when d.loan_item_id = 43 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as tspCashRecTot,
+       sum(distinct case when d.loan_item_id = 43 then farDis.fDistributionStk else 0 end)      as tspCashDisQnt,
+       sum(distinct case when d.loan_item_id = 43 then dis.depotInvStock else 0 end)        as tspCashStock,
 
-       sum(case when dldi.loan_item_id = 41 then dldi.depot_receive_quantity else 0 end) as trichoRecQty,
-       0                                                                                 as trichodRecQty,
-       sum(case when dldi.loan_item_id = 41 then dldi.depot_receive_quantity else 0 end) as trichoRecTot,
-       sum(distinct case when dd.loan_item_id = 41 then dd.disbursedQnt else 0 end)      as trichoDisQnt,
-       sum(distinct case when dli.loan_item_id = 41 then dli.quantity else 0 end)        as trichoStock,
+       sum(case when d.loan_item_id = 44 then daRec.dRecQntfArea else 0 end) as ureaRecQty,
+       coalesce(sum(case when d.loan_item_id = 44 then ddRec.dtdRecQnt else 0 end),0) as ureadRecQty,
+       sum(case when d.loan_item_id = 44 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as ureaRecTot,
+       sum(distinct case when d.loan_item_id = 44 then farDis.fDistributionStk else 0 end)      as ureaDisQnt,
+       sum(distinct case when d.loan_item_id = 44 then dis.depotInvStock else 0 end)        as ureaStock,
 
-       sum(case when dldi.loan_item_id = 42 then dldi.depot_receive_quantity else 0 end) as tspRecQty,
-       0                                                                                 as tspdRecQty,
-       sum(case when dldi.loan_item_id = 42 then dldi.depot_receive_quantity else 0 end) as tspRecTot,
-       sum(distinct case when dd.loan_item_id = 42 then dd.disbursedQnt else 0 end)      as tspDisQnt,
-       sum(distinct case when dli.loan_item_id = 42 then dli.quantity else 0 end)        as tspStock,
+       sum(case when d.loan_item_id = 45 then daRec.dRecQntfArea else 0 end) as ureaCashRecQty,
+       coalesce(sum(case when d.loan_item_id = 45 then ddRec.dtdRecQnt else 0 end),0) as ureaCashdRecQty,
+       sum(case when d.loan_item_id = 45 then (coalesce(daRec.dRecQntfArea,0) + coalesce(ddRec.dtdRecQnt,0)) else 0 end) as ureaCashRecTot,
+       sum(distinct case when d.loan_item_id = 45 then farDis.fDistributionStk else 0 end)      as ureaCashDisQnt,
+       sum(distinct case when d.loan_item_id = 45 then dis.depotInvStock else 0 end)        as ureaCashStock
 
-       sum(case when dldi.loan_item_id = 43 then dldi.depot_receive_quantity else 0 end) as tspCashRecQty,
-       0                                                                                 as tspCashdRecQty,
-       sum(case when dldi.loan_item_id = 43 then dldi.depot_receive_quantity else 0 end) as tspCashRecTot,
-       sum(distinct case when dd.loan_item_id = 43 then dd.disbursedQnt else 0 end)      as tspCashDisQnt,
-       sum(distinct case when dli.loan_item_id = 43 then dli.quantity else 0 end)        as tspCashStock,
+from (select distinct li.area_id   as area_id,
+                      d.id         as depot_id,
+                      d.depot_name as depot_name,
+                      li.id        as loan_item_id,
+                      li.item_name as item_name
+      from (select distinct id, depot_name, area_id from depot) d
+               join (select li.*, lir.area_id
+                     from loan_items li
+                              join (select distinct loan_item_id, area_id from loan_items_rate where loan_item_id not in (1,2,3)) lir
+                                   on li.id = lir.loan_item_id) li on d.area_id = li.area_id
+                                   and (:areaId = 0 or li.area_id = :areaId)) d
 
-       sum(case when dldi.loan_item_id = 44 then dldi.depot_receive_quantity else 0 end) as ureaRecQty,
-       0                                                                                 as ureadRecQty,
-       sum(case when dldi.loan_item_id = 44 then dldi.depot_receive_quantity else 0 end) as ureaRecTot,
-       sum(distinct case when dd.loan_item_id = 44 then dd.disbursedQnt else 0 end)      as ureaDisQnt,
-       sum(distinct case when dli.loan_item_id = 44 then dli.quantity else 0 end)        as ureaStock,
-
-       sum(case when dldi.loan_item_id = 45 then dldi.depot_receive_quantity else 0 end) as ureaCashRecQty,
-       0                                                                                 as ureaCashdRecQty,
-       sum(case when dldi.loan_item_id = 45 then dldi.depot_receive_quantity else 0 end) as ureaCashRecTot,
-       sum(distinct case when dd.loan_item_id = 45 then dd.disbursedQnt else 0 end)      as ureaCashDisQnt,
-       sum(distinct case when dli.loan_item_id = 45 then dli.quantity else 0 end)        as ureaCashStock
-
-from depot d
-         join depot_li_disbursement dld on d.id = dld.to_depot_id
-    and (case when :areaId is not null then d.area_id=:areaId else true end)
-         join depot_li_disbursement_item dldi on dld.id = dldi.depot_li_disbursement_id
-         join depot_li_inventory dli on dld.to_depot_id = dli.depot_id and dldi.loan_item_id = dli.loan_item_id
-         left join (select dt.id                        depotId,
-                           fa.zone_id,
-                           flri.loan_item_id,
-                           sum(flri.delivered_quantity) disbursedQnt
-                    from farmer_loan_request_items flri
-                             join farmer_loan_requests flr on flri.farmer_loan_request_id = flr.id
-                        and flr.approval_status = 'APPROVED'
+         left join (select dld.to_depot_id   as        depot_id,
+                           dldi.loan_item_id as        loan_item_id,
+                           sum(dldi.depot_receive_quantity) dRecQntfArea
+                    from depot_li_disbursement dld
                              join (select *
-                                   from farmer_agreement
-                                   where season_name = (select fiscal_year
-                                                        from season
-                                                        where id = (select cast(attribute_value as numeric)
-                                                                    from global_setting
-                                                                    where attribute_name = 'REGISTRATION_SEASON'))) fa
-                                  on flr.farmer_agreement_id = fa.id
-                             join farmer f on f.id = fa.farmer_id
-                        and f.is_active = true
-                             join (select distinct vta.zone_id, vta.zone_name, d.id, d.depot_name
-                                   from (select distinct area_id, area_name, zone_id, zone_name from v_teritory_all) vta
-                                            join depot_territory dt on vta.zone_id = dt.territory_id
-                                            join depot d on dt.depot_id = d.id
-                                       and (case when :areaId is not null then d.area_id=:areaId else true end)
-                    ) dt on fa.zone_id = dt.zone_id
-                    group by dt.id, fa.zone_id, flri.loan_item_id) dd
-                   on dli.depot_id = dd.depotId and dli.loan_item_id = dd.loan_item_id
-group by d.id, d.depot_name
+                                   from (select * from depot_li_disbursement_item where loan_item_id not in (1,2,3)) dldi
+                                            cross join (select * from season where current_date between ed and td) s
+                                   where cast(dldi.received_datetime as date) between s.ed and s.td) dldi
+                                 on dld.id = dldi.depot_li_disbursement_id
+                        and dld.status = 'RECEIVED'
+                    group by dld.to_depot_id, dldi.loan_item_id) daRec
+                   on d.depot_id = daRec.depot_id and d.loan_item_id = daRec.loan_item_id
+
+         left join (select dtdld.to_depot_id             as depot_id,
+                           dtdldi.loan_item_id           as loan_item_id,
+                           coalesce(sum(dtdldi.depot_receive_quantity),0) as dtdRecQnt
+                    from depot_to_depot_li_disbursement dtdld
+                             join (select *
+                                   from (select * from depot_to_depot_li_disbursement_item where loan_item_id not in (1,2,3)) dtdldi
+                                            cross join (select * from season where current_date between ed and td) s
+                                   where cast(dtdldi.received_datetime as date) between s.ed and s.td) dtdldi
+                                  on dtdld.id = dtdldi.depot_to_depot_li_disbursement_id
+                                      and dtdld.status = 'RECEIVED'
+                    group by dtdld.to_depot_id, dtdldi.loan_item_id) ddRec
+                   on d.depot_id = ddRec.depot_id and d.loan_item_id = ddRec.loan_item_id
+
+         left join (select dlds.depot_id      as depot_id,
+                           dlds.loan_item_id  as loan_item_id,
+                           coalesce(sum(dlds.quantity),0) as fDistributionStk
+                    from (select * from daily_li_distribution_summary where loan_item_id not in (1, 2, 3)) dlds
+                    group by dlds.depot_id, dlds.loan_item_id) farDis
+                   on d.depot_id = farDis.depot_id and d.loan_item_id = farDis.loan_item_id
+
+         left join (select dli.depot_id     as depot_id,
+                           dli.loan_item_id as loan_item_id,
+                           coalesce(sum(dli.quantity),0)        depotInvStock
+                    from (select * from depot_li_inventory where loan_item_id not in (1, 2, 3)) dli
+                    group by dli.depot_id, dli.loan_item_id) dis
+             on d.depot_id = dis.depot_id and d.loan_item_id = dis.loan_item_id
+group by d.depot_id, d.depot_name
+order by d.depot_id
