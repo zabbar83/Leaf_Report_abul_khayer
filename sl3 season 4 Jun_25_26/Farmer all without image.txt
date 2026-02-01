@@ -1,0 +1,33 @@
+--Farmer all without image
+
+select vta.area_id                           areaId,
+       vta.area_name                         areaName,
+       vta.zone_id zoneId,
+       vta.zone_name                         zoneName,
+       vta.sub_area_id subAreaId,
+       vta.sub_area_name                     subAreaName,
+       vta.village_id villageId,
+       vta.village_name                      villageName,
+       f.farmer_name                         farmerName,
+       f.farmer_reg_number                   farmerReg,
+       f.farmer_father_name                  fatherName,
+       fc.farmer_category                    as category,
+       coalesce(fc.land_acreage, 0)          acre,
+       fbc.account_number                    accountNumber,
+       bb.routing_number                     routingNumber,
+       b.bank_name bankName,
+       bb.branch_name branchName,
+       f.mobile_no                           mobileNo
+from v_teritory_all vta
+         join farmer f on vta.village_id = f.territory_id
+    and f.is_active = 'true'
+    and (case when :areaId is not null then vta.area_id = :areaId else true end)
+    and (case when :zoneId is not null then vta.zone_id = :zoneId else true end)
+    and (case when :subAreaId is not null then vta.sub_area_id = :subAreaId else true end)
+         left join (select * from farmer_agreement where season_name = (
+    select fiscal_year from season
+    where id =:seasonId)) fc on f.id = fc.farmer_id
+         left join farmer_bank_account fbc on f.id = fbc.farmer_id
+         join bank_branch bb on fbc.bank_branch_id = bb.id
+         join bank b on bb.bank_id = b.id
+order by vta.area_id, vta.zone_id,vta.sub_area_id, vta.village_id
