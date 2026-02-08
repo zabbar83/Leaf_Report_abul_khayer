@@ -1,0 +1,89 @@
+select d.area_id                                 as areaId,
+       d.depot_id                                as depotId,
+       d.depot_name                              as depotName,
+       d.loan_item_id                            as loanItemId,
+       d.item_name                               as itemName,
+       d.unit                                    as unit,
+       coalesce(sum(daRec.dRecQntfArea), 0)         dRecQntfArea,
+       coalesce(sum(ddRecTo.dtdRecQnt_to), 0)       dtdRecQnt_to,
+       coalesce(sum(ddRecFrom.dtdRecQnt_from), 0)   dtdRecQnt_from,
+       coalesce(sum(farDis.fDistributionStk), 0) as fDistributionStk,
+       coalesce(sum(dis.depotInvStock), 0)       as depotInvStock
+
+from (select distinct area_id, area_name from v_teritory_all) vta
+         join (select li.area_id   as area_id,
+                               d.id         as depot_id,
+                               d.depot_name as depot_name,
+                               li.id        as loan_item_id,
+                               li.item_name as item_name,
+                               li.unit      as unit
+               from depot d
+                        join (select li.*, lir.area_id
+                              from loan_items li
+                                       join loan_items_rate lir
+                                            on li.id = lir.loan_item_id
+                                                and li.id not in (1, 2, 3)
+                              ) li on d.area_id = li.area_id
+               where li.area_id = :areaId
+                   and :depotId = 0
+                  or d.id = :depotId) d on vta.area_id = d.area_id
+
+         left join (select dld.to_depot_id   as             depot_id,
+                           dldi.loan_item_id as             loan_item_id,
+                           sum(dldi.depot_receive_quantity) dRecQntfArea
+                    from depot_li_disbursement dld
+                             join (select *
+                                   from depot_li_disbursement_item dldi
+                                            cross join (select * from season where current_date between ed and td) s
+                                   where dldi.received_datetime::date between s.ed and s.td) dldi
+                                  on dld.id = dldi.depot_li_disbursement_id
+                                      and dld.status = 'RECEIVED'
+                    group by dld.to_depot_id, dldi.loan_item_id
+                    ) daRec
+                   on d.depot_id = daRec.depot_id and d.loan_item_id = daRec.loan_item_id
+         left join (select dtdld.to_depot_id                  as depot_id,
+                           dtdldi.loan_item_id                as loan_item_id,
+                           sum(dtdldi.depot_receive_quantity) as dtdRecQnt_to
+                    from depot_to_depot_li_disbursement dtdld
+                             join (select *
+                                   from (select * from depot_to_depot_li_disbursement_item) dtdldi
+                                            cross join (select * from season where current_date between ed and td) s
+                                   where dtdldi.received_datetime::date between s.ed and s.td) dtdldi
+                                  on dtdld.id = dtdldi.depot_to_depot_li_disbursement_id
+                                      and dtdld.status = 'RECEIVED'
+                    group by dtdld.to_depot_id, dtdldi.loan_item_id) ddRecTo
+                   on d.depot_id = ddRecTo.depot_id and d.loan_item_id = ddRecTo.loan_item_id
+
+         left join (select dtdld.from_depot_id                as depot_id,
+                           dtdldi.loan_item_id                as loan_item_id,
+                           sum(dtdldi.depot_receive_quantity) as dtdRecQnt_from
+                    from depot_to_depot_li_disbursement dtdld
+                             join (select *
+                                   from (select * from depot_to_depot_li_disbursement_item) dtdldi
+                                            cross join (select * from season where current_date between ed and td) s
+                                   where dtdldi.received_datetime::date between s.ed and s.td) dtdldi
+                                  on dtdld.id = dtdldi.depot_to_depot_li_disbursement_id
+                                      and dtdld.status = 'RECEIVED'
+                    group by dtdld.from_depot_id, dtdldi.loan_item_id) ddRecFrom
+                   on d.depot_id = ddRecFrom.depot_id and d.loan_item_id = ddRecFrom.loan_item_id
+
+         left join (select dlds.depot_id      as depot_id,
+                           dlds.loan_item_id  as loan_item_id,
+                           sum(dlds.quantity) as fDistributionStk
+                    from (select *
+                          from daily_li_distribution_summary
+                          where season_id in (select cast(attribute_value as numeric)
+                                              from global_setting
+                                              where attribute_name = 'REGISTRATION_SEASON')) dlds
+                    group by dlds.depot_id, dlds.loan_item_id) farDis
+                   on d.depot_id = farDis.depot_id and d.loan_item_id = farDis.loan_item_id
+
+
+         left join (select dli.depot_id     as depot_id,
+                           dli.loan_item_id as loan_item_id,
+                           sum(dli.quantity)   depotInvStock
+                    from (select * from depot_li_inventory) dli
+                    group by dli.depot_id, dli.loan_item_id) dis
+                   on d.depot_id = dis.depot_id and d.loan_item_id = dis.loan_item_id
+
+group by d.area_id, d.depot_id, d.depot_name, d.loan_item_id, d.item_name, d.unit;
