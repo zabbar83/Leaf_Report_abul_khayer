@@ -1,0 +1,46 @@
+-- 6. Farmer Wise Purchased & Realisation Report
+select fa.area_id areaId, fa.area_name areaName,
+        fa.zone_id zoneId, fa.zone_name zoneName,
+        fa.sub_area_id subAreaId, fa.sub_area_name subAreaName,
+        fa.village_id villageId, fa.village_name villageName,
+        fa.season_name, fa.season_id,
+        fa.farmer_id farmerId,fa.farmer_reg_number farReg, fa.farmer_name farmerName,
+        fa.farmer_father_name farFatherName,
+        fa.bank_name bankName, fa.bank_branch_name bbranchName, fa.bank_account_number bankAccountName, fa.land_acreage acre,
+        (fa.land_acreage * vwt.production_target) targetKG,
+        coalesce(noOfBale, 0) noOfBale,
+        coalesce(baleWeight,0) baleWeight,
+        coalesce(baleAmount,0) baleAmount,
+        coalesce(bonusRate, 0) bonusRate,
+        coalesce(bonusAmount, 0) bonusAmount,
+        coalesce(loan, 0) loan,
+        coalesce(loan_relaization, 0) loan_relaization
+from farmer_agreement fa
+         join variety_wise_target vwt on fa.area_id = vwt.area_id
+    and fa.season_id = 4
+          left join (select agreement_id,
+                           sum(noOfBale)    noOfBale,
+                           sum(baleWeight)  baleWeight,
+                           sum(baleAmount)  baleAmount,
+                           sum(bonusRate)   bonusRate,
+                           sum(bonusAmount) bonusAmount,
+                           sum(loan_amount) loan_relaization
+                    from (select pm.agreement_id,
+                                 pm.id,
+                                 count(pd.bale_id)    noOfBale,
+                                 sum(pd.weight)       baleWeight,
+                                 sum(amount)          baleAmount,
+                                 sum(bb.bonus_rate)   bonusRate,
+                                 sum(bb.bonus_amount) bonusAmount
+                          from purchase_main pm
+                                   join purchase_details pd on pm.id = pd.purchase_main_id
+                                   left join bale_bonus bb on pd.bale_id = bb.bale_id
+                          group by pm.agreement_id, pm.id) ps
+                             left join farmer_loan_main flm on ps.id = flm.purchase_main_id
+                    group by agreement_id) prs on fa.id = prs.agreement_id
+          join (select flr.farmer_agreement_id,
+                           sum(loan_amount) loan
+                    from farmer_loan_main flm
+                             join farmer_loan_requests flr on flm.farmer_loan_request_id = flr.id
+                    group by flr.farmer_agreement_id) fl on fa.id = fl.farmer_agreement_id
+order   by  fa.area_id, fa.zone_id, fa.sub_area_id, fa.village_id, fa.farmer_id
