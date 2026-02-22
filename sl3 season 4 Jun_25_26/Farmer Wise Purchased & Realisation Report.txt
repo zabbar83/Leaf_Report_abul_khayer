@@ -11,18 +11,20 @@ select fa.area_id areaId, fa.area_name areaName,
         coalesce(noOfBale, 0) noOfBale,
         coalesce(baleWeight,0) baleWeight,
         coalesce(baleAmount,0) baleAmount,
-        coalesce(bonusRate, 0) bonusRate,
         coalesce(bonusAmount, 0) bonusAmount,
+        coalesce(baleAmount,0) + coalesce(bonusAmount, 0) totalAmount,
         coalesce(loan, 0) loan,
-        coalesce(loan_relaization, 0) loan_relaization
+        coalesce(abs(loan_relaization), 0) loan_relaization,
+        coalesce(loan, 0) - coalesce(abs(loan_relaization), 0) loanBalance
 from farmer_agreement fa
          join variety_wise_target vwt on fa.area_id = vwt.area_id
-    and fa.season_id = 4
+            and fa.area_id =:areaId
+         join season s on fa.season_id = s.id
+            and s.id =: seasonId
           left join (select agreement_id,
                            sum(noOfBale)    noOfBale,
                            sum(baleWeight)  baleWeight,
                            sum(baleAmount)  baleAmount,
-                           sum(bonusRate)   bonusRate,
                            sum(bonusAmount) bonusAmount,
                            sum(loan_amount) loan_relaization
                     from (select pm.agreement_id,
@@ -30,7 +32,6 @@ from farmer_agreement fa
                                  count(pd.bale_id)    noOfBale,
                                  sum(pd.weight)       baleWeight,
                                  sum(amount)          baleAmount,
-                                 sum(bb.bonus_rate)   bonusRate,
                                  sum(bb.bonus_amount) bonusAmount
                           from purchase_main pm
                                    join purchase_details pd on pm.id = pd.purchase_main_id

@@ -1,0 +1,29 @@
+select
+    g.id,
+    g.grade_name inGradeName,
+    count(pd.bale_id) nosofBale,
+    coalesce(sum(bw.weight),0) godownRecWeight,
+    coalesce(sum(bs.sacks_weight),0) ciDedactionWeight,
+    coalesce(sum(pd.weight),0) purchaseWeight,
+    (coalesce(sum(bw.weight),0) + coalesce(sum(bs.sacks_weight),0)) - coalesce(sum(pd.weight),0) differenceKg,
+    coalesce(sum(bb.bonus_amount),0) bonus
+from    bale_grade bg
+            join    grade g on bg.grade_id=g.id
+    and     bg.grade_provider = 'CLASSIFIER'
+            join    variety v on g.variety_id = v.id
+    and     v.id =:varietyId
+            join    purchase_details pd on bg.bale_id=pd.bale_id
+            join    purchase_main pm on pd.purchase_main_id = pm.id
+    and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+            join    farmer_agreement fa on pm.agreement_id = fa.id
+    and     (:id=fa.area_id
+        or :id=fa.zone_id
+        or :id=fa.sub_area_id
+        or :id=fa.village_id)
+            join    season s on fa.season_id = s.id
+    and     s.id=:season
+            left    join bale_bonus bb on pd.bale_id=bb.bale_id
+            join    (select  bale_id,weight from bale_weight where weight_recipient='RE_WEIGHT') bw on pd.bale_id=bw.bale_id
+            left    join (select bale_id,sacks_weight from bale_sacks where sack_type_selector='CLASSIFIER') bs on bw.bale_id=bs.bale_id
+group by g.id,g.grade_name
+order  by g.id

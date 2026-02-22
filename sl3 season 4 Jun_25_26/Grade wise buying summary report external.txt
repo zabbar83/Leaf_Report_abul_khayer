@@ -1,0 +1,29 @@
+select
+        g.id,
+        g.grade_name gradeName,
+        count(pd.bale_id) nosofBale,
+        coalesce(sum(pd.weight),0) weight,
+        coalesce(sum(pd.amount),0) amount,
+                 coalesce(sum(bb.bonus_amount),0) bonus,
+                          coalesce(sum(pd.amount),0) + coalesce(sum(bb.bonus_amount),0) totalAmount,
+                          case when coalesce(sum(pd.weight),0) > 0
+                               then (coalesce(sum(pd.amount),0) + coalesce(sum(bb.bonus_amount),0)) / coalesce(sum(pd.weight),0)
+                               else 0 end average
+from    bale_grade bg
+join    grade g on bg.grade_id=g.id
+and     bg.grade_provider = 'BUYER'
+join    variety v on g.variety_id = v.id
+and     v.id =:varietyId
+join    purchase_details pd on bg.bale_id=pd.bale_id
+join    purchase_main pm on pd.purchase_main_id = pm.id
+and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+join    farmer_agreement fa on pm.agreement_id = fa.id
+and     (:id=fa.area_id
+        or :id=fa.zone_id
+        or :id=fa.sub_area_id
+        or :id=fa.village_id)
+join    season s on fa.season_id = s.id
+and     s.id=:season
+left    join bale_bonus bb on pd.bale_id=bb.bale_id
+group by g.id,g.grade_name
+order  by g.id
