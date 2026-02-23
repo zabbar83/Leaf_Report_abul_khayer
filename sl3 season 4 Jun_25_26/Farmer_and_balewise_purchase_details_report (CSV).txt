@@ -1,0 +1,55 @@
+select
+        pm.purchase_date pmDate,
+        fa.area_id,
+        fa.area_name,
+        fa.zone_id ,
+        fa.zone_name ,
+        fa.sub_area_id ,
+        fa.sub_area_name ,
+        fa.village_id ,
+        fa.village_name ,
+        fa.farmer_reg_number ,
+        fa.farmer_category ,
+        fa.farmer_name ,
+        fa.farmer_father_name ,
+        fa.bank_name ,
+        fa.bank_branch_name ,
+        fa.bank_account_number ,
+        fa.variety_name,
+        b.bale_code ,
+
+
+        g.grade_name buyer_grade_name,
+        coalesce(pd.actual_weight,0) actual_weight,
+        bs.sacks_weight,
+        coalesce(pd.weight,0) buying_weight,
+
+        pd.amount amount,
+        coalesce(bb.bonus_amount,0) bonus,
+        pd.amount + coalesce(bb.bonus_amount,0) total_amount,
+        --reweight
+        bw.weight,
+        gc.grade_name,
+        bsc.sacks_weight
+
+from    farmer_agreement fa
+join    season s on fa.season_id = s.id
+and     s.id=:season
+join    purchase_main pm on fa.id = pm.agreement_id
+--and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+join    purchase_details pd on pm.id = pd.purchase_main_id
+join    bale b on pd.bale_id = b.id
+left    join (select * from bale_grade where grade_provider='BUYER') bg on b.id = bg.bale_id
+left    join (select * from grade where grade_provider='BUYER' and season_id=:season) g on bg.grade_id = g.id
+left    join (select bale_id,sacks_weight from bale_sacks where sack_type_selector ='BUYER') bs on b.id = bs.bale_id
+and     (:id=0
+        or :id=fa.area_id
+        or :id=fa.zone_id
+        or :id=fa.sub_area_id
+        or :id=fa.village_id)
+left    join bale_bonus bb on pd.bale_id=bb.bale_id
+left    join (select  bale_id,weight from bale_weight where weight_recipient='RE_WEIGHT') bw on pd.bale_id=bw.bale_id
+left    join (select bale_id,sacks_weight from bale_sacks where sack_type_selector ='CLASSIFIER') bsc on bw.bale_id = bsc.bale_id
+left    join (select * from bale_grade where grade_provider='CLASSIFIER') bgc on b.id = bgc.bale_id
+left    join (select * from grade where grade_provider='CLASSIFIER' and season_id=:season) gc on bgc.grade_id = gc.id
+order    by fa.zone_id, fa.sub_area_id, fa.village_id

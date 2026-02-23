@@ -8,7 +8,7 @@ select
     (coalesce(sum(bw.weight),0) + coalesce(sum(bs.sacks_weight),0)) - coalesce(sum(pd.weight),0) differenceKg,
     coalesce(sum(bb.bonus_amount),0) bonus
 from    bale_grade bg
-            join    grade g on bg.grade_id=g.id
+            join (select * from grade where grade_provider='CLASSIFIER' and season_id=:season) g on bg.grade_id=g.id
     and     bg.grade_provider = 'CLASSIFIER'
             join    variety v on g.variety_id = v.id
     and     v.id =:varietyId

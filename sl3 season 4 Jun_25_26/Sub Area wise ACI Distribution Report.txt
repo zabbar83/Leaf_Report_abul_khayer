@@ -1,0 +1,74 @@
+SELECT fa.area_id as areaId,
+                     fa.area_name as areaName,
+                     fa.zone_id as zoneId,
+                     fa.zone_name as zoneName,
+                     fa.sub_area_id as subAreaId,
+                     fa.sub_area_name as subAreaName,
+                     fa.village_id villageId,
+                     fa.village_name villageName,
+                     fa.farmer_id as farmerId,
+                     fa.farmer_name as farmerName,
+                     fa.farmer_father_name ffName,
+                     fa.farmer_reg_number farRegNo,
+                     coalesce(sum(case when fld.loan_item_id = 1 then fld.quantity else 0 end),0) item1Dis,
+                     coalesce(sum(case when fld.loan_item_id = 2 then fld.quantity else 0 end),0) item2Dis,
+                     coalesce(sum(case when fld.loan_item_id = 4 then fld.quantity else 0 end),0) item4Dis,
+                     coalesce(sum(case when fld.loan_item_id = 5 then fld.quantity else 0 end),0) item5Dis,
+                     coalesce(sum(case when fld.loan_item_id = 6 then fld.quantity else 0 end),0) item6Dis,
+                     coalesce(sum(case when fld.loan_item_id = 7 then fld.quantity else 0 end),0) item7Dis,
+                     coalesce(sum(case when fld.loan_item_id = 8 then fld.quantity else 0 end),0) item8Dis,
+                     coalesce(sum(case when fld.loan_item_id = 9 then fld.quantity else 0 end),0) item9Dis,
+                     coalesce(sum(case when fld.loan_item_id = 10 then fld.quantity else 0 end),0) item10Dis,
+                     coalesce(sum(case when fld.loan_item_id = 11 then fld.quantity else 0 end),0) item11Dis,
+                     coalesce(sum(case when fld.loan_item_id = 12 then fld.quantity else 0 end),0) item12Dis,
+                     coalesce(sum(case when fld.loan_item_id = 13 then fld.quantity else 0 end),0) item13Dis,
+                     coalesce(sum(case when fld.loan_item_id = 14 then fld.quantity else 0 end),0) item14Dis,
+                     coalesce(sum(case when fld.loan_item_id = 15 then fld.quantity else 0 end),0) item15Dis,
+                     coalesce(sum(case when fld.loan_item_id = 16 then fld.quantity else 0 end),0) item16Dis,
+                     coalesce(sum(case when fld.loan_item_id = 17 then fld.quantity else 0 end),0) item17Dis,
+                     coalesce(sum(case when fld.loan_item_id = 18 then fld.quantity else 0 end),0) item18Dis,
+                     coalesce(sum(case when fld.loan_item_id = 19 then fld.quantity else 0 end),0) item19Dis,
+                     coalesce(sum(case when fld.loan_item_id = 20 then fld.quantity else 0 end),0) item20Dis,
+                     coalesce(sum(case when fld.loan_item_id = 21 then fld.quantity else 0 end),0) item21Dis,
+                     coalesce(sum(case when fld.loan_item_id = 22 then fld.quantity else 0 end),0) item22Dis,
+                     coalesce(sum(case when fld.loan_item_id = 23 then fld.quantity else 0 end),0) item23Dis,
+                     coalesce(sum(case when fld.loan_item_id = 24 then fld.quantity else 0 end),0) item24Dis,
+                     coalesce(sum(case when fld.loan_item_id = 25 then fld.quantity else 0 end),0) item25Dis,
+                     coalesce(sum(case when fld.loan_item_id = 26 then fld.quantity else 0 end),0) item26Dis,
+                     coalesce(sum(case when fld.loan_item_id = 27 then fld.quantity else 0 end),0) item27Dis,
+                     coalesce(sum(case when fld.loan_item_id = 28 then fld.quantity else 0 end),0) item28Dis,
+                     coalesce(sum(case when fld.loan_item_id = 29 then fld.quantity else 0 end),0) item29Dis,
+                     coalesce(sum(case when fld.loan_item_id = 30 then fld.quantity else 0 end),0) item30Dis,
+                     coalesce(sum(case when fld.loan_item_id = 31 then fld.quantity else 0 end),0) item31Dis,
+                     coalesce(sum(case when fld.loan_item_id = 32 then fld.quantity else 0 end),0) item32Dis,
+                     coalesce(sum(case when fld.loan_item_id = 33 then fld.quantity else 0 end),0) item33Dis,
+                     coalesce(sum(case when fld.loan_item_id = 34 then fld.quantity else 0 end),0) item34Dis,
+                     coalesce(sum(case when fld.loan_item_id = 35 then fld.quantity else 0 end),0) item35Dis,
+                     coalesce(sum(case when fld.loan_item_id = 37 then fld.quantity else 0 end),0) item37Dis,
+                     coalesce(sum(case when fld.loan_item_id = 38 then fld.quantity else 0 end),0) item38Dis,
+                     coalesce(sum(case when fld.loan_item_id = 39 then fld.quantity else 0 end),0) item39Dis,
+                     coalesce(sum(case when fld.loan_item_id = 40 then fld.quantity else 0 end),0) item40Dis,
+                     coalesce(sum(case when fld.loan_item_id = 41 then fld.quantity else 0 end),0) item41Dis,
+                     coalesce(sum(case when fld.loan_item_id = 42 then fld.quantity else 0 end),0) item42Dis,
+                     coalesce(sum(case when fld.loan_item_id = 43 then fld.quantity else 0 end),0) item43Dis,
+                     coalesce(sum(case when fld.loan_item_id = 44 then fld.quantity else 0 end),0) item44Dis,
+                     coalesce(sum(case when fld.loan_item_id = 45 then fld.quantity else 0 end),0) item45Dis,
+                     coalesce(sum(case when fld.loan_item_id = 46 then fld.quantity else 0 end),0) item46Dis,
+                     coalesce(sum(case when fld.loan_item_id = 47 then fld.quantity else 0 end),0) item47Dis
+
+              FROM farmer_loan_requests flr
+                       JOIN farmer_loan_main flm on flr.id = flm.farmer_loan_request_id
+                  AND flr.approval_status = 'APPROVED'
+                       JOIN farmer_loan_details fld on flm.id = fld.loan_main_id
+                       JOIN (select * from farmer_agreement
+                             Where season_name IN (
+                                 SELECT
+                                     fiscal_year
+                                 FROM    season s
+                                 where   s.id = :seasonId)
+                             and (:areaId = 0 or area_id=:areaId)
+                              ) fa
+                            ON flr.farmer_agreement_id = fa.id
+              group by fa.area_id, fa.area_name, fa.zone_id, fa.zone_name, fa.sub_area_id, fa.sub_area_name, fa.village_id, fa.village_name, fa.farmer_id, fa.farmer_reg_number,
+                       fa.farmer_name, fa.farmer_father_name
+              order by fa.area_id, fa.zone_id, fa.sub_area_id, fa.village_id, fa.farmer_id
