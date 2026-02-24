@@ -1,0 +1,52 @@
+select
+    fal.area_id areaId,
+    fal.area_name areaName,
+    fal.zone_id zoneId,
+    fal.zone_name zoneName,
+    coalesce(fal.farmerCount,0) totalFarmer,
+             coalesce(fsm.invFarmerCount,0) nosofFarmerSold,
+                      coalesce(fal.land_acreage,0) acre,
+                               coalesce(fal.target,0)target,
+                                        coalesce(fsm.totalBale,0)totalBale,
+                                                 coalesce(fsm.weight,0)weight,
+                                                          coalesce(fsm.amount,0)amount,
+                                                                   coalesce(fsm.bonus,0)bonus,
+                                                                            coalesce(fsm.amount,0) + coalesce(fsm.bonus,0) totalAmount
+from (select fa.area_id,
+             fa.area_name,
+             fa.zone_id,
+             fa.zone_name,
+             count(fa.farmer_reg_number) farmerCount,
+             max(vwt.production_target)  production_target,
+             sum(fa.land_acreage)        land_acreage,
+             max(vwt.production_target) * sum(fa.land_acreage) target
+      from farmer_agreement fa
+               join season s on fa.season_id = s.id
+          and s.id = :season
+          and (:id=0 or :id = fa.area_id
+              or :id = fa.zone_id)
+               join variety_wise_target vwt on fa.variety_id = vwt.variety_id and fa.area_id = vwt.area_id
+      group by fa.area_id, fa.area_name, fa.zone_id, fa.zone_name) fal
+left join
+(select
+        fs.area_id,
+        fs.zone_id,
+        count(distinct pm.agreement_id) invFarmerCount,
+        count(pd.bale_id) totalBale,
+        coalesce(sum(pd.weight),0) weight,
+        coalesce(sum(pd.amount),0) amount,
+        coalesce(sum(bb.bonus_amount),0) bonus,
+        coalesce(sum(pd.amount),0) + coalesce(sum(bb.bonus_amount),0) totalAmount
+from    purchase_main pm
+join    purchase_details pd on pm.id = pd.purchase_main_id
+and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+join    (select fa.* from
+                farmer_agreement fa
+                join    season s on fa.season_id = s.id
+                where     s.id=:season
+                and     (:id=0 or :id=fa.area_id
+                    or :id=fa.zone_id)
+        ) fs on pm.agreement_id=fs.id
+left    join bale_bonus bb on pd.bale_id=bb.bale_id
+group by fs.area_id, fs.zone_id)fsm on fal.zone_id=fsm.zone_id
+order  by fal.area_id, fal.zone_id

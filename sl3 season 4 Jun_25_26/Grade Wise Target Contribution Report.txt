@@ -1,0 +1,26 @@
+-- 5. Grade wise contribution and analysis report
+select g.variety_name as                                 varietyName,
+       g.id           as                                 gradeId,
+       g.grade_name                                      gradeName,
+       g.production_target                               quantity,
+       count(pd.bale_id)                                 nosOfBale,
+       coalesce(sum(pd.weight), 0)                       weight,
+       g.production_target - coalesce(sum(pd.weight), 0) variationKg
+from (select g.*, v.variety_name, vwt.production_target
+      from grade g
+               join season s on g.season_id = s.id
+          and s.id =:seasonId
+          and g.grade_provider = 'BUYER'
+          and g.variety_id =:varietyId
+               join (select fa.area_id, fa.variety_id, sum(fa.land_acreage * vwt.production_target) production_target
+                     from farmer_agreement fa
+                              join variety_wise_target vwt
+                                   on fa.area_id = vwt.area_id and fa.variety_id = vwt.variety_id
+                                       and fa.season_id =:seasonId
+                     group by fa.area_id, fa.variety_id) vwt on g.variety_id = vwt.variety_id
+               join variety v on g.variety_id = v.id) g
+         join bale_grade bg on bg.grade_id = g.id
+    and bg.grade_provider = 'BUYER'
+         join purchase_details pd on pd.bale_id = bg.bale_id
+group by g.variety_name, g.id, g.grade_name, g.production_target
+order by g.id

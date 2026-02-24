@@ -3,24 +3,24 @@ select fa.area_id areaId, fa.area_name areaName,
         fa.zone_id zoneId, fa.zone_name zoneName,
         fa.sub_area_id subAreaId, fa.sub_area_name subAreaName,
         fa.village_id villageId, fa.village_name villageName,
-        fa.season_name, fa.season_id,
+        fa.season_name seasonName, fa.season_id seasonId,
         fa.farmer_id farmerId,fa.farmer_reg_number farReg, fa.farmer_name farmerName,
         fa.farmer_father_name farFatherName,
         fa.bank_name bankName, fa.bank_branch_name bbranchName, fa.bank_account_number bankAccountName, fa.land_acreage acre,
-        (fa.land_acreage * vwt.production_target) targetKG,
+        (fa.land_acreage * vwt.production_target) targetKg,
         coalesce(noOfBale, 0) noOfBale,
         coalesce(baleWeight,0) baleWeight,
         coalesce(baleAmount,0) baleAmount,
         coalesce(bonusAmount, 0) bonusAmount,
         coalesce(baleAmount,0) + coalesce(bonusAmount, 0) totalAmount,
         coalesce(loan, 0) loan,
-        coalesce(abs(loan_relaization), 0) loan_relaization,
+        coalesce(abs(loan_relaization), 0) loanRelaization,
         coalesce(loan, 0) - coalesce(abs(loan_relaization), 0) loanBalance
 from farmer_agreement fa
          join variety_wise_target vwt on fa.area_id = vwt.area_id
             and fa.area_id =:areaId
          join season s on fa.season_id = s.id
-            and s.id =: seasonId
+            and s.id =:seasonId
           left join (select agreement_id,
                            sum(noOfBale)    noOfBale,
                            sum(baleWeight)  baleWeight,

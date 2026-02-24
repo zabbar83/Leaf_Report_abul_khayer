@@ -1,0 +1,34 @@
+select
+    fa.area_id areaId,
+    fa.area_name areaName,
+    fa.zone_id zoneId,
+    fa.zone_name zoneName,
+    fa.sub_area_id subAreaId,
+    fa.sub_area_name subAareaName,
+    fa.farmer_reg_number farmerId,
+    fa.farmer_name farmerName,
+    fa.farmer_father_name fatherName,
+    fa.village_id villageId,
+    fa.village_name villageName,
+    fa.land_acreage acre,
+    max(vwt.production_target) * fa.land_acreage target,
+    count(pd.bale_id) totalBale,
+    coalesce(sum(pd.weight),0) weight,
+    coalesce(sum(pd.amount),0) amount,
+    coalesce(sum(bb.bonus_amount),0) bonus,
+    coalesce(sum(pd.amount),0) + coalesce(sum(bb.bonus_amount),0) totalAmount
+from    farmer_agreement fa
+            join    season s on fa.season_id = s.id
+    and     s.id=:season
+            join    purchase_main pm on fa.id = pm.agreement_id
+    and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+            join    purchase_details pd on pm.id = pd.purchase_main_id
+    and     (:id=0 or :id=fa.area_id
+        or :id=fa.zone_id
+        or :id=fa.sub_area_id
+        or :id=fa.village_id)
+            left    join bale_bonus bb on pd.bale_id=bb.bale_id
+            join variety_wise_target vwt on fa.variety_id=vwt.variety_id and fa.area_id=vwt.area_id
+group by fa.area_id, fa.area_name, fa.zone_id, fa.zone_name, fa.sub_area_id, fa.sub_area_name, fa.farmer_reg_number,
+         fa.farmer_name, fa.farmer_father_name, fa.village_id, fa.village_name, fa.land_acreage
+order    by fa.area_id, fa.zone_id, fa.sub_area_id, fa.village_id
