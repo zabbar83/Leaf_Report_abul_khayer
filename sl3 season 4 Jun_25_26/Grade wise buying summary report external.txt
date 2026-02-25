@@ -18,10 +18,10 @@ from    bale_grade bg
             join    purchase_main pm on pd.purchase_main_id = pm.id
     and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
             join    farmer_agreement fa on pm.agreement_id = fa.id
-    and     (:id=fa.area_id
-        or :id=fa.zone_id
-        or :id=fa.sub_area_id
-        or :id=fa.village_id)
+    and (case when :areaId is not null then fa.area_id = :areaId else true end)
+    and (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
+    and (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
+    and (case when :villageId is not null then fa.village_id = :villageId else true end)
             join    season s on fa.season_id = s.id
     and     s.id=:season
             left    join bale_bonus bb on pd.bale_id=bb.bale_id

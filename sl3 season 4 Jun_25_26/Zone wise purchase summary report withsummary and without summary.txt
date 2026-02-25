@@ -23,8 +23,8 @@ from (select fa.area_id,
       from farmer_agreement fa
                join season s on fa.season_id = s.id
           and s.id = :season
-          and (:id=0 or :id = fa.area_id
-              or :id = fa.zone_id)
+          and (case when :areaId is not null then fa.area_id = :areaId else true end)
+    and (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
                join variety_wise_target vwt on fa.variety_id = vwt.variety_id and fa.area_id = vwt.area_id
       group by fa.area_id, fa.area_name, fa.zone_id, fa.zone_name) fal
 left join
@@ -44,8 +44,8 @@ join    (select fa.* from
                 farmer_agreement fa
                 join    season s on fa.season_id = s.id
                 where     s.id=:season
-                and     (:id=0 or :id=fa.area_id
-                    or :id=fa.zone_id)
+                and (case when :areaId is not null then fa.area_id = :areaId else true end)
+    and (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
         ) fs on pm.agreement_id=fs.id
 left    join bale_bonus bb on pd.bale_id=bb.bale_id
 group by fs.area_id, fs.zone_id)fsm on fal.zone_id=fsm.zone_id

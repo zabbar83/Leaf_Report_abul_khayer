@@ -23,10 +23,10 @@ from    farmer_agreement fa
             join    purchase_main pm on fa.id = pm.agreement_id
     and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
             join    purchase_details pd on pm.id = pd.purchase_main_id
-    and     (:id=0 or :id=fa.area_id
-        or :id=fa.zone_id
-        or :id=fa.sub_area_id
-        or :id=fa.village_id)
+    and (case when :areaId is not null then fa.area_id = :areaId else true end)
+    and (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
+    and (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
+    and (case when :villageId is not null then fa.village_id = :villageId else true end)
             left    join bale_bonus bb on pd.bale_id=bb.bale_id
             join variety_wise_target vwt on fa.variety_id=vwt.variety_id and fa.area_id=vwt.area_id
 group by fa.area_id, fa.area_name, fa.zone_id, fa.zone_name, fa.sub_area_id, fa.sub_area_name, fa.farmer_reg_number,

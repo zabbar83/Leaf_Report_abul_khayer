@@ -1,0 +1,20 @@
+-- 2. Farmer Wise Bank Payment Summary Report
+select  fa.bank_id bankId,
+        fa.bank_name bankName,
+        coalesce(bb.routing_number, 'N/A') routingNumber,
+        fa.bank_account_number bankAccountNo,
+        fa.farmer_reg_number farmerRegNo,
+        fa.farmer_name farmerName,
+        coalesce(sum(net_pay),0) netPay,
+        coalesce(sum(bbn.bonus_amount),0) bonusAmount,
+        coalesce(sum(net_pay),0) - coalesce(sum(bbn.bonus_amount),0) finalNetPay
+        from farmer_agreement fa
+        join bank_branch bb on fa.bank_branch_id = bb.id
+            and fa.season_id =:seasonId
+            and fa.bank_id =:bankId
+        join purchase_main pm on fa.id = pm.agreement_id
+            and pm.purchase_date between :fromDate and :toDate
+        join purchase_details pd on pm.id = pd.purchase_main_id
+            left join bale_bonus bbn on pd.bale_id = bbn.bale_id
+group by fa.bank_id, fa.bank_name, bb.routing_number, fa.bank_account_number, fa.farmer_reg_number, fa.farmer_name
+order by fa.bank_id, fa.farmer_reg_number
