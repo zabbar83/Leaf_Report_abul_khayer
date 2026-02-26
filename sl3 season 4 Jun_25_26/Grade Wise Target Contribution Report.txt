@@ -1,26 +1,60 @@
--- 5. Grade wise contribution and analysis report
-select g.variety_name as                                 varietyName,
-       g.id           as                                 gradeId,
-       g.grade_name                                      gradeName,
-       g.production_target                               quantity,
-       count(pd.bale_id)                                 nosOfBale,
-       coalesce(sum(pd.weight), 0)                       weight,
-       g.production_target - coalesce(sum(pd.weight), 0) variationKg
-from (select g.*, v.variety_name, vwt.production_target
-      from grade g
-               join season s on g.season_id = s.id
-          and s.id =:seasonId
-          and g.grade_provider = 'BUYER'
-          and g.variety_id =:varietyId
-               join (select fa.area_id, fa.variety_id, sum(fa.land_acreage * vwt.production_target) production_target
-                     from farmer_agreement fa
-                              join variety_wise_target vwt
-                                   on fa.area_id = vwt.area_id and fa.variety_id = vwt.variety_id
-                                       and fa.season_id =:seasonId
-                     group by fa.area_id, fa.variety_id) vwt on g.variety_id = vwt.variety_id
-               join variety v on g.variety_id = v.id) g
-         join bale_grade bg on bg.grade_id = g.id
-    and bg.grade_provider = 'BUYER'
-         join purchase_details pd on pd.bale_id = bg.bale_id
-group by g.variety_name, g.id, g.grade_name, g.production_target
-order by g.id
+select
+    t.variety_id as varietyId,
+    t.variety_name as varietyName,
+    t.grade_id gradeId,
+    t.grade_name as gradeName,
+    coalesce(t.target_quantity,0) as quantity,
+    coalesce(p.nosOfBale,0) as nosOfBale,
+    coalesce(p.weight,0) as weight,
+    coalesce(t.target_quantity,0) - coalesce(p.weight,0) variationKg
+from
+    (
+        select
+            g.season_id    as season_id,
+            g.area_id      as area_id,
+            v.id           as variety_id,
+            v.variety_name as variety_name,
+            g.id           as grade_id,
+            g.grade_name   as grade_name,
+            gwt.quantity   as target_quantity
+        from    grade g
+                    join    grade_wise_target gwt
+                            on g.id = gwt.grade_id
+                                and g.season_id =:seasonId
+                                and case when :areaId is not null then g.area_id = :areaId else true end
+                                and g.variety_id =:varietyId
+                    join    variety v
+                            on g.variety_id = v.id
+    ) as t
+        left    join
+    (
+        select
+            v.id              as variety_id,
+            v.variety_name    as varietyName,
+            fa.area_id        as areaId,
+            fa.area_Name      as areaName,
+            g.id              as grade_id,
+            g.grade_name      as gradeName,
+            count(pd.bale_id) as nosOfBale,
+            sum(pd.weight)    as weight
+        from    purchase_main pm
+                    join    purchase_details pd
+                            on pm.id = pd.purchase_main_id
+                                and pd.bale_id not in (select id from bale where bale_accept_status = 'REJECTED')
+                    join    farmer_agreement fa
+                            on pm.agreement_id = fa.id
+                                and fa.season_id =:seasonId
+                    join    bale_grade bg
+                            on pd.bale_id = bg.bale_id
+                                and bg.grade_provider = 'BUYER'
+                    join    grade g
+                            on bg.grade_id = g.id
+                                and g.variety_id =:varietyId
+                    join    variety v
+                            on g.variety_id = v.id
+        where   case when :areaId is not null then g.area_id = :areaId else true end
+        group   by v.id, v.variety_name, fa.area_id, fa.area_Name, g.id, g.grade_name
+    ) as p
+    on t.variety_id = p.variety_id
+        and t.grade_id = p.grade_id
+order by t.variety_id, t.grade_id
