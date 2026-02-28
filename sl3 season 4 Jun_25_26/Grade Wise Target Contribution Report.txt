@@ -1,60 +1,126 @@
-select
-    t.variety_id as varietyId,
-    t.variety_name as varietyName,
-    t.grade_id gradeId,
-    t.grade_name as gradeName,
-    coalesce(t.target_quantity,0) as quantity,
-    coalesce(p.nosOfBale,0) as nosOfBale,
-    coalesce(p.weight,0) as weight,
-    coalesce(t.target_quantity,0) - coalesce(p.weight,0) variationKg
-from
-    (
-        select
-            g.season_id    as season_id,
-            g.area_id      as area_id,
-            v.id           as variety_id,
-            v.variety_name as variety_name,
-            g.id           as grade_id,
-            g.grade_name   as grade_name,
-            gwt.quantity   as target_quantity
-        from    grade g
-                    join    grade_wise_target gwt
-                            on g.id = gwt.grade_id
-                                and g.season_id =:seasonId
-                                and case when :areaId is not null then g.area_id = :areaId else true end
-                                and g.variety_id =:varietyId
-                    join    variety v
-                            on g.variety_id = v.id
-    ) as t
-        left    join
-    (
-        select
-            v.id              as variety_id,
-            v.variety_name    as varietyName,
-            fa.area_id        as areaId,
-            fa.area_Name      as areaName,
-            g.id              as grade_id,
-            g.grade_name      as gradeName,
-            count(pd.bale_id) as nosOfBale,
-            sum(pd.weight)    as weight
-        from    purchase_main pm
-                    join    purchase_details pd
-                            on pm.id = pd.purchase_main_id
-                                and pd.bale_id not in (select id from bale where bale_accept_status = 'REJECTED')
-                    join    farmer_agreement fa
-                            on pm.agreement_id = fa.id
-                                and fa.season_id =:seasonId
-                    join    bale_grade bg
-                            on pd.bale_id = bg.bale_id
-                                and bg.grade_provider = 'BUYER'
-                    join    grade g
-                            on bg.grade_id = g.id
-                                and g.variety_id =:varietyId
-                    join    variety v
-                            on g.variety_id = v.id
-        where   case when :areaId is not null then g.area_id = :areaId else true end
-        group   by v.id, v.variety_name, fa.area_id, fa.area_Name, g.id, g.grade_name
-    ) as p
-    on t.variety_id = p.variety_id
-        and t.grade_id = p.grade_id
-order by t.variety_id, t.grade_id
+select gws.varietyId                                 as varietyId,
+       gws.varietyName                               as varietyName,
+       gws.gradeId                                   as gradeId,
+       gws.gradeName                                 as gradeName,
+
+       gws.quantity                                  as quantity,
+       CASE
+           WHEN cont.totalQuantity = 0 THEN 0
+           ELSE (gws.quantity / cont.totalQuantity) * 100
+           END                                      as targetCont,
+
+       gws.nosOfBale                                 as nosOfBale,
+       gws.weight                                    as weight,
+       CASE
+           WHEN cont.totalWeight = 0 THEN 0
+           ELSE (gws.weight / cont.totalWeight) * 100
+           END                                       AS weightCont,
+
+       gws.variationKg                               as variationKg,
+       CASE
+           WHEN cont.totalVariationKg = 0 THEN 0
+           ELSE (gws.variationKg / cont.totalVariationKg) * 100
+           END                                       as contVariation
+
+from (select t.variety_id                   as                      varietyId,
+             t.variety_name                 as                      varietyName,
+             t.grade_id                                             gradeId,
+             t.grade_name                   as                      gradeName,
+             coalesce(t.target_quantity, 0) as                      quantity,
+             coalesce(p.nosOfBale, 0)       as                      nosOfBale,
+             coalesce(p.weight, 0)          as                      weight,
+             coalesce(t.target_quantity, 0) - coalesce(p.weight, 0) variationKg
+      from (select g.season_id    as season_id,
+                   g.area_id      as area_id,
+                   v.id           as variety_id,
+                   v.variety_name as variety_name,
+                   g.id           as grade_id,
+                   g.grade_name   as grade_name,
+                   gwt.quantity   as target_quantity
+            from grade g
+                     join grade_wise_target gwt
+                          on g.id = gwt.grade_id
+                              and g.season_id = :seasonId
+                              and case when :area_id is not null then g.area_id = :area_id else true end
+                              and g.variety_id = :varietyId
+                     join variety v
+                          on g.variety_id = v.id) as t
+               left join
+           (select v.id              as variety_id,
+                   v.variety_name    as varietyName,
+                   fa.area_id        as areaId,
+                   fa.area_Name      as areaName,
+                   g.id              as grade_id,
+                   g.grade_name      as gradeName,
+                   count(pd.bale_id) as nosOfBale,
+                   sum(pd.weight)    as weight
+            from purchase_main pm
+                     join purchase_details pd
+                          on pm.id = pd.purchase_main_id
+                              and pd.bale_id not in (select id from bale where bale_accept_status = 'REJECTED')
+                     join farmer_agreement fa
+                          on pm.agreement_id = fa.id
+                              and fa.season_id = :seasonId
+                     join bale_grade bg
+                          on pd.bale_id = bg.bale_id
+                              and bg.grade_provider = 'BUYER'
+                     join grade g
+                          on bg.grade_id = g.id
+                              and g.variety_id = :varietyId
+                     join variety v
+                          on g.variety_id = v.id
+            where case when :area_id is not null then g.area_id = :area_id else true end
+            group by v.id, v.variety_name, fa.area_id, fa.area_Name, g.id, g.grade_name) as p
+           on t.variety_id = p.variety_id
+               and t.grade_id = p.grade_id) gws
+         cross join
+     (select t.variety_id                        as                           varietyId,
+             t.variety_name                      as                           varietyName,
+             coalesce(sum(t.target_quantity), 0) as                           totalQuantity,
+             coalesce(sum(p.nosOfBale), 0)       as                           totalNosOfBale,
+             coalesce(sum(p.weight), 0)          as                           totalWeight,
+             coalesce(sum(t.target_quantity), 0) - coalesce(sum(p.weight), 0) totalVariationKg
+      from (select g.season_id    as season_id,
+                   g.area_id      as area_id,
+                   v.id           as variety_id,
+                   v.variety_name as variety_name,
+                   g.id           as grade_id,
+                   g.grade_name   as grade_name,
+                   gwt.quantity   as target_quantity
+            from grade g
+                     join grade_wise_target gwt
+                          on g.id = gwt.grade_id
+                              and g.season_id = :seasonId
+                              and case when :area_id is not null then g.area_id = :area_id else true end
+                              and g.variety_id = :varietyId
+                     join variety v
+                          on g.variety_id = v.id) as t
+               left join
+           (select v.id              as variety_id,
+                   v.variety_name    as varietyName,
+                   fa.area_id        as areaId,
+                   fa.area_Name      as areaName,
+                   g.id              as grade_id,
+                   g.grade_name      as gradeName,
+                   count(pd.bale_id) as nosOfBale,
+                   sum(pd.weight)    as weight
+            from purchase_main pm
+                     join purchase_details pd
+                          on pm.id = pd.purchase_main_id
+                              and pd.bale_id not in (select id from bale where bale_accept_status = 'REJECTED')
+                     join farmer_agreement fa
+                          on pm.agreement_id = fa.id
+                              and fa.season_id = :seasonId
+                     join bale_grade bg
+                          on pd.bale_id = bg.bale_id
+                              and bg.grade_provider = 'BUYER'
+                     join grade g
+                          on bg.grade_id = g.id
+                              and g.variety_id = :varietyId
+                     join variety v
+                          on g.variety_id = v.id
+            where case when :area_id is not null then g.area_id = :area_id else true end
+            group by v.id, v.variety_name, fa.area_id, fa.area_Name, g.id, g.grade_name) as p
+           on t.variety_id = p.variety_id
+               and t.grade_id = p.grade_id
+      group by t.variety_id, t.variety_name) cont

@@ -1,14 +1,18 @@
 select
-    v.id varietyId,
-    v.variety_name varietyName,
+    v.id as varietyId,
+    v.variety_name as varietyName,
     g.id,
     g.grade_name inGradeName,
     count(pd.bale_id) nosofBale,
     coalesce(sum(bw.weight),0) godownRecWeight,
+    coalesce(max(tw.total_godownWeight),0) totalGodownWeight,
     coalesce(sum(bs.sacks_weight),0) ciDedactionWeight,
     coalesce(sum(pd.weight),0) purchaseWeight,
     (coalesce(sum(bw.weight),0) + coalesce(sum(bs.sacks_weight),0)) - coalesce(sum(pd.weight),0) differenceKg,
-    coalesce(sum(bb.bonus_amount),0) bonus
+    coalesce(sum(bb.bonus_amount),0) bonus,
+    case when coalesce(max(tw.total_godownWeight),0) > 0
+             then (coalesce(sum(bw.weight),0) / coalesce(max(tw.total_godownWeight),0)) * 100
+         else 0 end contribution
 from    bale_grade bg
             join (select * from grade where grade_provider='CLASSIFIER' and season_id=:season) g on bg.grade_id=g.id
     and     bg.grade_provider = 'CLASSIFIER'
@@ -27,5 +31,28 @@ from    bale_grade bg
             left    join bale_bonus bb on pd.bale_id=bb.bale_id
             join    (select  bale_id,weight from bale_weight where weight_recipient='RE_WEIGHT') bw on pd.bale_id=bw.bale_id
             left    join (select bale_id,sacks_weight from bale_sacks where sack_type_selector='CLASSIFIER') bs on bw.bale_id=bs.bale_id
+                        join (select
+                                  v.id varietyId,
+                                  v.variety_name varietyName,
+                                  coalesce(sum(bw.weight),0) total_godownWeight
+                              from    bale_grade bg
+                                          join (select * from grade where grade_provider='CLASSIFIER' and season_id=:season) g on bg.grade_id=g.id
+                                  and     bg.grade_provider = 'CLASSIFIER'
+                                          join    variety v on g.variety_id = v.id
+                                  and     v.id in (:varietyId)
+                                          join    purchase_details pd on bg.bale_id=pd.bale_id
+                                          join    purchase_main pm on pd.purchase_main_id = pm.id
+                                  and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+                                          join    farmer_agreement fa on pm.agreement_id = fa.id and g.area_id=fa.area_id
+                                  and (case when :areaId is not null then fa.area_id = :areaId else true end)
+                                  and (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
+                                  and (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
+                                  and (case when :villageId is not null then fa.village_id = :villageId else true end)
+                                          join    season s on fa.season_id = s.id
+                                  and     s.id=:season
+                                          left    join bale_bonus bb on pd.bale_id=bb.bale_id
+                                          join    (select  bale_id,weight from bale_weight where weight_recipient='RE_WEIGHT') bw on pd.bale_id=bw.bale_id
+                                          left    join (select bale_id,sacks_weight from bale_sacks where sack_type_selector='CLASSIFIER') bs on bw.bale_id=bs.bale_id
+                              group by v.id,v.variety_name) tw on v.id=tw.varietyId
 group by v.id,v.variety_name,g.id,g.grade_name
 order  by v.id,g.id
