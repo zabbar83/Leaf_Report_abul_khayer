@@ -1,0 +1,41 @@
+select
+        bb.id branchId,
+        bb.branch_name branchName,
+        coalesce(bb.routing_number,'N/A') routingName,
+        fa.bank_account_number accountNumber,
+        fa.farmer_reg_number farRegNum,
+        fa.farmer_name farmerName,
+        fa.mobile_no farMobNum,
+        coalesce(sum(pd.weight),0) buyingKg,
+        coalesce(sum(pd.amount),0) buyingAmount,
+        case when coalesce(sum(pd.weight),0) > 0 then coalesce(sum(pd.amount),0)/coalesce(sum(pd.weight),0) else 0 end buyingAvg,
+        coalesce(sum(case when bbn.bale_id is not null then pd.weight else 0 end),0) bonusKg,
+        coalesce(sum(bbn.bonus_amount),0) bonusAmount,
+         case when coalesce((sum(case when bbn.bale_id is not null then pd.weight else 0 end)),0) > 0 then coalesce(sum(bbn.bonus_amount),0)/
+                                                                                                                 coalesce(sum(case when bbn.bale_id is not null then pd.weight else 0 end),0)
+             else 0 end bonusAvg,
+         coalesce(sum(pd.weight),0) totalKg,
+         coalesce(sum(pd.amount),0) + coalesce(sum(bbn.bonus_amount),0) totalAmount,
+         case when coalesce(sum(pd.weight),0) > 0 then (coalesce(sum(pd.amount),0) + coalesce(sum(bbn.bonus_amount),0))/coalesce(sum(pd.weight),0) else 0 end totalAvg,
+         coalesce(max(tlr.loan_realize),0) loanRealize,
+         (coalesce(sum(pd.amount),0) + coalesce(sum(bbn.bonus_amount),0)) - coalesce(abs(max(tlr.loan_realize)),0) netPay
+from    farmer_agreement fa
+join    bank_branch bb on fa.bank_branch_id = bb.id
+join    season s on fa.season_id=s.id
+and     s.id=:seasonId
+and     bb.bank_id=:bankId
+join    purchase_main pm on fa.id=pm.agreement_id
+join    purchase_details pd on pm.id = pd.purchase_main_id
+and     pm.purchase_date between :fromDate and :toDate
+left    join bale_bonus bbn on pd.bale_id=bbn.bale_id
+left    join    (select
+             pm.agreement_id,
+             sum(flm.loan_amount) loan_realize
+         from farmer_loan_main flm
+                  join purchase_main pm on flm.purchase_main_id = pm.id
+         where pm.purchase_date between :fromDate and :toDate
+           and   flm.purchase_main_id is not null
+         group by pm.agreement_id)tlr on fa.id=tlr.agreement_id
+group   by bb.id, bb.branch_name, bb.routing_number, fa.bank_account_number,
+        fa.farmer_reg_number, fa.farmer_name, fa.mobile_no
+order   by bb.id,fa.farmer_reg_number
