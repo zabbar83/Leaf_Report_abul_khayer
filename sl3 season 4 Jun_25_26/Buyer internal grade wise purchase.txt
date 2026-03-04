@@ -1,0 +1,41 @@
+
+select  fa.area_id areaId,
+        fa.area_name areaName,
+        u.user_id buyerId,
+        u.user_name buyerName,
+        bc.id buyingPointId,
+        bc.center_name buyingPointName,
+        g.grade_name externalGrade,
+        ing.internalGrade as internalGrade,
+        count(ing.bale_id)nosofBale,
+        coalesce(sum(pd.weight),0)purchaseWeight,
+        coalesce(sum(pd.amount),0) amount,
+        coalesce(sum(bb.bonus_amount),0) bonusAmount,
+        coalesce(sum(pd.amount),0) + coalesce(sum(bb.bonus_amount),0) totalAmount
+from    bale_grade bg
+            join    (select * from grade where grade_provider='BUYER' and season_id=:season) g on bg.grade_id=g.id
+    and     bg.grade_provider = 'BUYER'
+            join    variety v on g.variety_id = v.id
+    and     v.id = :varietyId
+            join    purchase_details pd on bg.bale_id=pd.bale_id
+            join    purchase_main pm on pd.purchase_main_id = pm.id
+    and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+            join    farmer_agreement fa on pm.agreement_id = fa.id and g.area_id=fa.area_id
+            join users u on bg.added_by_user_id=u.user_id
+            join buying_center bc on bg.buying_center_id = bc.id
+    and fa.area_id = :areaId
+    and (case when :buyerId is not null then u.user_id =:buyerId else true end)
+            join    season s on fa.season_id = s.id
+    and     s.id=:season
+            left    join bale_bonus bb on pd.bale_id=bb.bale_id
+            join    (select  cbg.bale_id,
+                             cg.grade_name internalGrade
+                     from    bale_grade cbg
+                                 join (select * from grade where grade_provider='CLASSIFIER' and season_id=:season) cg on cbg.grade_id=cg.id
+                         and     cbg.grade_provider = 'CLASSIFIER'
+                                 join    purchase_details cpd on cbg.bale_id=cpd.bale_id
+                                 join    purchase_main cpm on cpd.purchase_main_id = cpm.id
+                         and     cpm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+                     ) ing on pd.bale_id=ing.bale_id
+group by fa.area_id, fa.area_name, u.user_id, u.user_name, bc.id, bc.center_name, g.grade_name ,ing.internalGrade
+order by u.user_id,bc.id, g.grade_name ,ing.internalGrade
