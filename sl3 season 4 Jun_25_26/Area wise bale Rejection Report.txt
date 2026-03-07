@@ -1,0 +1,16 @@
+--AreaWise_Bale_Rejection_Report
+select  fa.area_id as areaId, fa.area_name as areaName,
+        rr.reason as reason,
+        count(brr.bale_id) nosofBale
+from farmer_agreement fa
+         join season s on fa.season_id = s.id
+    and s.id=:seasonId
+         join transit_pass tp on fa.id = tp.farmer_agreement_id
+         join tp_purchase_schedule tps on tp.id = tps.tp_id
+         join bale b on tp.id = b.transit_pass_id
+    and cast(b.add_date_time as date) between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+         join bale_reject_reason brr on b.id = brr.bale_id
+         join reject_reason rr on brr.reject_reason_id = rr.id
+         left join purchase_main pm on fa.id = pm.agreement_id and tp.id = pm.tp_no
+group by fa.area_id, fa.area_name, rr.reason
+order by fa.area_id
