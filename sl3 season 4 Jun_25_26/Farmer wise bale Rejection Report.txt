@@ -11,6 +11,7 @@ fa.zone_id as zoneId, fa.zone_name as zoneName,
         from farmer_agreement fa
         join season s on fa.season_id = s.id
             and s.id=:seasonId
+	and (case when :areaId is not null then fa.area_id=:areaId else true end)
         join transit_pass tp on fa.id = tp.farmer_agreement_id
         join tp_purchase_schedule tps on tp.id = tps.tp_id
         join bale b on tp.id = b.transit_pass_id
