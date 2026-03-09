@@ -54,7 +54,9 @@ SELECT fa.area_id as areaId,
                      coalesce(sum(case when fld.loan_item_id = 44 then fld.quantity else 0 end),0) item44Dis,
                      coalesce(sum(case when fld.loan_item_id = 45 then fld.quantity else 0 end),0) item45Dis,
                      coalesce(sum(case when fld.loan_item_id = 46 then fld.quantity else 0 end),0) item46Dis,
-                     coalesce(sum(case when fld.loan_item_id = 47 then fld.quantity else 0 end),0) item47Dis
+                     coalesce(sum(case when fld.loan_item_id = 47 then fld.quantity else 0 end),0) item47Dis,
+                     coalesce(sum(case when fld.loan_item_id = 36 then fld.quantity else 0 end),0) item36Dis,
+                     coalesce(sum(case when fld.loan_item_id = 48 then fld.quantity else 0 end),0) item48Dis
 
               FROM farmer_loan_requests flr
                        JOIN farmer_loan_main flm on flr.id = flm.farmer_loan_request_id

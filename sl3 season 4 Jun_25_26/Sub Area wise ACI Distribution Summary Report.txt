@@ -226,7 +226,15 @@ select
 
     count(distinct case when li.id=47 then fa.farmer_id end) plantCashFarmer,
     sum(case when li.id=47 then fld.quantity else 0 end) plantCashQty,
-    sum(case when li.id=47 then fa.land_acreage else 0 end) plantCashAcre
+    sum(case when li.id=47 then fa.land_acreage else 0 end) plantCashAcre,
+
+    count(distinct case when li.id=36 then fa.farmer_id end) tarpaulinFarmer,
+    sum(case when li.id=36 then fld.quantity else 0 end) tarpaulinQty,
+    sum(case when li.id=36 then fa.land_acreage else 0 end) tarpaulinAcre,
+
+    count(distinct case when li.id=48 then fa.farmer_id end) hygroFarmer,
+    sum(case when li.id=48 then fld.quantity else 0 end) hygroQty,
+    sum(case when li.id=48 then fa.land_acreage else 0 end) hygroAcre
 from    (select *
          from farmer_agreement
          where season_name = (select fiscal_year
