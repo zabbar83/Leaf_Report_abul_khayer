@@ -1,0 +1,27 @@
+select  u.user_id buyerId,
+        em.emp_name buyerName,
+        fa.area_id areaId,
+        fa.area_name areaName,
+        count(case when pm.purchase_date = current_date then pd.bale_id end) nosofBaleToday,
+        case when
+                sum(case when pm.purchase_date = current_date then pd.weight else 0 end) > 0 then
+                sum(case when pm.purchase_date = current_date then pd.amount else 0 end) /
+                sum(case when pm.purchase_date = current_date then pd.weight else 0 end)
+        else 0 end avRateToday,
+
+        count(pd.bale_id)                                                    nosofBaleTodate,
+        case when sum(pd.weight) > 0 then sum(pd.amount)/sum(pd.weight) else 0 end avRaTodate
+from    users u
+join    users_roles ur on u.user_id = ur.users_user_id
+        and ur.roles_id=3
+join    emp_info em on u.user_id = em.users_user_id
+join    bale_grade bg on u.user_id=bg.added_by_user_id
+join    purchase_details pd on bg.bale_id=pd.bale_id
+join    purchase_main pm on pd.purchase_main_id = pm.id
+join    farmer_agreement fa on pm.agreement_id = fa.id
+and     fa.season_id=(select  s.id
+                      from season s
+                               join global_setting gs on s.id=cast(gs.attribute_value as numeric)
+                      where gs.attribute_name='BUYING_SEASON')
+group by u.user_id, em.emp_name, fa.area_id, fa.area_name
+order by fa.area_id,u.user_id
