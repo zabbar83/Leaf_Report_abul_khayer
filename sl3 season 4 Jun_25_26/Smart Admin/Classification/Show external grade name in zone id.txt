@@ -1,0 +1,10 @@
+select  distinct g.grade_name
+from    bale_grade bg
+            join    (select * from grade where grade_provider='BUYER' and season_id=(select cast(attribute_value as numeric) sId
+                                                                                     from global_setting
+                                                                                     where attribute_name='BUYING_SEASON')) g on bg.grade_id=g.id
+    and     bg.grade_provider = 'BUYER'
+            join purchase_details pd on bg.bale_id=pd.bale_id
+            join purchase_main pm on pd.purchase_main_id = pm.id
+            join farmer_agreement fa on pm.agreement_id = fa.id
+    and  fa.zone_id=:zoneId
