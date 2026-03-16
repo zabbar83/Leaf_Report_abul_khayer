@@ -15,7 +15,7 @@ Select     fa.season_name              AS cropYear,
            fa.farmer_category             AS category,
            case when f.is_active='true' then 'ACTIVE' else 'INACTIVE' end AS farmerStatus,
            fa.land_acreage             AS cropAcre,
-           0                           AS targetQty,
+           max(vwt.production_target) * fa.land_acreage   AS targetQty,
            fa.variety_name              AS varietyCode,
            li.item_name                AS itemsName,
            li.unit                     AS umo,
@@ -36,7 +36,8 @@ FROM    (select * from farmer_agreement
 
         ) fa
             JOIN farmer f ON f.id=fa.farmer_id
-            and f.is_active = 'true'
+            join variety_wise_target vwt on fa.variety_id = vwt.variety_id and fa.area_id = vwt.area_id
+    and f.is_active = 'true'
             JOIN farmer_loan_requests flr ON fa.id=flr.farmer_agreement_id
             JOIN farmer_loan_main flm ON flr.id = flm.farmer_loan_request_id
             JOIN farmer_loan_details fld ON flm.id = fld.loan_main_id
