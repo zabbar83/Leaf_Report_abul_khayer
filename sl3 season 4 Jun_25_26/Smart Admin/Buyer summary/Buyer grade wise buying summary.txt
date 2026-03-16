@@ -1,5 +1,6 @@
-select  g.id gradeId,g.grade_name gradeName,
+select  u.user_id as userId, ep.emp_name as empName, ud.user_image ,fa.area_name as areaName,g.id gradeId,g.grade_name gradeName,
         count(case when pm.purchase_date = current_date then pd.bale_id end) nosofBaleToday,
+        coalesce(sum(case when pm.purchase_date = current_date then pd.weight end),0) baleWeightToday,
         case when
                  sum(case when pm.purchase_date = current_date then pd.weight else 0 end) > 0 then
                  sum(case when pm.purchase_date = current_date then pd.amount else 0 end) /
@@ -7,15 +8,21 @@ select  g.id gradeId,g.grade_name gradeName,
              else 0 end avRateToday,
 
         count(pd.bale_id)                                                    nosofBaleTodate,
+        coalesce(sum(pd.weight),0)                                           baleWeightTodate,
         case when sum(pd.weight) > 0 then sum(pd.amount)/sum(pd.weight) else 0 end avRaTodate
 from    farmer_agreement fa
 join    purchase_main pm on fa.id=pm.agreement_id
+        and fa.area_id=:areaId
 and     fa.season_id=(select  s.id
                       from season s
                                join global_setting gs on s.id=cast(gs.attribute_value as numeric)
                       where gs.attribute_name='BUYING_SEASON')
 join    purchase_details pd on pm.id = pd.purchase_main_id
 join    bale_grade bg on pd.bale_id=bg.bale_id
+join    users u on bg.added_by_user_id = u.user_id
+        and u.user_id=:userId
+join    emp_info ep on u.user_id = ep.users_user_id
+join    (select * from user_document where user_user_id = :userId) ud on u.user_id = ud.user_user_id
 join    (select * from grade where grade_provider='BUYER') g on bg.grade_id=g.id
-group by g.id,g.grade_name
+group by u.user_id, ep.emp_name,fa.area_name, g.id,g.grade_name,ud.user_image
 order by g.id

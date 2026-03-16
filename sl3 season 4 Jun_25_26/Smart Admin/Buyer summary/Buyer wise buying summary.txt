@@ -3,6 +3,7 @@ select  u.user_id buyerId,
         fa.area_id areaId,
         fa.area_name areaName,
         count(case when pm.purchase_date = current_date then pd.bale_id end) nosofBaleToday,
+        coalesce(sum(case when pm.purchase_date = current_date then pd.weight end),0) baleWeightToday,
         case when
                 sum(case when pm.purchase_date = current_date then pd.weight else 0 end) > 0 then
                 sum(case when pm.purchase_date = current_date then pd.amount else 0 end) /
@@ -10,6 +11,7 @@ select  u.user_id buyerId,
         else 0 end avRateToday,
 
         count(pd.bale_id)                                                    nosofBaleTodate,
+        coalesce(sum(pd.weight),0)                                           baleWeightTodate,
         case when sum(pd.weight) > 0 then sum(pd.amount)/sum(pd.weight) else 0 end avRaTodate
 from    users u
 join    users_roles ur on u.user_id = ur.users_user_id
