@@ -1,40 +1,46 @@
 select
-    pm.purchase_date pmDate,
-    fa.area_id,
-    fa.area_name,
-    fa.zone_id ,
-    fa.zone_name ,
-    fa.sub_area_id ,
-    fa.sub_area_name ,
-    fa.village_id ,
-    fa.village_name ,
-    fa.farmer_reg_number ,
-    fa.farmer_category ,
-    fa.farmer_name ,
-    fa.farmer_father_name ,
-    fa.bank_name ,
-    fa.bank_branch_name ,
-    fa.bank_account_number ,
-    fa.variety_name,
-    b.bale_code ,
-    coalesce(ei.emp_name,'N/A') buyer_user_name,
-    coalesce(ei.office_phone_no,'N/A') buyer_mob_no,
-    coalesce(g.grade_name,'N/A') buyer_grade_name,
-    coalesce(pd.actual_weight,0) actual_weight,
-    bs.sacks_weight,
-    coalesce(pd.weight,0) buying_weight,
-    coalesce(g.grade_rate,0) grade_rate,
+    pm.purchase_date as pmDate,
+    fa.area_id as areaId,
+    fa.area_name as areaName,
+    fa.zone_id as zoneId,
+    fa.zone_name as zoneName,
+    fa.sub_area_id as subAreaId,
+    fa.sub_area_name as subAreaName,
+    fa.village_id as villageId,
+    fa.village_name as villageName,
+    fa.farmer_reg_number as farmerRegNumber,
+    fa.farmer_category as farmerCategory,
+    fa.farmer_name as farmerName,
+    fa.farmer_father_name as farmerFatherName,
+    fa.bank_name as bankName,
+    fa.bank_branch_name as bankBranchName,
+    fa.bank_account_number as bankAccountNumber,
+    fa.variety_name as varietyName,
+    b.bale_code as baleCode,
+
+    coalesce(ei.emp_name,'N/A') as buyerUserName,
+    coalesce(ei.office_phone_no,'N/A') as buyerMobNo,
+    coalesce(g.grade_name,'N/A') as buyerGradeName,
+
+    coalesce(pd.actual_weight,0) as actualWeight,
+    bs.sacks_weight as sacksWeight,
+    coalesce(pd.weight,0) as buyingWeight,
+    coalesce(g.grade_rate,0) as gradeRate,
+
     pd.amount as amount,
-    coalesce(bb.bonus_amount,0) bonus,
-    pd.amount + coalesce(bb.bonus_amount,0) total_amount,
-    --reweight
-    coalesce(bw.weight,0) actual_reweight,
-    (coalesce(bw.weight,0) - coalesce(bsc.sacks_weight,0)) + coalesce(bsc.extra_weight,0) additional_weight,
-    coalesce(bw.weight,0) - coalesce(bsc.sacks_weight,0) net_reweight,
-    coalesce(gc.grade_name,'N/A') classifier_Grade_Name,
-    coalesce(eic.emp_name,'N/A') classification_Users_Name,
-    coalesce(to_char(bw.add_date_time,'YYYY-MM-DD'),'N/A') classified_Date,
-    bc.center_name
+    coalesce(bb.bonus_amount,0) as bonus,
+    (pd.amount + coalesce(bb.bonus_amount,0)) as totalAmount,
+
+    -- reweight
+    coalesce(bw.weight,0) as actualReweight,
+    ((coalesce(bw.weight,0) - coalesce(bsc.sacks_weight,0)) + coalesce(bsc.extra_weight,0)) as additionalWeight,
+    (coalesce(bw.weight,0) - coalesce(bsc.sacks_weight,0)) as netReweight,
+
+    coalesce(gc.grade_name,'N/A') as classifierGradeName,
+    coalesce(eic.emp_name,'N/A') as classificationUserName,
+    coalesce(to_char(bw.add_date_time,'YYYY-MM-DD'),'N/A') as classifiedDate,
+
+    bc.center_name as centerName
 from    farmer_agreement fa
             join    season s on fa.season_id = s.id
     and     s.id=:season
@@ -43,13 +49,13 @@ from    farmer_agreement fa
             and (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
             and (case when :villageId is not null then fa.village_id = :villageId else true end)
             join    purchase_main pm on fa.id = pm.agreement_id
---and     pm.purchase_date between :fromDate and :toDate
+            and     pm.purchase_date between :fromDate and :toDate
             join    purchase_details pd on pm.id = pd.purchase_main_id
             join    buying_center bc on pm.buying_center_id = bc.id
             join    bale b on pd.bale_id = b.id
             left    join (select * from bale_grade where grade_provider='BUYER') bg on b.id = bg.bale_id
             left    join (select * from grade where grade_provider='BUYER' and season_id=:season) g on bg.grade_id = g.id
-                    and fa.area_id=g.area_id and fa.variety_id=g.variety_id
+                    -- and fa.area_id=g.area_id and fa.variety_id=g.variety_id
             left    join emp_info ei on bg.added_by_user_id=ei.users_user_id
             left    join (select bale_id,sacks_weight from bale_sacks where sack_type_selector ='BUYER') bs on b.id = bs.bale_id
             left    join bale_bonus bb on pd.bale_id=bb.bale_id
@@ -57,7 +63,7 @@ from    farmer_agreement fa
             left    join (select bale_id,sacks_weight,extra_weight from bale_sacks where sack_type_selector ='CLASSIFIER') bsc on bw.bale_id = bsc.bale_id
             left    join (select * from bale_grade where grade_provider='CLASSIFIER') bgc on b.id = bgc.bale_id
             left    join (select * from grade where grade_provider='CLASSIFIER' and season_id=:season) gc on bgc.grade_id = gc.id
-                    and fa.area_id=gc.area_id and fa.variety_id=gc.variety_id
+                    -- and fa.area_id=gc.area_id and fa.variety_id=gc.variety_id
             left    join users uc on bgc.added_by_user_id=user_id
             left    join emp_info eic on uc.user_id = eic.users_user_id
 order    by fa.area_id,fa.zone_id, fa.sub_area_id, fa.village_id

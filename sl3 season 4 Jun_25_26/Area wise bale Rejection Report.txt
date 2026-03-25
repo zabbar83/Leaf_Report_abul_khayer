@@ -1,7 +1,7 @@
 --AreaWise_Bale_Rejection_Report
 select  fa.area_id as areaId, fa.area_name as areaName,
-        rr.reason as reason,
-        count(brr.bale_id) nosofBale
+        STRING_AGG(DISTINCT rr.reason, ', ' ORDER BY rr.reason) AS reason,
+        count(DISTINCT brr.bale_id) nosofBale
 from farmer_agreement fa
          join season s on fa.season_id = s.id
     and s.id=:seasonId
@@ -13,5 +13,5 @@ and (case when :areaId is not null then fa.area_id=:areaId else true end)
          join bale_reject_reason brr on b.id = brr.bale_id
          join reject_reason rr on brr.reject_reason_id = rr.id
          left join purchase_main pm on fa.id = pm.agreement_id and tp.id = pm.tp_no
-group by fa.area_id, fa.area_name, rr.reason
+group by fa.area_id, fa.area_name
 order by fa.area_id
