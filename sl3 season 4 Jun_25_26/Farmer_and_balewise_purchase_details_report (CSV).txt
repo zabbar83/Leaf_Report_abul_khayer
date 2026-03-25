@@ -17,13 +17,13 @@ select
     fa.bank_account_number ,
     fa.variety_name,
     b.bale_code ,
-    ei.emp_name buyer_user_name,
-    ei.office_phone_no buyer_mob_no,
-    g.grade_name buyer_grade_name,
+    coalesce(ei.emp_name,'N/A') buyer_user_name,
+    coalesce(ei.office_phone_no,'N/A') buyer_mob_no,
+    coalesce(g.grade_name,'N/A') buyer_grade_name,
     coalesce(pd.actual_weight,0) actual_weight,
     bs.sacks_weight,
     coalesce(pd.weight,0) buying_weight,
-    g.grade_rate,
+    coalesce(g.grade_rate,0) grade_rate,
     pd.amount as amount,
     coalesce(bb.bonus_amount,0) bonus,
     pd.amount + coalesce(bb.bonus_amount,0) total_amount,
@@ -31,7 +31,7 @@ select
     coalesce(bw.weight,0) actual_reweight,
     (coalesce(bw.weight,0) - coalesce(bsc.sacks_weight,0)) + coalesce(bsc.extra_weight,0) additional_weight,
     coalesce(bw.weight,0) - coalesce(bsc.sacks_weight,0) net_reweight,
-    gc.grade_name classifier_Grade_Name,
+    coalesce(gc.grade_name,'N/A') classifier_Grade_Name,
     coalesce(eic.emp_name,'N/A') classification_Users_Name,
     coalesce(to_char(bw.add_date_time,'YYYY-MM-DD'),'N/A') classified_Date,
     bc.center_name
@@ -43,7 +43,7 @@ from    farmer_agreement fa
             and (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
             and (case when :villageId is not null then fa.village_id = :villageId else true end)
             join    purchase_main pm on fa.id = pm.agreement_id
---and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+--and     pm.purchase_date between :fromDate and :toDate
             join    purchase_details pd on pm.id = pd.purchase_main_id
             join    buying_center bc on pm.buying_center_id = bc.id
             join    bale b on pd.bale_id = b.id
