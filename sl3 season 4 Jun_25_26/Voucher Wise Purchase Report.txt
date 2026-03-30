@@ -1,44 +1,55 @@
 select
-        pm.purchase_date pmDate,
-        pm.purchase_no voucherNo,
-        fa.zone_id zoneId,
-        fa.zone_name zoneName,
-        fa.sub_area_id subAreaId,
-        fa.sub_area_name subAareaName,
-        fa.farmer_reg_number farmerId,
-        fa.farmer_name farmerName,
-        fa.farmer_father_name fatherName,
-        fa.village_id villageId,
-        fa.village_name villageName,
-        fa.bank_name bankName,
-        fa.bank_branch_name bbranchName,
-        fa.bank_account_number bankAccountName,
-        bbr.routing_number routingNumber,
-        count(pd.bale_id) purchasedBaleNos,
-        coalesce(sum(pd.weight),0) weight,
-        sum(pd.amount) amount,
-        coalesce(sum(bb.bonus_amount),0) bonus,
-        coalesce(sum(pd.amount),0) + coalesce(sum(bb.bonus_amount),0) grossAmount,
-        coalesce(sum(fln.loan),0) loan,
-        (coalesce(sum(pd.amount),0) + coalesce(sum(bb.bonus_amount),0)) - coalesce(sum(fln.loan),0) netPay
+    pmd.purchase_date pmDate,
+    pmd.purchase_no voucherNo,
+    fa.zone_id zoneId,
+    fa.zone_name zoneName,
+    fa.sub_area_id subAreaId,
+    fa.sub_area_name subAreaName,
+    fa.farmer_reg_number farmerId,
+    fa.farmer_name farmerName,
+    fa.farmer_father_name fatherName,
+    fa.village_id villId,
+    fa.village_name village,
+    fa.bank_name bankName,
+    fa.bank_branch_name bbranchName,
+    fa.bank_account_number accountNumber,
+    bbr.routing_number routingNumber,
+    pmd.purchasedBaleNos,
+    pmd.purchasedWeight,
+    pmd.amount,
+    pmd.totalBonus,
+    pmd.grossAmount,
+    pmd.deductedLoan,
+    pmd.grossAmount - pmd.deductedLoan netPay
 from    farmer_agreement fa
-join    season s on fa.season_id = s.id
-and     s.id=:season
-join    bank_branch bbr on fa.bank_branch_id = bbr.id
-join    purchase_main pm on fa.id = pm.agreement_id
-and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
-join    purchase_details pd on pm.id = pd.purchase_main_id
-and (case when :areaId is not null then fa.area_id = :areaId else true end)
-    and (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
-    and (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
-    and (case when :villageId is not null then fa.village_id = :villageId else true end)
-left    join bale_bonus bb on pd.bale_id=bb.bale_id
-join    (select flr.farmer_agreement_id,
-                sum(loan_amount) loan
-         from farmer_loan_main flm
-                  join farmer_loan_requests flr on flm.farmer_loan_request_id = flr.id
-         group by flr.farmer_agreement_id
-         ) fln on fa.id=fln.farmer_agreement_id
-group by pm.purchase_date,pm.purchase_no, fa.zone_id, fa.zone_name, fa.sub_area_id, fa.sub_area_name, fa.farmer_reg_number, fa.farmer_name, fa.farmer_father_name,
-         fa.village_id, fa.village_name, fa.bank_name, fa.bank_branch_name, fa.bank_account_number, bbr.routing_number
-order    by fa.zone_id, fa.sub_area_id, fa.village_id
+            join    season s
+                    on fa.season_id = s.id
+                        and s.id = :season
+                        and (case when :areaId is not null then fa.area_id = :areaId else true end)
+                        and (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
+                        and (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
+                        and (case when :villageId is not null then fa.village_id = :villageId else true end)
+            join    bank_branch bbr
+                    on fa.bank_branch_id = bbr.id
+            join    (
+    select
+        pm.agreement_id,
+        pm.id as purchase_main_id,
+        pm.purchase_date,
+        pm.purchase_no,
+        count(pd.bale_id) purchasedBaleNos,
+        sum(pd.weight) purchasedWeight,
+        pm.grand_total amount,
+        coalesce(sum(bb.bonus_amount),0) totalBonus,
+        pm.grand_total + coalesce(sum(bb.bonus_amount),0) grossAmount,
+        pm.loan_deduct as deductedLoan
+    from    purchase_main pm
+                join    purchase_details pd
+                        on pm.id = pd.purchase_main_id
+                            and pm.purchase_date between :fromDate and :toDate
+                left    join bale_bonus bb
+                             on pd.bale_id = bb.bale_id
+    group   by pm.agreement_id, pm.id, pm.purchase_date, pm.purchase_no, pm.grand_total, pm.loan_deduct
+) pmd
+                    on fa.id = pmd.agreement_id
+order   by fa.zone_id, fa.sub_area_id, fa.village_id
