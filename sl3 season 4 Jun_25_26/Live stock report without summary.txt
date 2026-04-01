@@ -1,22 +1,25 @@
 select
-        d.id depotId,
-        d.depot_name depotName,
-        vbcd.bale_id baleId,
-        b.bale_code barCode,
-        g.id gradeId,
-        g.grade_name internalGrade,
-        count(vbcd.bale_id) nosofBale,
-        vbcd.bale_weight withSackExtWeight,
-        (vbcd.sacks_weight + vbcd.extra_deduction_weight) tareWeight,
-        vbcd.bale_weight - (vbcd.sacks_weight + vbcd.extra_deduction_weight) netWeight
+    v.area_id as areaId,
+    v.area_name as areaName,
+    d.id depotId,
+    d.depot_name depotName,
+    vbcd.bale_id baleId,
+    b.bale_code barCode,
+    g.id gradeId,
+    g.grade_name internalGrade,
+    count(vbcd.bale_id) nosofBale,
+    vbcd.bale_weight withSackExtWeight,
+    (vbcd.sacks_weight + vbcd.extra_deduction_weight) tareWeight,
+    vbcd.bale_weight - (vbcd.sacks_weight + vbcd.extra_deduction_weight) netWeight
 from    (select * from grade where grade_provider='CLASSIFIER' and season_id=:seasonId and variety_id=:varietyId
-                             and area_id=:areaId) g
-join    v_bale_classification_details vbcd on vbcd.grade_id=g.id
-and     vbcd.bale_weight > 0
-join    (select * from buying_center_stock where in_out_status IN ('IN', 'OUT_FOR_CLASSIFY')) bcs on vbcd.bale_id=bcs.bale_id
-join    (select id,bale_code from bale) b on bcs.bale_id = b.id
-join    buying_center bc on bcs.buying_center_id=bc.id
-join    depot d on bc.depot_id = d.id
-and     d.id=depotId
-group   by d.id, d.depot_name, vbcd.bale_id, b.bale_code, g.id, g.grade_name,vbcd.bale_weight,vbcd.sacks_weight,vbcd.extra_deduction_weight
-order   by d.id, g.id, vbcd.bale_id
+                               and (case when :areaId is not null then area_id=:areaId else true end)) g
+    join (select distinct area_id, area_name from v_teritory_all) v on g.area_id=v.area_id
+            join    v_bale_classification_details vbcd on vbcd.grade_id=g.id
+    and     vbcd.bale_weight > 0
+            join    (select * from buying_center_stock where in_out_status IN ('IN', 'OUT_FOR_CLASSIFY')) bcs on vbcd.bale_id=bcs.bale_id
+            join    (select id,bale_code from bale) b on bcs.bale_id = b.id
+            join    buying_center bc on bcs.buying_center_id=bc.id
+            join    depot d on bc.depot_id = d.id
+    and     (case when :depotId is not null then d.id=:depotId else true end)
+group   by v.area_id, v.area_name, d.id, d.depot_name, vbcd.bale_id, b.bale_code, g.id, g.grade_name,vbcd.bale_weight,vbcd.sacks_weight,vbcd.extra_deduction_weight
+order   by v.area_id, d.id, g.id, vbcd.bale_id
