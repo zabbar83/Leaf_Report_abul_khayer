@@ -17,8 +17,9 @@ select
     coalesce(sum(pd.weight),0) totalKg,
     coalesce(sum(pd.amount),0) + coalesce(sum(bbn.bonus_amount),0) totalAmount,
     case when coalesce(sum(pd.weight),0) > 0 then (coalesce(sum(pd.amount),0) + coalesce(sum(bbn.bonus_amount),0))/coalesce(sum(pd.weight),0) else 0 end totalAvg,
-    coalesce(max(tlr.loan_realize),0) loanRealize,
-    abs(case when coalesce(abs(max(tlr.loan_realize)),0) - coalesce(sum(pd.amount),0) < 0 then coalesce(abs(max(tlr.loan_realize)),0) - coalesce(sum(pd.amount),0) else 0 end) balanceLoan,
+    coalesce(max(tl.totalLoan),0)totalLoan,
+    abs(coalesce(max(tlr.loan_realize),0)) loanRealize,
+    abs(case when coalesce(abs(max(tlr.loan_realize)),0) - coalesce(sum(pd.amount),0) > 0 then coalesce(abs(max(tlr.loan_realize)),0) - coalesce(sum(pd.amount),0) else 0 end) balanceLoan,
     (case when coalesce(sum(pd.amount),0) - coalesce(abs(max(tlr.loan_realize)),0) > 0 then coalesce(sum(pd.amount),0) - coalesce(abs(max(tlr.loan_realize)),0) else 0 end) + coalesce(sum(bbn.bonus_amount),0) netPay
 from    farmer_agreement fa
             join    bank_branch bb on fa.bank_branch_id = bb.id
@@ -37,6 +38,11 @@ from    farmer_agreement fa
                              where pm.purchase_date between :fromDate and :toDate
                                and   flm.purchase_main_id is not null
                              group by pm.agreement_id)tlr on fa.id=tlr.agreement_id
+            left join (select  flr.farmer_agreement_id,
+                               sum(flm.loan_amount) totalLoan
+                       from    farmer_loan_main flm
+                                   join    farmer_loan_requests flr on flm.farmer_loan_request_id = flr.id
+                       group by flr.farmer_agreement_id) tl on fa.id=tl.farmer_agreement_id
 group   by bb.id, bb.branch_name, bb.routing_number, fa.bank_account_number,
            fa.farmer_reg_number, fa.farmer_name, fa.mobile_no
 order   by bb.id,fa.farmer_reg_number
