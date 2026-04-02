@@ -15,96 +15,15 @@ from    (select
              v.id varietyId,
              v.variety_name varietyName,
              count(bg.bale_id) clBale,
-             sum(bw.weight) - sum(bs.extra_sacks_weight) clQty,
+             sum(bg.bale_weight) - sum(bg.extra_deduction_weight+bg.sacks_weight) clQty,
              count(case when bcs.received_status NOT IN ('FRESH', 'REVISE_BALE') then bg.bale_id else null end) nonClBale,
-             coalesce(sum(case when bcs.received_status NOT IN ('FRESH', 'REVISE_BALE') then bw.weight else null end),0) -
-             coalesce(sum(case when bcs.received_status NOT IN ('FRESH', 'REVISE_BALE') then bs.extra_sacks_weight else null end),0) nonClQty
-             from    (select
-                      grade_id,
-                      add_date_time,
-                      grade_provider,
-                      bale_id
-                  from    (select
-                               grade_id,
-                               add_date_time,
-                               grade_provider,
-                               bale_id,
-                               RANK() OVER (PARTITION BY bale_id ORDER BY add_date_time DESC) desc_rank
-                           from (select
-                                     grade_id,
-                                     add_date_time,
-                                     bale_id,
-                                     grade_provider
-                                 from    bale_grade
-                                 where   grade_provider='CLASSIFIER'
-                                 union all
-                                 select
-                                     grade_id,
-                                     add_date_time,
-                                     bale_id,
-                                     grade_provider
-                                 from    reclassified_bale_grade)tb
-                          )fb
-                  where  desc_rank=1) bg
+             coalesce(sum(case when bcs.received_status NOT IN ('FRESH', 'REVISE_BALE') then bg.bale_weight else null end),0) -
+             coalesce(sum(case when bcs.received_status NOT IN ('FRESH', 'REVISE_BALE') then (bg.extra_deduction_weight+bg.sacks_weight) else null end),0) nonClQty
+             from    v_bale_classification_details bg
                      join    (select * from buying_center_stock where in_out_status IN ('IN', 'OUT_FOR_CLASSIFY')) bcs on bg.bale_id=bcs.bale_id
                      join    (select * from grade where grade_provider='CLASSIFIER' and season_id=:seasonId) g on bg.grade_id=g.id
                      join    (select distinct area_id, area_name from v_teritory_all) vta on g.area_id=vta.area_id
                      join    variety v on g.variety_id=v.id
-                     join    (select  add_date_time,
-                                      bale_id,
-                                      weight_recipient,
-                                      weight
-                              from    (select
-                                           add_date_time,
-                                           bale_id,
-                                           weight_recipient,
-                                           weight,
-                                           RANK() OVER (PARTITION BY bale_id ORDER BY add_date_time DESC) desc_rank
-                                       from    (select
-                                                    add_date_time,
-                                                    bale_id,
-                                                    weight_recipient,
-                                                    weight
-                                                from    bale_weight
-                                                where   weight_recipient='CLASSIFICATION_FIRST'
-                                                union all
-                                                select
-                                                    add_date_time,
-                                                    bale_id,
-                                                    weight_recipient,
-                                                    weight
-                                                from    reclassified_bale_weight) tw
-                                      )tw1
-                              where  desc_rank=1) bw on bg.bale_id=bw.bale_id
-                     join    (select  add_date_time,
-                                      bale_id,
-                                      sack_type_selector,
-                                      sacks_weight + coalesce(extra_weight,0) extra_sacks_weight
-                              from    (select
-                                           add_date_time,
-                                           bale_id,
-                                           sack_type_selector,
-                                           sacks_weight,
-                                           extra_weight,
-                                           RANK() OVER (PARTITION BY bale_id ORDER BY add_date_time DESC) desc_rank
-                                       from    (select
-                                                    add_date_time,
-                                                    bale_id,
-                                                    sack_type_selector,
-                                                    sacks_weight,
-                                                    extra_weight
-                                                from    bale_sacks
-                                                where   sack_type_selector='CLASSIFIER'
-                                                union all
-                                                select
-                                                    add_date_time,
-                                                    bale_id,
-                                                    sack_type_selector,
-                                                    sacks_weight,
-                                                    extra_weight
-                                                from    reclassified_bale_sacks) ts) ts1
-                              where  desc_rank=1
-             ) bs on bw.bale_id=bs.bale_id
          group by vta.area_id, vta.area_name, v.id, v.variety_name
          UNION ALL
          select
@@ -114,94 +33,13 @@ from    (select
              v.id varietyId,
              v.variety_name varietyName,
              count(fs.bale_id) clBale,
-             sum(bw.weight) - sum(bs.extra_sacks_weight) clQty,
+             sum(bg.bale_weight) - sum(bg.extra_deduction_weight+bg.sacks_weight) clQty,
              0 nonClBale,
              0 nonClQty
              from    factory f
                      join    (select  * from glt_stock where status='IN') fs on f.id = fs.factory_id
-                     join    (select
-                                   grade_id,
-                                   add_date_time,
-                                   grade_provider,
-                                   bale_id
-                               from    (select
-                                            grade_id,
-                                            add_date_time,
-                                            grade_provider,
-                                            bale_id,
-                                            RANK() OVER (PARTITION BY bale_id ORDER BY add_date_time DESC) desc_rank
-                                        from (select
-                                                  grade_id,
-                                                  add_date_time,
-                                                  bale_id,
-                                                  grade_provider
-                                              from    bale_grade
-                                              where   grade_provider='CLASSIFIER'
-                                              union all
-                                              select
-                                                  grade_id,
-                                                  add_date_time,
-                                                  bale_id,
-                                                  grade_provider
-                                              from    reclassified_bale_grade)tb
-                                       )fb
-                               where  desc_rank=1) bg on fs.bale_id=bg.bale_id
+                     join    v_bale_classification_details bg on fs.bale_id=bg.bale_id
                      join    (select * from grade where grade_provider='CLASSIFIER' and season_id=:seasonId) g on bg.grade_id=g.id
                      join    variety v on g.variety_id=v.id
-                     join    (select  add_date_time,
-                                      bale_id,
-                                      weight_recipient,
-                                      weight
-                              from    (select
-                                           add_date_time,
-                                           bale_id,
-                                           weight_recipient,
-                                           weight,
-                                           RANK() OVER (PARTITION BY bale_id ORDER BY add_date_time DESC) desc_rank
-                                       from    (select
-                                                    add_date_time,
-                                                    bale_id,
-                                                    weight_recipient,
-                                                    weight
-                                                from    bale_weight
-                                                where   weight_recipient='CLASSIFICATION_FIRST'
-                                                union all
-                                                select
-                                                    add_date_time,
-                                                    bale_id,
-                                                    weight_recipient,
-                                                    weight
-                                                from    reclassified_bale_weight) tw
-                                      )tw1
-                              where  desc_rank=1) bw on bg.bale_id=bw.bale_id
-                     join    (select  add_date_time,
-                                      bale_id,
-                                      sack_type_selector,
-                                      sacks_weight + coalesce(extra_weight,0) extra_sacks_weight
-                              from    (select
-                                           add_date_time,
-                                           bale_id,
-                                           sack_type_selector,
-                                           sacks_weight,
-                                           extra_weight,
-                                           RANK() OVER (PARTITION BY bale_id ORDER BY add_date_time DESC) desc_rank
-                                       from    (select
-                                                    add_date_time,
-                                                    bale_id,
-                                                    sack_type_selector,
-                                                    sacks_weight,
-                                                    extra_weight
-                                                from    bale_sacks
-                                                where   sack_type_selector='CLASSIFIER'
-                                                union all
-                                                select
-                                                    add_date_time,
-                                                    bale_id,
-                                                    sack_type_selector,
-                                                    sacks_weight,
-                                                    extra_weight
-                                                from    reclassified_bale_sacks) ts) ts1
-                              where  desc_rank=1) bs on bw.bale_id=bs.bale_id
          group by f.id, f.factory_name, v.id, v.variety_name) t
 order by sl,areaId,varietyId
-

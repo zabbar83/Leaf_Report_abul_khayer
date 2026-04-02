@@ -25,7 +25,7 @@ select
     coalesce(pd.actual_weight,0) as actualWeight,
     bs.sacks_weight as sacksWeight,
     coalesce(pd.weight,0) as buyingWeight,
-    coalesce(g.grade_rate,0) as gradeRate,
+    coalesce(bg.grade_rate,0) as gradeRate,
 
     pd.amount as amount,
     coalesce(bb.bonus_amount,0) as bonus,
@@ -45,9 +45,9 @@ from    farmer_agreement fa
             join    season s on fa.season_id = s.id
     and     s.id=:season
             and (case when :areaId is not null then fa.area_id = :areaId else true end)
-            and (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
-            and (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
-            and (case when :villageId is not null then fa.village_id = :villageId else true end)
+--             and (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
+--             and (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
+--             and (case when :villageId is not null then fa.village_id = :villageId else true end)
             join    purchase_main pm on fa.id = pm.agreement_id
             and     pm.purchase_date between :fromDate and :toDate
             join    purchase_details pd on pm.id = pd.purchase_main_id
@@ -60,10 +60,17 @@ from    farmer_agreement fa
             left    join (select bale_id,sacks_weight from bale_sacks where sack_type_selector ='BUYER') bs on b.id = bs.bale_id
             left    join bale_bonus bb on pd.bale_id=bb.bale_id
             left    join (select  add_date_time,bale_id,weight from bale_weight where weight_recipient='RE_WEIGHT') bw on pd.bale_id=bw.bale_id
-            left    join (select bale_id,sacks_weight,extra_weight from bale_sacks where sack_type_selector ='CLASSIFIER') bsc on bw.bale_id = bsc.bale_id
+            left    join (select *
+                          from (select bale_id,
+                                       sacks_weight,
+                                       extra_weight,
+                                       sack_type_selector,
+                                       RANK() OVER (PARTITION BY bale_id ORDER BY add_date_time DESC) desc_rank
+                                from bale_sacks) bss
+                          where desc_rank = 1) bsc on bw.bale_id = bsc.bale_id
             left    join (select * from bale_grade where grade_provider='CLASSIFIER') bgc on b.id = bgc.bale_id
             left    join (select * from grade where grade_provider='CLASSIFIER' and season_id=:season) gc on bgc.grade_id = gc.id
                     -- and fa.area_id=gc.area_id and fa.variety_id=gc.variety_id
             left    join users uc on bgc.added_by_user_id=user_id
             left    join emp_info eic on uc.user_id = eic.users_user_id
-order    by fa.area_id,fa.zone_id, fa.sub_area_id, fa.village_id
+order    by pm.purchase_date, fa.area_id,fa.zone_id, fa.sub_area_id, fa.village_id

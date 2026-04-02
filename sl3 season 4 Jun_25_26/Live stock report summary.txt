@@ -5,7 +5,7 @@ select
     d.depot_name depotName,
     g.id gradeId,
     g.grade_name internalGrade,
-    count(vbcd.bale_id) nosofBale,
+    CAST(COUNT(vbcd.bale_id) AS NUMERIC(18,2)) AS baleofNos,
     sum(vbcd.bale_weight) withSackExtWeight,
     sum(vbcd.sacks_weight + vbcd.extra_deduction_weight) tareWeight,
     sum(vbcd.bale_weight) - sum(vbcd.sacks_weight + vbcd.extra_deduction_weight) netWeight
@@ -13,7 +13,6 @@ from    (select * from grade where grade_provider='CLASSIFIER' and season_id=:se
                                and (case when :areaId is not null then area_id=:areaId else true end)) g
             join (select distinct area_id, area_name from v_teritory_all) v on g.area_id=v.area_id
             join    v_bale_classification_details vbcd on vbcd.grade_id=g.id
-    and     vbcd.bale_weight > 0
             join    (select * from buying_center_stock where in_out_status IN ('IN', 'OUT_FOR_CLASSIFY')) bcs on vbcd.bale_id=bcs.bale_id
             join    (select id,bale_code from bale) b on bcs.bale_id = b.id
             join    buying_center bc on bcs.buying_center_id=bc.id

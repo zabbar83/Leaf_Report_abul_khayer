@@ -33,7 +33,7 @@ from    (select
                         from    reclassified_bale_grade) as tb
                  ) as fb
          where  clg_rank = 1) as bg
-LEFT JOIN (select
+JOIN (select
                    ts1.*
            from    (select
                         ts.*,
@@ -58,7 +58,7 @@ LEFT JOIN (select
                              from    reclassified_bale_sacks) as ts) as ts1
            where  ts1.clsw_rank = 1) as bs
 on bg.bale_id = bs.bale_id
-LEFT JOIN (select
+JOIN (select
                     tw1.*
            from    (select
                         tw.*,
