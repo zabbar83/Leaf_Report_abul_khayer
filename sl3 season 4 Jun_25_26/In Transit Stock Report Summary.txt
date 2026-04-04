@@ -4,7 +4,7 @@ select
     bti.chalan_no as chalanNo,
     tv.trade_license_name as vendorName,
     t.vehicle_reg_no as vehicleRegNo,
-    bti.from_buying_center_id as shipmentFrom,
+    fbc.center_name as shipmentFrom,
     case when bti.to_buying_center_id is not null then tbc.center_name else tf.factory_name end as shipmentTo,
     v.id as varietyId,
     v.variety_name as varietyName,
@@ -41,5 +41,5 @@ from    bale_transfer_info bti
             left    join factory tf
                          on bti.factory_id = tf.id
 where   (case when :areaId is not null then d.area_id=:areaId else true end)
-group by bti.chalan_date, bti.chalan_no, tv.trade_license_name, t.vehicle_reg_no, tf.factory_name, bti.from_buying_center_id,bti.to_buying_center_id,tbc.center_name, v.id, v.variety_name, g.id, g.grade_name
+group by bti.chalan_date, bti.chalan_no, tv.trade_license_name, t.vehicle_reg_no, tf.factory_name, bti.from_buying_center_id,bti.to_buying_center_id,fbc.center_name, tbc.center_name, v.id, v.variety_name, g.id, g.grade_name
 order   by bti.chalan_date, v.id,g.id

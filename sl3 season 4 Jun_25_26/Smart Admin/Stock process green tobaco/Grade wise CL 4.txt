@@ -1,0 +1,14 @@
+select
+    g.id as id,
+    g.grade_name as name,
+    count(bg.bale_id) nosofBale,
+    sum(bg.bale_weight) - sum(bg.extra_deduction_weight + bg.sacks_weight) purchaseWeight
+from    v_bale_classification_details bg
+            join    (select * from buying_center_stock where in_out_status IN ('IN', 'OUT_FOR_CLASSIFY')) bcs on bg.bale_id=bcs.bale_id
+            join    buying_center bc on bcs.buying_center_id=bc.id
+    and     bc.id =:buyingCenterId
+            join    (select * from grade where grade_provider='CLASSIFIER' and season_id=:seasonId) g on bg.grade_id=g.id
+            join    variety v on g.variety_id=v.id
+    and     v.id =:varietyId
+group by g.id,g.grade_name
+order by g.id

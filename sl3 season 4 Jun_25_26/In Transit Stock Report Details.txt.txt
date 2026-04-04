@@ -4,7 +4,7 @@ select
     bti.chalan_no as chalanNo,
     tv.trade_license_name as vendorName,
     t.vehicle_reg_no as vehicleRegNo,
-    bti.from_buying_center_id as shipmentFrom,
+    fbc.center_name as shipmentFrom,
     case when bti.to_buying_center_id is not null then tbc.center_name else tf.factory_name end as shipmentTo,
     b.bale_code as baleCode,
     v.variety_name as varietyName,

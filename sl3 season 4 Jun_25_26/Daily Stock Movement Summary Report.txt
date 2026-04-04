@@ -1,19 +1,19 @@
 select
-        bt.chalan_date chalanDate,
-        bt.chalan_no shipmentNumber,
-        tv.vendor_id vendorId,
-        tv.trade_license_name vendorName,
-        t.id transportId,
-        coalesce(t.vehicle_name, 'N/A') vehicleName,
-        t.vehicle_reg_no truckNumber,
-       bt.from_buying_center_id shipmentFromId,
-       bt.center_name shipmentFromName,
-       coalesce(bt.to_buying_center_id, bt.factory_id) shipmentToid,
-       coalesce(f.factory_name,bc.center_name) shipmentToname,
-       count(bcs.bale_id) nosofBale,
-       sum(vbcd.bale_weight)  baleWeightWithSacks,
-       (sum(vbcd.sacks_weight) + sum(vbcd.extra_deduction_weight)) tareWeight,
-       sum(vbcd.bale_weight) - (sum(vbcd.sacks_weight) + sum(vbcd.extra_deduction_weight)) netWeight
+    bt.chalan_date chalanDate,
+    bt.chalan_no shipmentNumber,
+    tv.vendor_id vendorId,
+    tv.trade_license_name vendorName,
+    t.id transportId,
+    coalesce(t.vehicle_name, 'N/A') vehicleName,
+    t.vehicle_reg_no truckNumber,
+    bt.from_buying_center_id shipmentFromId,
+    bt.center_name shipmentFromName,
+    coalesce(bt.to_buying_center_id, bt.factory_id) shipmentToid,
+    coalesce(f.factory_name,bc.center_name) shipmentToname,
+    count(bcs.bale_id) nosofBale,
+    sum(vbcd.bale_weight)  baleWeightWithSacks,
+    (sum(vbcd.sacks_weight) + sum(vbcd.extra_deduction_weight)) tareWeight,
+    sum(vbcd.bale_weight) - (sum(vbcd.sacks_weight) + sum(vbcd.extra_deduction_weight)) netWeight
 
 from (select distinct bale_id from buying_center_stock where in_out_status in ('IN', 'OUT_TRANSFER')) bcs
          join (select btim.bale_id,
@@ -30,20 +30,19 @@ from (select distinct bale_id from buying_center_stock where in_out_status in ('
                       btim.bale_deliver_status
                from bale_transfer_info btif
                         join bale_transfer_item btim on btif.id = btim.transfer_id
-                    and btim.bale_deliver_status='BALE_RECEIVE'
                    and chalan_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
                    and (case when :shipmentId is not null then btif.chalan_no=:shipmentId else true end)
-               join buying_center bc on btif.from_buying_center_id = bc.id
+                        join buying_center bc on btif.from_buying_center_id = bc.id
                    and (case when :shipmentFrom is not null then bc.id=:shipmentFrom else true end)
                    and (
-                       (case
-                             when :shipmentTo is not null
-                                 then (btif.to_buying_center_id) = :shipmentTo
-                             else true end)
-                  or  (case
-                   when :shipmentTo is not null
-                   then (btif.factory_id) = :shipmentTo
-                   else true end) )
+                                                     (case
+                                                          when :shipmentTo is not null
+                                                              then (btif.to_buying_center_id) = :shipmentTo
+                                                          else true end)
+                                                         or  (case
+                                                                  when :shipmentTo is not null
+                                                                      then (btif.factory_id) = :shipmentTo
+                                                                  else true end) )
 ) bt on bcs.bale_id = bt.bale_id
          join transport t on bt.transport_id = t.id
     and (case when :truckId is not null then t.Id=:truckId else true end)
