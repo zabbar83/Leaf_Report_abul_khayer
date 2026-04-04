@@ -1,0 +1,43 @@
+-- In Transit Stock Report- Details
+select
+    bti.chalan_date as chalanDate,
+    bti.chalan_no as chalanNo,
+    tv.trade_license_name as vendorName,
+    t.vehicle_reg_no as vehicleRegNo,
+    bti.from_buying_center_id as shipmentFrom,
+    case when bti.to_buying_center_id is not null then tbc.center_name else tf.factory_name end as shipmentTo,
+    b.bale_code as baleCode,
+    v.variety_name as varietyName,
+    g.grade_name as internalGrade,
+    1 as noOfBale,
+    btit.actual_weight as weightWithSacks,
+    btit.actual_weight - btit.net_weight as tareWeight,
+    btit.net_weight as netWeight
+from    bale_transfer_info bti
+            join    bale_transfer_item btit
+                    on bti.id = btit.transfer_id
+                        and bti.chalan_date between :fromDate and :toDate
+                        and btit.bale_deliver_status = 'BALE_SEND'
+            join    bale b
+                    on btit.bale_id = b.id
+            join    v_bale_classification_details vbcd
+                    on b.id = vbcd.bale_id
+            join    grade g
+                    on vbcd.grade_id = g.id
+                        and g.season_id = :seasonId
+            join    variety v
+                    on g.variety_id = v.id
+            join    transport_vendor tv
+                    on bti.transport_vendor_id = tv.vendor_id
+            join    transport t
+                    on bti.transport_id = t.id
+            left    join buying_center fbc
+                         on bti.from_buying_center_id = fbc.id
+            left    join buying_center tbc
+                         on bti.to_buying_center_id = tbc.id
+            left    join depot d
+                         on tbc.depot_id = d.id
+            left    join factory tf
+                         on bti.factory_id = tf.id
+where   (case when :areaId is not null then d.area_id=:areaId else true end)
+order   by bti.chalan_date, v.id, g.id
