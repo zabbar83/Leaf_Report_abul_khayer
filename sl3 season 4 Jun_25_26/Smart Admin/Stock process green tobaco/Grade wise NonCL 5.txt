@@ -1,15 +1,17 @@
 select
-    buyg.id as id,
-    buyg.grade_name as name,
-    count(case when bcs.received_status NOT IN ('FRESH', 'REVISE_BALE') then bg.bale_id else null end) nosofBale,
+    gb.id as id,
+    gb.grade_name as name,
+    count(case when bcs.received_status NOT IN ('FRESH', 'REVISE_BALE') then bu.bale_id else null end) nosofBale,
     coalesce(sum(case when bcs.received_status NOT IN ('FRESH', 'REVISE_BALE') then bg.bale_weight else null end),0) -
     coalesce(sum(case when bcs.received_status NOT IN ('FRESH', 'REVISE_BALE') then (bg.extra_deduction_weight + bg.sacks_weight) else null end),0) purchaseWeight
 from    v_bale_classification_details bg
             join    (select * from buying_center_stock where in_out_status IN ('IN', 'OUT_FOR_CLASSIFY')) bcs on bg.bale_id=bcs.bale_id
             join    buying_center bc on bcs.buying_center_id=bc.id
     and     bc.id =:buyingCenterId
-            join    (select * from grade where grade_provider='BUYER' and season_id=:seasonId) buyg on bg.grade_id=buyg.id
-            join    variety v on buyg.variety_id=v.id
+            join    (select * from grade where grade_provider='CLASSIFIER' and season_id=:seasonId) g on bg.grade_id=g.id
+            join    (select * from bale_grade where grade_provider='BUYER') bu on bg.bale_id=bu.bale_id
+            join    (select * from grade where grade_provider='BUYER' and season_id=:seasonId) gb on bu.grade_id=gb.id
+            join    variety v on g.variety_id=v.id
     and     v.id =:varietyId
-group by buyg.id,buyg.grade_name
-order by buyg.id
+group by gb.id,gb.grade_name
+order by gb.id
