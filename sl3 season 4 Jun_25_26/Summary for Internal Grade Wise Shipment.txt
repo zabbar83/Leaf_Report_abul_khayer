@@ -1,0 +1,33 @@
+-----------------------------------------------
+-- 3. Summary for Internal Grade Wise Shipment
+-----------------------------------------------
+SELECT
+        s.id as seasonId,
+        s.fiscal_year as seasonName,
+        info.chalan_date AS shipmentDate,
+        v.id as varietyId,
+        v.variety_name AS varietyName,
+        g.id as gradeId,
+        g.grade_name AS gradeName,
+        fbc.id as shipmentFromId,
+        fbc.center_name AS shipmentFromName,
+        CASE WHEN info.factory_id IS NOT NULL THEN f.factory_name ELSE tbc.center_name END AS shipmentToName,
+        COUNT(vbale.bale_id) AS totalBale,
+        SUM(vbale.bale_weight) AS totalWeight,
+        sum (vbale.sacks_weight+extra_deduction_weight) tareWeight,
+        SUM(vbale.bale_weight) - SUM(vbale.sacks_weight + vbale.extra_deduction_weight) AS netWeight
+
+FROM bale_transfer_item item
+JOIN bale_transfer_info info ON item.transfer_id = info.id
+    and info.chalan_date::date BETWEEN :startDate::date AND :endDate::date
+JOIN v_bale_classification_details vbale ON vbale.bale_id = item.bale_id
+JOIN grade g ON vbale.grade_id = g.id and season_id = :seasonId
+JOIN season s on g.season_id = s.id
+JOIN variety v ON g.variety_id = v.id
+JOIN buying_center fbc ON info.from_buying_center_id = fbc.id
+left JOIN buying_center tbc ON info.to_buying_center_id = tbc.id
+left join depot d on tbc.depot_id = d.id
+left JOIN factory f ON info.factory_id = f.id
+WHERE (:areaId is null or d.area_id = :areaId)
+GROUP   BY s.id, s.fiscal_year, info.chalan_date, v.id, v.variety_name, g.id, g.grade_name, fbc.id, fbc.center_name, tbc.id, tbc.center_name, info.factory_id, f.factory_name
+order   by s.id, info.chalan_date, v.id, fbc.id, g.id;

@@ -1,0 +1,43 @@
+select
+        bti.chalan_date chalanDate,
+        to_char(bti.add_date, 'HH:MM:SS AM') addTime,
+        fbc.center_name fromBuying,
+        coalesce(tbc.center_name, tf.factory_name) toBuying,
+        t.vehicle_reg_no regNo,
+        t.driver_mobile_no mobileNo,
+        tv.trade_license_name as vendorName,
+        g.id gradeId,
+        g.grade_name internalGrade,
+        count(btit.bale_id) nosofBale,
+        sum(btit.actual_weight) grossWeight,
+        sum(btit.actual_weight) - sum(btit.net_weight) sackExtWeight,
+        sum(btit.net_weight) netWeight
+from    bale_transfer_info bti
+join    bale_transfer_item btit
+        on bti.id = btit.transfer_id
+and     bti.chalan_no=:chalanNo
+join    (select id,bale_code from bale) b on btit.bale_id=b.id
+join    bale_grade bg on btit.bale_id=bg.bale_id
+and     bg.grade_provider='CLASSIFIER'
+join    grade g on bg.grade_id = g.id
+and     bg.grade_provider='CLASSIFIER'
+and     g.season_id = (
+        SELECT CAST(attribute_value AS numeric)
+        FROM global_setting
+        WHERE attribute_name = 'REGISTRATION_SEASON'
+        )
+join    transport_vendor tv
+        on bti.transport_vendor_id = tv.vendor_id
+join    transport t
+        on bti.transport_id = t.id
+left    join buying_center fbc
+             on bti.from_buying_center_id = fbc.id
+left    join buying_center tbc
+             on bti.to_buying_center_id = tbc.id
+left    join depot d
+             on tbc.depot_id = d.id
+left    join factory tf
+             on bti.factory_id = tf.id
+group by bti.chalan_date, bti.add_date, fbc.center_name, tbc.center_name, tf.factory_name,
+         t.vehicle_reg_no, t.driver_mobile_no, tv.trade_license_name, g.id, g.grade_name
+order   by g.id

@@ -38,8 +38,8 @@ from    bale_transfer_info bti
                          on bti.to_buying_center_id = tbc.id
             left    join depot d
                          on tbc.depot_id = d.id
+	and (case when :areaId is not null then d.area_id=:areaId else true end)
             left    join factory tf
                          on bti.factory_id = tf.id
-where   (case when :areaId is not null then d.area_id=:areaId else true end)
 group by bti.chalan_date, bti.chalan_no, tv.trade_license_name, t.vehicle_reg_no, tf.factory_name, bti.from_buying_center_id,bti.to_buying_center_id,fbc.center_name, tbc.center_name, v.id, v.variety_name, g.id, g.grade_name
-order   by bti.chalan_date, v.id,g.id
+order   by bti.chalan_date, bti.chalan_no, g.id
