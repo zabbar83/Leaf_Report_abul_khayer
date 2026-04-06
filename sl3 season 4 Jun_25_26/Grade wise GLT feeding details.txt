@@ -1,0 +1,60 @@
+select
+        g.id gradeId,
+        g.grade_name internalGrade,
+        count(case when gfd.add_date ::time BETWEEN TIME '06:31:00.000000' AND TIME '07:30:59.999999' then gfd.bale_id else null end) nosofBale631730,
+        count(case when gfd.add_date ::time BETWEEN TIME '07:31:00.000000' AND TIME '08:30:59.999999' then gfd.bale_id else null end) nosofBale731830,
+        count(case when gfd.add_date ::time BETWEEN TIME '08:31:00.000000' AND TIME '09:30:59.999999' then gfd.bale_id else null end) nosofBale831930,
+        count(case when gfd.add_date ::time BETWEEN TIME '09:31:00.000000' AND TIME '10:30:59.999999' then gfd.bale_id else null end) nosofBale9311030,
+        count(case when gfd.add_date ::time BETWEEN TIME '10:31:00.000000' AND TIME '11:30:59.999999' then gfd.bale_id else null end) nosofBale10311130,
+        count(case when gfd.add_date ::time BETWEEN TIME '11:31:00.000000' AND TIME '12:30:59.999999' then gfd.bale_id else null end) nosofBale11311230,
+        count(case when gfd.add_date ::time BETWEEN TIME '12:31:00.000000' AND TIME '13:30:59.999999' then gfd.bale_id else null end) nosofBale12311330,
+        count(case when gfd.add_date ::time BETWEEN TIME '13:31:00.000000' AND TIME '14:30:59.999999' then gfd.bale_id else null end) nosofBale13311430,
+        count(case when gfd.add_date ::time BETWEEN TIME '14:31:00.000000' AND TIME '15:30:59.999999' then gfd.bale_id else null end) nosofBale14311530,
+        count(case when gfd.add_date ::time BETWEEN TIME '15:31:00.000000' AND TIME '16:30:59.999999' then gfd.bale_id else null end) nosofBale1511630,
+        count(case when gfd.add_date ::time BETWEEN TIME '16:31:00.000000' AND TIME '17:30:59.999999' then gfd.bale_id else null end) nosofBale16311730,
+        count(case when gfd.add_date ::time BETWEEN TIME '17:31:00.000000' AND TIME '18:30:59.999999' then gfd.bale_id else null end) nosofBale17311830,
+        count(case when gfd.add_date ::time BETWEEN TIME '18:31:00.000000' AND TIME '19:30:59.999999' then gfd.bale_id else null end) nosofBale18311930,
+        count(case when gfd.add_date ::time BETWEEN TIME '19:31:00.000000' AND TIME '20:30:59.999999' then gfd.bale_id else null end) nosofBale19312030,
+        count(case when gfd.add_date ::time BETWEEN TIME '20:31:00.000000' AND TIME '21:30:59.999999' then gfd.bale_id else null end) nosofBale20312130,
+        count(case when gfd.add_date ::time BETWEEN TIME '21:31:00.000000' AND TIME '22:30:59.999999' then gfd.bale_id else null end) nosofBale21312230,
+        count(case when gfd.add_date ::time BETWEEN TIME '22:31:00.000000' AND TIME '23:30:59.999999' then gfd.bale_id else null end) nosofBale22312330,
+        count(case when gfd.add_date ::time BETWEEN TIME '23:31:00.000000' AND TIME '00:30:59.999999' then gfd.bale_id else null end) nosofBale23310030,
+        count(case when gfd.add_date ::time BETWEEN TIME '00:31:00.000000' AND TIME '01:30:59.999999' then gfd.bale_id else null end) nosofBale0031130,
+        count(case when gfd.add_date ::time BETWEEN TIME '01:31:00.000000' AND TIME '02:30:59.999999' then gfd.bale_id else null end) nosofBale0131230,
+        count(case when gfd.add_date ::time BETWEEN TIME '02:31:00.000000' AND TIME '03:30:59.999999' then gfd.bale_id else null end) nosofBale0231330,
+        count(case when gfd.add_date ::time BETWEEN TIME '03:31:00.000000' AND TIME '04:30:59.999999' then gfd.bale_id else null end) nosofBale0331430,
+        count(case when gfd.add_date ::time BETWEEN TIME '04:31:00.000000' AND TIME '05:30:59.999999' then gfd.bale_id else null end) nosofBale0431530,
+        count(case when gfd.add_date ::time BETWEEN TIME '05:31:00.000000' AND TIME '06:30:59.999999' then gfd.bale_id else null end) nosofBale0531630,
+
+        sum(case when gfd.add_date ::time BETWEEN TIME '06:31:00.000000' AND TIME '07:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight631730,
+        sum(case when gfd.add_date ::time BETWEEN TIME '07:31:00.000000' AND TIME '08:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight731830,
+        sum(case when gfd.add_date ::time BETWEEN TIME '08:31:00.000000' AND TIME '09:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight831930,
+        sum(case when gfd.add_date ::time BETWEEN TIME '09:31:00.000000' AND TIME '10:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight9311030,
+        sum(case when gfd.add_date ::time BETWEEN TIME '10:31:00.000000' AND TIME '11:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight10311130,
+        sum(case when gfd.add_date ::time BETWEEN TIME '11:31:00.000000' AND TIME '12:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight11311230,
+        sum(case when gfd.add_date ::time BETWEEN TIME '12:31:00.000000' AND TIME '13:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight12311330,
+        sum(case when gfd.add_date ::time BETWEEN TIME '13:31:00.000000' AND TIME '14:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight13311430,
+        sum(case when gfd.add_date ::time BETWEEN TIME '14:31:00.000000' AND TIME '15:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight14311530,
+        sum(case when gfd.add_date ::time BETWEEN TIME '15:31:00.000000' AND TIME '16:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight1511630,
+        sum(case when gfd.add_date ::time BETWEEN TIME '16:31:00.000000' AND TIME '17:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight16311730,
+        sum(case when gfd.add_date ::time BETWEEN TIME '17:31:00.000000' AND TIME '18:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight17311830,
+        sum(case when gfd.add_date ::time BETWEEN TIME '18:31:00.000000' AND TIME '19:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight18311930,
+        sum(case when gfd.add_date ::time BETWEEN TIME '19:31:00.000000' AND TIME '20:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight19312030,
+        sum(case when gfd.add_date ::time BETWEEN TIME '20:31:00.000000' AND TIME '21:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight20312130,
+        sum(case when gfd.add_date ::time BETWEEN TIME '21:31:00.000000' AND TIME '22:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight21312230,
+        sum(case when gfd.add_date ::time BETWEEN TIME '22:31:00.000000' AND TIME '23:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight22312330,
+        sum(case when gfd.add_date ::time BETWEEN TIME '23:31:00.000000' AND TIME '00:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight23310030,
+        sum(case when gfd.add_date ::time BETWEEN TIME '00:31:00.000000' AND TIME '01:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight0031130,
+        sum(case when gfd.add_date ::time BETWEEN TIME '01:31:00.000000' AND TIME '02:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight0131230,
+        sum(case when gfd.add_date ::time BETWEEN TIME '02:31:00.000000' AND TIME '03:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight0231330,
+        sum(case when gfd.add_date ::time BETWEEN TIME '03:31:00.000000' AND TIME '04:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight0331430,
+        sum(case when gfd.add_date ::time BETWEEN TIME '04:31:00.000000' AND TIME '05:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight0431530,
+        sum(case when gfd.add_date ::time BETWEEN TIME '05:31:00.000000' AND TIME '06:30:59.999999' then gfd.gross_weight - gfd.trolly_weight else 0 end) weight0531630
+from    grade g
+join    bale_grade bg on g.id = bg.grade_id
+and     g.grade_provider='CLASSIFIER'
+and     bg.grade_provider='CLASSIFIER'
+join    glt_feeding_details gfd on bg.bale_id=gfd.bale_id
+and     gfd.add_date between ((:fromDate ::text || ' 06:31:00.000000') :: timestamp) and ((:toDate :text || ' 06:30:59.999999') :: timestamp)
+group   by g.id,g.grade_name
+order  by g.id
