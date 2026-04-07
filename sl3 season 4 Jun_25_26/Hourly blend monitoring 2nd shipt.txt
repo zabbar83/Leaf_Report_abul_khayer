@@ -1,0 +1,444 @@
+select gradeId,
+       internalGrade,
+
+       CAST(sv.nosofBale631730   AS NUMERIC) as nosofBale631730,
+       sv.weight631730      as weight631730,
+       tw.tweight631730     as tweight631730,
+
+       CAST(sv.nosofBale731830   AS NUMERIC) as nosofBale731830,
+       sv.weight731830      as weight731830,
+       tw.tweight731830     as tweight731830,
+
+       CAST(sv.nosofBale831930   AS NUMERIC) as nosofBale831930,
+       sv.weight831930      as weight831930,
+       tw.tweight831930     as tweight831930,
+
+       CAST(sv.nosofBale9311030  AS NUMERIC) as nosofBale9311030,
+       sv.weight9311030     as weight9311030,
+       tw.tweight9311030    as tweight9311030,
+
+       CAST(sv.nosofBale10311130 AS NUMERIC) as nosofBale10311130,
+       sv.weight10311130    as weight10311130,
+       tw.tweight10311130   as tweight10311130,
+
+       CAST(sv.nosofBale11311230 AS NUMERIC) as nosofBale11311230,
+       sv.weight11311230    as weight11311230,
+       tw.tweight11311230   as tweight11311230,
+
+       CAST(sv.nosofBale12311330 AS NUMERIC) as nosofBale12311330,
+       sv.weight12311330    as weight12311330,
+       tw.tweight12311330   as tweight12311330,
+
+       CAST(sv.nosofBale13311430 AS NUMERIC) as nosofBale13311430,
+       sv.weight13311430    as weight13311430,
+       tw.tweight13311430   as tweight13311430,
+
+       CAST(sv.nosofBale14311530 AS NUMERIC) as nosofBale14311530,
+       sv.weight14311530    as weight14311530,
+       tw.tweight14311530   as tweight14311530,
+
+       CAST(sv.nosofBale1511630  AS NUMERIC) as nosofBale1511630,
+       sv.weight1511630     as weight1511630,
+       tw.tweight1511630    as tweight1511630,
+
+       CAST(sv.nosofBale16311730 AS NUMERIC) as nosofBale16311730,
+       sv.weight16311730    as weight16311730,
+       tw.tweight16311730   as tweight16311730,
+
+       CAST(sv.nosofBale17311830 AS NUMERIC) as nosofBale17311830,
+       sv.weight17311830    as weight17311830,
+       tw.tweight17311830   as tweight17311830,
+
+       CAST(sv.nosofBale18311930 AS NUMERIC) as nosofBale18311930,
+       sv.weight18311930    as weight18311930,
+       tw.tweight18311930   as tweight18311930,
+
+       CAST(sv.nosofBale19312030 AS NUMERIC) as nosofBale19312030,
+       sv.weight19312030    as weight19312030,
+       tw.tweight19312030   as tweight19312030,
+
+       CAST(sv.nosofBale20312130 AS NUMERIC) as nosofBale20312130,
+       sv.weight20312130    as weight20312130,
+       tw.tweight20312130   as tweight20312130,
+
+       CAST(sv.nosofBale21312230 AS NUMERIC) as nosofBale21312230,
+       sv.weight21312230    as weight21312230,
+       tw.tweight21312230   as tweight21312230,
+
+       CAST(sv.nosofBale22312330 AS NUMERIC) as nosofBale22312330,
+       sv.weight22312330    as weight22312330,
+       tw.tweight22312330   as tweight22312330,
+
+       CAST(sv.nosofBale23310030 AS NUMERIC) as nosofBale23310030,
+       sv.weight23310030    as weight23310030,
+       tw.tweight23310030   as tweight23310030,
+
+       CAST(sv.nosofBale0031130  AS NUMERIC) as nosofBale0031130,
+       sv.weight0031130     as weight0031130,
+       tw.tweight0031130    as tweight0031130,
+
+       CAST(sv.nosofBale0131230  AS NUMERIC) as nosofBale0131230,
+       sv.weight0131230     as weight0131230,
+       tw.tweight0131230    as tweight0131230,
+
+       CAST(sv.nosofBale0231330  AS NUMERIC) as nosofBale0231330,
+       sv.weight0231330     as weight0231330,
+       tw.tweight0231330    as tweight0231330,
+
+       CAST(sv.nosofBale0331430  AS NUMERIC) as nosofBale0331430,
+       sv.weight0331430     as weight0331430,
+       tw.tweight0331430    as tweight0331430,
+
+       CAST(sv.nosofBale0431530  AS NUMERIC) as nosofBale0431530,
+       sv.weight0431530     as weight0431530,
+       tw.tweight0431530    as tweight0431530,
+
+       CAST(sv.nosofBale0531630  AS NUMERIC) as nosofBale0531630,
+       sv.weight0531630     as weight0531630,
+       tw.tweight0531630    as tweight0531630
+
+from (select g.id                                gradeId,
+             g.grade_name                        internalGrade,
+
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '06:31:00' AND TIME '07:30:59.999999'
+                           then gfd.bale_id end) nosofBale631730,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '07:31:00' AND TIME '08:30:59.999999'
+                           then gfd.bale_id end) nosofBale731830,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '08:31:00' AND TIME '09:30:59.999999'
+                           then gfd.bale_id end) nosofBale831930,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '09:31:00' AND TIME '10:30:59.999999'
+                           then gfd.bale_id end) nosofBale9311030,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '10:31:00' AND TIME '11:30:59.999999'
+                           then gfd.bale_id end) nosofBale10311130,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '11:31:00' AND TIME '12:30:59.999999'
+                           then gfd.bale_id end) nosofBale11311230,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '12:31:00' AND TIME '13:30:59.999999'
+                           then gfd.bale_id end) nosofBale12311330,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '13:31:00' AND TIME '14:30:59.999999'
+                           then gfd.bale_id end) nosofBale13311430,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '14:31:00' AND TIME '15:30:59.999999'
+                           then gfd.bale_id end) nosofBale14311530,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '15:31:00' AND TIME '16:30:59.999999'
+                           then gfd.bale_id end) nosofBale1511630,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '16:31:00' AND TIME '17:30:59.999999'
+                           then gfd.bale_id end) nosofBale16311730,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '17:31:00' AND TIME '18:30:59.999999'
+                           then gfd.bale_id end) nosofBale17311830,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '18:31:00' AND TIME '19:30:59.999999'
+                           then gfd.bale_id end) nosofBale18311930,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '19:31:00' AND TIME '20:30:59.999999'
+                           then gfd.bale_id end) nosofBale19312030,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '20:31:00' AND TIME '21:30:59.999999'
+                           then gfd.bale_id end) nosofBale20312130,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '21:31:00' AND TIME '22:30:59.999999'
+                           then gfd.bale_id end) nosofBale21312230,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '22:31:00' AND TIME '23:30:59.999999'
+                           then gfd.bale_id end) nosofBale22312330,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '23:31:00' AND TIME '00:30:59.999999'
+                           then gfd.bale_id end) nosofBale23310030,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '00:31:00' AND TIME '01:30:59.999999'
+                           then gfd.bale_id end) nosofBale0031130,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '01:31:00' AND TIME '02:30:59.999999'
+                           then gfd.bale_id end) nosofBale0131230,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '02:31:00' AND TIME '03:30:59.999999'
+                           then gfd.bale_id end) nosofBale0231330,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '03:31:00' AND TIME '04:30:59.999999'
+                           then gfd.bale_id end) nosofBale0331430,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '04:31:00' AND TIME '05:30:59.999999'
+                           then gfd.bale_id end) nosofBale0431530,
+             count(case
+                       when CAST(gfd.add_date AS time) BETWEEN TIME '05:31:00' AND TIME '06:30:59.999999'
+                           then gfd.bale_id end) nosofBale0531630,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '06:31:00' AND TIME '07:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight631730,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '07:31:00' AND TIME '08:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight731830,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '08:31:00' AND TIME '09:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight831930,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '09:31:00' AND TIME '10:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight9311030,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '10:31:00' AND TIME '11:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight10311130,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '11:31:00' AND TIME '12:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight11311230,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '12:31:00' AND TIME '13:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight12311330,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '13:31:00' AND TIME '14:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight13311430,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '14:31:00' AND TIME '15:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight14311530,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '15:31:00' AND TIME '16:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight1511630,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '16:31:00' AND TIME '17:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight16311730,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '17:31:00' AND TIME '18:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight17311830,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '18:31:00' AND TIME '19:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight18311930,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '19:31:00' AND TIME '20:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight19312030,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '20:31:00' AND TIME '21:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight20312130,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '21:31:00' AND TIME '22:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight21312230,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '22:31:00' AND TIME '23:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight22312330,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '23:31:00' AND TIME '00:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight23310030,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '00:31:00' AND TIME '01:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight0031130,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '01:31:00' AND TIME '02:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight0131230,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '02:31:00' AND TIME '03:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight0231330,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '03:31:00' AND TIME '04:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight0331430,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '04:31:00' AND TIME '05:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight0431530,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '05:31:00' AND TIME '06:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end)                 weight0531630
+
+      from grade g
+               join bale_grade bg
+                    on g.id = bg.grade_id
+                        and g.grade_provider = 'CLASSIFIER'
+                        and bg.grade_provider = 'CLASSIFIER'
+
+               join glt_feeding_details gfd
+                    on bg.bale_id = gfd.bale_id
+                        and gfd.add_date between
+                           CAST(CAST(:fromDate  AS text) || ' 06:31:00.000000' AS timestamp)
+                           and
+                           CAST(CAST(:toDate  AS text) || ' 06:30:59.999999' AS timestamp)
+
+      group by g.id, g.grade_name) sv
+
+         cross join
+     (select sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '06:31:00' AND TIME '07:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight631730,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '07:31:00' AND TIME '08:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight731830,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '08:31:00' AND TIME '09:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight831930,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '09:31:00' AND TIME '10:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight9311030,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '10:31:00' AND TIME '11:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight10311130,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '11:31:00' AND TIME '12:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight11311230,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '12:31:00' AND TIME '13:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight12311330,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '13:31:00' AND TIME '14:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight13311430,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '14:31:00' AND TIME '15:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight14311530,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '15:31:00' AND TIME '16:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight1511630,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '16:31:00' AND TIME '17:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight16311730,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '17:31:00' AND TIME '18:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight17311830,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '18:31:00' AND TIME '19:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight18311930,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '19:31:00' AND TIME '20:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight19312030,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '20:31:00' AND TIME '21:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight20312130,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '21:31:00' AND TIME '22:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight21312230,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '22:31:00' AND TIME '23:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight22312330,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '23:31:00' AND TIME '00:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight23310030,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '00:31:00' AND TIME '01:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight0031130,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '01:31:00' AND TIME '02:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight0131230,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '02:31:00' AND TIME '03:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight0231330,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '03:31:00' AND TIME '04:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight0331430,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '04:31:00' AND TIME '05:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight0431530,
+
+             sum(case
+                     when CAST(gfd.add_date AS time) BETWEEN TIME '05:31:00' AND TIME '06:30:59.999999'
+                         then gfd.gross_weight - gfd.trolly_weight
+                     else 0 end) tweight0531630
+
+      from grade g
+               join bale_grade bg
+                    on g.id = bg.grade_id
+                        and g.grade_provider = 'CLASSIFIER'
+                        and bg.grade_provider = 'CLASSIFIER'
+
+               join glt_feeding_details gfd
+                    on bg.bale_id = gfd.bale_id
+                        and gfd.add_date between
+                           CAST(CAST(:fromDate  AS text) || ' 18:31:00.000000' AS timestamp)
+                           and
+                           CAST(CAST(:toDate  AS text) || ' 06:30:59.999999' AS timestamp)) tw
+order by sv.gradeId

@@ -1,0 +1,24 @@
+select  gradeId,
+        internalGrade,
+
+        CAST(sv.nosofBale   AS NUMERIC) as nosofBale,
+        weight,
+        sum(weight) OVER (PARTITION BY sl) totalWeight
+from    (select
+                1 sl,
+                g.id                                gradeId,
+                g.grade_name                        internalGrade,
+                count(gfd.bale_id)   nosofBale,
+                sum(gfd.gross_weight - gfd.trolly_weight) weight
+from grade g
+         join bale_grade bg
+              on g.id = bg.grade_id
+                  and g.grade_provider = 'CLASSIFIER'
+                  and bg.grade_provider = 'CLASSIFIER'
+
+         join glt_feeding_details gfd
+              on bg.bale_id = gfd.bale_id
+                  and gfd.add_date between '2026-03-04 11:31:00.000000'  and '2026-03-04 12:30:59.999999' 
+group by g.id, g.grade_name
+    )sv
+order by gradeId

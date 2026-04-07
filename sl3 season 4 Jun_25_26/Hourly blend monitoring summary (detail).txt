@@ -1,0 +1,23 @@
+--- Hourly blend monitoring summary (detail)
+select                b.id baleId,
+                      b.bale_code baleCode,
+                      g.id         gradeId,
+                      g.grade_name gradeName,
+                      gfd.gross_weight - gfd.trolly_weight feddingIssueWeight,
+                      vbcd.bale_weight - (vbcd.sacks_weight+vbcd.extra_deduction_weight) clWeight,
+                      (gfd.gross_weight - gfd.trolly_weight) -
+                        (vbcd.bale_weight - (vbcd.sacks_weight+vbcd.extra_deduction_weight)) lossGain,
+                      pm.purchase_date purchaseDate
+from           grade g
+               join bale_grade bg
+                    on g.id = bg.grade_id
+                        and g.grade_provider = 'CLASSIFIER'
+                        and bg.grade_provider = 'CLASSIFIER'
+               join v_bale_classification_details vbcd on bg.bale_id = vbcd.bale_id
+               join glt_feeding_details gfd
+                    on bg.bale_id = gfd.bale_id
+                        and gfd.add_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+               join bale b on bg.bale_id = b.id
+               left join purchase_details pd on b.id = pd.bale_id
+               left join purchase_main pm on pd.purchase_main_id = pm.id
+order by    b.id, g.id
