@@ -1,0 +1,38 @@
+select abc.area_id,
+       abc.area_name,
+       abc.center_id,
+       abc.center_name,
+       count(distinct btif.transport_id) sendTruckBale,
+       count(distinct case when bti.bale_deliver_status = 'BALE_RECEIVE' then btif.transport_id else null end) recTruckBale,
+       count(distinct btif.transport_id) -
+       count(distinct case when bti.bale_deliver_status = 'BALE_RECEIVE' then btif.transport_id else null end) intransitTruck,
+
+       count(bti.bale_id) as challanQtyBale,
+       count(case when bti.bale_deliver_status = 'BALE_SEND' then bti.bale_id else null end) as scanePendingBale
+from bale_transfer_info btif
+         join bale_transfer_item bti on bti.transfer_id = btif.id
+         join(select * from bale_grade where grade_provider = 'CLASSIFIER') bg on bti.bale_id = bg.bale_id
+         join (select * from grade where grade_provider = 'CLASSIFIER' and season_id=:seasonId
+                   and variety_id in (:varietyId)) g on bg.grade_id = g.id
+         join (select vta.area_id,
+                      vta.area_name,
+                      bc.id   center_id,
+                      bc.center_name,
+                      d.id as depot_id,
+                      d.depot_name
+               from buying_center bc
+                        join depot d on bc.depot_id = d.id
+         and (:areaId is null or d.area_id=:areaId)
+                        join (select distinct area_id, area_name from v_teritory_all) vta
+                             on d.area_id = vta.area_id) abc on btif.from_buying_center_id = abc.center_id
+group by abc.area_id, abc.area_name, abc.center_id, abc.center_name;
+
+
+-- validation
+select distinct transport_id from bale_transfer_info where add_date::date between '2026-01-01' and '2026-04-09';
+
+select * from bale_transfer_item bti
+         join bale_grade bg on bti.bale_id = bg.bale_id
+         and transfer_id in (select id from bale_transfer_info where add_date::date between '2026-01-01' and '2026-04-09')
+         and bg.grade_provider = 'CLASSIFIER'
+         join grade g on bg.grade_id = g.id and variety_id = 1 and season_id = 4 and g.grade_provider = 'CLASSIFIER' and area_id = 3
