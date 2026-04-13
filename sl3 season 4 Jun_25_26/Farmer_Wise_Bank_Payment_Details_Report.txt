@@ -24,6 +24,7 @@ select
 from    farmer_agreement fa
             join    bank_branch bb on fa.bank_branch_id = bb.id
             join    season s on fa.season_id=s.id
+	and     (case when :areaId is not null then fa.area_id=:areaId else true end)
     and     s.id=:seasonId
     and     bb.bank_id=:bankId
             join    purchase_main pm on fa.id=pm.agreement_id
