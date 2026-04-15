@@ -1,0 +1,80 @@
+WITH time_slots AS (
+    SELECT generate_series(0, 11) AS slot_no
+),
+
+     base AS (
+         SELECT
+             add_date,
+             gross_weight,
+             trolly_weight,
+             CASE
+                 WHEN CAST(add_date AS time) >= TIME '06:31:00'
+                     THEN CAST(add_date AS date)
+                 ELSE CAST(add_date AS date) - INTERVAL '1 day'
+                 END AS business_date
+         FROM glt_feeding_details
+         WHERE add_date BETWEEN
+                   CAST(:fromDate || ' 06:31:00' AS TIMESTAMP)
+                   AND
+                   CAST(:toDate || ' 06:30:59.999999' AS TIMESTAMP)
+     ),
+
+     report_date AS (
+         SELECT MIN(business_date) AS rpt_date FROM base
+     ),
+
+     slot_calc AS (
+         SELECT
+             FLOOR(
+                     EXTRACT(EPOCH FROM (add_date - (business_date + TIME '06:31:00')))
+                         / 3600
+             ) AS slot_no,
+             gross_weight,
+             trolly_weight
+         FROM base
+     ),
+
+     agg AS (
+         SELECT
+             slot_no,
+             SUM(gross_weight) - SUM(trolly_weight) AS issueKg
+         FROM slot_calc
+         GROUP BY slot_no
+     )
+
+SELECT
+    -- ✅ AM (always same date)
+    TO_CHAR(r.rpt_date, 'YYYY-MM-DD') || ' ' ||
+    TO_CHAR(TIME '06:31' + (ts.slot_no * INTERVAL '1 hour'), 'HH12:MI am')
+        || '-' ||
+    TO_CHAR(TIME '07:30' + (ts.slot_no * INTERVAL '1 hour'), 'HH12:MI am')
+                           AS whiteTime,
+
+    COALESCE(a.issueKg, 0) AS whiteIssueKg,
+
+    -- ✅ PM with DATE FIX
+    TO_CHAR(
+            CASE
+                WHEN ts.slot_no + 12 < 18
+                    THEN r.rpt_date                     -- 06:31 PM → 11:30 PM
+                ELSE r.rpt_date + INTERVAL '1 day'     -- 11:31 PM → 06:30 AM
+                END,
+            'YYYY-MM-DD'
+    ) || ' ' ||
+    TO_CHAR(TIME '06:31' + ((ts.slot_no + 12) * INTERVAL '1 hour'), 'HH12:MI am')
+        || '-' ||
+    TO_CHAR(TIME '07:30' + ((ts.slot_no + 12) * INTERVAL '1 hour'), 'HH12:MI am')
+                           AS greenTime,
+
+    COALESCE(p.issueKg, 0) AS greenIssueKg
+
+FROM time_slots ts
+         CROSS JOIN report_date r
+
+         LEFT JOIN agg a
+                   ON ts.slot_no = a.slot_no
+
+         LEFT JOIN agg p
+                   ON ts.slot_no + 12 = p.slot_no
+
+ORDER BY ts.slot_no
