@@ -152,7 +152,7 @@ from (select g.id                                gradeId,
                        when CAST(gfd.add_date AS time) BETWEEN TIME '22:31:00' AND TIME '23:30:59.999999'
                            then gfd.bale_id end) nosofBale22312330,
              count(case
-                       when CAST(gfd.add_date AS time) BETWEEN TIME '23:31:00' AND TIME '00:30:59.999999'
+                       when CAST(gfd.add_date AS time) >= TIME '23:31:00' or CAST(gfd.add_date AS time) <= TIME '00:30:59.999999'
                            then gfd.bale_id end) nosofBale23310030,
              count(case
                        when CAST(gfd.add_date AS time) BETWEEN TIME '00:31:00' AND TIME '01:30:59.999999'
@@ -259,7 +259,7 @@ from (select g.id                                gradeId,
                      else 0 end)                 weight22312330,
 
              sum(case
-                     when CAST(gfd.add_date AS time) BETWEEN TIME '23:31:00' AND TIME '00:30:59.999999'
+                     when CAST(gfd.add_date AS time) >= TIME '23:31:00' or CAST(gfd.add_date AS time) <= TIME '00:30:59.999999'
                          then gfd.gross_weight - gfd.trolly_weight
                      else 0 end)                 weight23310030,
 
@@ -395,7 +395,7 @@ from (select g.id                                gradeId,
                      else 0 end) tweight22312330,
 
              sum(case
-                     when CAST(gfd.add_date AS time) BETWEEN TIME '23:31:00' AND TIME '00:30:59.999999'
+                     when CAST(gfd.add_date AS time) >= TIME '23:31:00' or CAST(gfd.add_date AS time) <= TIME '00:30:59.999999'
                          then gfd.gross_weight - gfd.trolly_weight
                      else 0 end) tweight23310030,
 

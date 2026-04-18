@@ -1,0 +1,41 @@
+--Challan wise truck received report at GLT
+select
+        btit.min_delivery_date as receivedDate,
+        bti.id as chalanId,
+        bti.chalan_no as challanNo,
+        bti.from_buying_center_id as fromId,
+        fbc.center_name as fromName,
+        bti.factory_id as toId,
+        f.factory_name as toName,
+        t.vehicle_reg_no as truckNo,
+        count(btit.bale_id) as challanBaleQty,
+        count(case when btit.bale_deliver_status = 'BALE_RECEIVE' then btit.bale_id else null end) as receivedBaleQty,
+        count(case when btit.bale_deliver_status = 'BALE_SEND' then btit.bale_id else null end) as notReceivedBaleQty,
+        count(gfd.bale_id) as issuedToFeedingTable,
+        count(case when gfd.bale_id is null then 0 else null end) as stillInGLT
+from    bale_transfer_info as bti
+join    (
+        select
+                *
+        from    (
+                select
+                        *,
+                        cast(min(delivery_date_time) over (partition by transfer_id) as date) as min_delivery_date
+                from    bale_transfer_item
+                ) as btit1
+        where   btit1.min_delivery_date between (select ed from glt_season where id = :gltSeasonId) and (select td from glt_season where id = :gltSeasonId)
+        and     btit1.min_delivery_date = :receiveDate
+        ) as btit
+        on bti.id = btit.transfer_id
+join    buying_center as fbc
+        on bti.from_buying_center_id = fbc.id
+join    factory as f
+        on bti.factory_id = f.id
+        and f.id =  :facotryIdTo
+join    transport as t
+        on bti.transport_id = t.id
+left    join glt_feeding_details as gfd
+        on btit.bale_id = gfd.bale_id
+group   by btit.min_delivery_date, bti.id, bti.from_buying_center_id, fbc.center_name, bti.factory_id, f.factory_name, bti.chalan_no, t.id, t.vehicle_reg_no
+order   by bti.from_buying_center_id, bti.factory_id, bti.id, t.id
+ ;

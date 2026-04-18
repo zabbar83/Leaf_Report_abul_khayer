@@ -1,54 +1,36 @@
+-- external buyingCenterWise last update
 select
-    v.id as varietyId,
-    v.variety_name as varietyName,
-    g.id,
-    g.grade_name gradeName,
-    count(pd.bale_id) nosofBale,
-    coalesce(sum(pd.weight),0) weight,
-    coalesce(max(v.total_weight),0) totalWeight,
-    coalesce(sum(pd.amount),0) amount,
-    coalesce(sum(bb.bonus_amount),0) bonus,
-    coalesce(sum(pd.amount),0) + coalesce(sum(bb.bonus_amount),0) totalAmount,
-    case when coalesce(max(v.total_weight),0) > 0
-             then (coalesce(sum(pd.weight),0) / coalesce(max(v.total_weight),0)) * 100
-         else 0 end contribution,
-    case when coalesce(sum(pd.weight),0) > 0
-             then (coalesce(sum(pd.amount),0) + coalesce(sum(bb.bonus_amount),0)) / coalesce(sum(pd.weight),0)
-         else 0 end average
-from    bale_grade bg
-            join    (select * from grade where grade_provider='BUYER' and season_id=:season) g on bg.grade_id=g.id
-    and     bg.grade_provider = 'BUYER'
-            join (select
-                      v.id ,
-                      v.variety_name ,
-                      coalesce(sum(pd.weight),0) total_weight
-                  from    bale_grade bg
-                              join    (select * from grade where grade_provider='BUYER' and season_id=:season) g on bg.grade_id=g.id
-                      and     bg.grade_provider = 'BUYER'
-                              join    variety v on g.variety_id = v.id
-                      and     v.id in (:varietyId)
-                              join    purchase_details pd on bg.bale_id=pd.bale_id
-                              join    purchase_main pm on pd.purchase_main_id = pm.id
-                      and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
-                              join    farmer_agreement fa on pm.agreement_id = fa.id and g.area_id=fa.area_id
-                      and (case when :areaId is not null then fa.area_id = :areaId else true end)
-                      and (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
-                      and (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
-                      and (case when :villageId is not null then fa.village_id = :villageId else true end)
-                              join    season s on fa.season_id = s.id
-                      and     s.id=:season
-                              left    join bale_bonus bb on pd.bale_id=bb.bale_id
-                  group by v.id,v.variety_name) v on g.variety_id = v.id
-            join    purchase_details pd on bg.bale_id=pd.bale_id
-            join    purchase_main pm on pd.purchase_main_id = pm.id
-    and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
-            join    farmer_agreement fa on pm.agreement_id = fa.id and g.area_id=fa.area_id
-    and (case when :areaId is not null then fa.area_id = :areaId else true end)
-    and (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
-    and (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
-    and (case when :villageId is not null then fa.village_id = :villageId else true end)
-            join    season s on fa.season_id = s.id
-    and     s.id=:season
-            left    join bale_bonus bb on pd.bale_id=bb.bale_id
-            group by v.id,v.variety_name,g.id,g.grade_name
-order  by v.id,g.id
+        v.id as varietyId,
+        v.variety_name as varietyName,
+        g.id as gradeId,
+        g.grade_name as gradeName,
+        count(pd.bale_id) nosofBale,
+        sum(pd.weight) as totalWeight,
+        SUM(SUM(pd.weight )) OVER (PARTITION BY v.id) AS varietyTotalWeight,
+        sum(pd.amount) as amount,
+        coalesce(sum(bb.bonus_amount),0) as bonusAmount,
+        sum(pd.amount) + coalesce(sum(bb.bonus_amount),0) totalAmount,
+        (sum(pd.weight )/(SUM(SUM(pd.weight )) OVER (PARTITION BY v.id)))*100 AS contribution
+from    farmer_agreement fa
+join    purchase_main pm
+        on fa.id = pm.agreement_id
+        and fa.season_id = 4
+          and (case when 166 is not  null then  pm.buying_center_id =166 else true end)
+                              and (case when 3 is not null then fa.area_id = 3 else true end)
+                              and (case when null is not null then fa.zone_id = null else true end)
+                              and (case when null is not null then fa.sub_area_id = null else true end)
+                              and (case when null is not null then fa.village_id = null else true end)
+        and pm.purchase_date between to_date('2026-04-01','yyyy-mm-dd') and to_date('2026-04-01','yyyy-mm-dd')
+join    purchase_details pd
+        on pm.id = pd.purchase_main_id
+join    grade g
+        on pd.grade_id = g.id
+        and g.season_id = fa.season_id
+        and g.area_id = fa.area_id
+        and g.grade_provider = 'BUYER'
+        and g.variety_id in(1)
+join    variety v
+        on g.variety_id = v.id
+left    join bale_bonus bb
+        on pd.bale_id = bb.bale_id
+group   by v.id, v.variety_name, g.id, g.grade_name

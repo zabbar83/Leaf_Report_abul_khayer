@@ -1,0 +1,23 @@
+select
+    vta.area_id areaId,
+    vta.area_name areaName,
+    v.id varietyId,
+    v.variety_name varietyName,
+    g.id gradeId,
+    g.grade_name gradeName,
+    count(gs.bale_id) baleQty,
+    sum(case when vbd.re_cl_status = 0 then vbd.re_weight_bale_weight else vbd.cl_bale_weight end) - sum(case when vbd.re_cl_status = 0 then (vbd.re_weight_sacks_weight + vbd.re_weight_extra_deduction_weight) else (vbd.cl_sacks_weight + vbd.cl_extra_deduction_weight) end) totalRecWeight
+from    glt_stock gs
+            join    bale_transfer_item btit on gs.bale_id=btit.bale_id
+    and     gs.add_date_time between cast(cast(:fromDate as text) || ' 00:00:00.000000' as timestamp) and cast(cast(:toDate as text) || ' 23:59:59.999999' as timestamp)
+    and     (case when :godownId is not null then gs.godown_id= :godownId else true end)
+            join    bale_transfer_info bti on btit.transfer_id = bti.id and gs.factory_id=bti.factory_id
+            join    buying_center bc on bti.from_buying_center_id = bc.id
+            join    depot d on bc.depot_id = d.id
+            join    (select distinct area_id,area_name from v_teritory_all) vta on d.area_id=vta.area_id
+            join    v_bale_details vbd on gs.bale_id=vbd.cl_bale_id
+            join    grade g on vbd.cl_grade_id=g.id
+            join    variety v on g.variety_id = v.id
+    and     (case when :varietyId is not null then v.id= :varietyId else true end)
+group   by vta.area_id, vta.area_name, v.id, v.variety_name, g.id, g.grade_name
+order   by v.id,vta.area_id,g.id
