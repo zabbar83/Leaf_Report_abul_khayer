@@ -22,13 +22,9 @@ from    bale_grade bg
     and     v.id in (:varietyId)
             join    purchase_details pd on bg.bale_id=pd.bale_id
             join    purchase_main pm on pd.purchase_main_id = pm.id
-    and     pm.purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
+    and     purchase_date between to_date(:fromDate,'yyyy-mm-dd') and to_date(:toDate,'yyyy-mm-dd')
     and     (case when :buyingCenterId is not  null then  pm.buying_center_id =:buyingCenterId else true end)
             join    farmer_agreement fa on pm.agreement_id = fa.id and g.area_id=fa.area_id
-    and     (case when :areaId is not null then fa.area_id = :areaId else true end)
-    and     (case when :zoneId is not null then fa.zone_id = :zoneId else true end)
-    and     (case when :subAreaId is not null then fa.sub_area_id = :subAreaId else true end)
-    and     (case when :villageId is not null then fa.village_id = :villageId else true end)
             left    join bale_bonus bb on pd.bale_id=bb.bale_id
             join    (select  bale_id,weight from bale_weight where weight_recipient='RE_WEIGHT') bw on pd.bale_id=bw.bale_id
             left    join (select bale_id,sacks_weight,extra_weight from bale_sacks where sack_type_selector='CLASSIFIER') bs on bw.bale_id=bs.bale_id
