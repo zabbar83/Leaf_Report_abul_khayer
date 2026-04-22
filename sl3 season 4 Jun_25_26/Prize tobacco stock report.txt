@@ -1,0 +1,24 @@
+select
+    gc.time_shift timeShift,
+    gpg.id gradeId,
+    gpg.grade_name packingGrade,
+    count(gc.id) prodCartQty,
+    sum(gc.net_weight) prodWeight,
+    count(case when trns.carton_id is not null then trns.carton_id else null end) transCartQty,
+    coalesce(sum(case when trns.carton_id is not null then trns.net_weight else 0 end),0) transWeight,
+    count(gc.id) - count(case when trns.carton_id is not null then trns.carton_id else null end) stockCartQty,
+    sum(gc.net_weight) - coalesce(sum(case when trns.carton_id is not null then trns.net_weight else 0 end),0) stockCartWeight
+from    glt_carton gc
+            join    glt_packing_grade gpg on gc.initial_grade_id = gpg.id
+            join glt_process gp on gc.process_id = gp.id
+    and     gp.glt_id=:gltId
+    and     gc.add_date between cast(cast(:fromDate as text) || ' 00:00:00.000000' as timestamp)
+                                       and cast(cast(:toDate as text) || ' 23:59:59.999999' as timestamp)
+            left    join (select  gwtd.carton_id,
+                                  net_weight
+                          from    glt_wh_transfer gt
+                                      join    glt_wh_transfer_details gwtd on gt.id = gwtd.transfer_id
+                          where     gt.cooling_rack_id is not null
+) trns on gc.id=trns.carton_id
+group by gc.time_shift, gpg.id, gpg.grade_name
+order by gc.time_shift
