@@ -1,0 +1,18 @@
+
+select
+    f.id factoryName,
+    f.factory_name factoryName,
+    gpg.id gradeId,
+    gpg.grade_name packingGrade,
+    count(gc.id) prodCartQty,
+    sum(gc.net_weight) prodWeight
+from    glt_carton gc
+            join    glt_packing_grade gpg on gc.initial_grade_id = gpg.id
+    and     (case when :gradeId is not null then gpg.id=:gradeId else true end )
+            join glt_process gp on gc.process_id = gp.id
+    and     gc.status not in('CANCELLED', 'RF_COMPLETED')
+            join factory f on gp.glt_id=f.id
+    and     gc.add_date between cast(cast(:fromDate as text) || ' 06:31:00.000000' as timestamp)
+                                  and cast(cast(:toDate as text) || ' 06:30:59.999999' as timestamp) + INTERVAL '1 day'
+group by f.id,f.factory_name,gpg.id, gpg.grade_name
+order by f.id,gpg.id
