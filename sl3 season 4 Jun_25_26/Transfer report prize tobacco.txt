@@ -1,0 +1,29 @@
+select
+    fgw.id fromWarehouseId,
+    fgw.warehouse_name fromWarehouseName,
+    tgw.id toWarehouseId,
+    tgw.warehouse_name toWarehouseName,
+    gt.chalan_no chalanNo,
+    t.vehicle_reg_no truckNo,
+    gpg.id gradeId,
+    gpg.grade_name gradeName,
+    count(gwtd.carton_id) totalCartonQty,
+    sum(gc.net_weight) totalWeight,
+    count(case when gwtd.status='RECEIVED' then gwtd.carton_id else null end) recCartonQty,
+    sum(case when gwtd.status='RECEIVED' then gc.net_weight else 0 end) recWeight
+from    glt_wh_transfer gt
+            join    glt_wh_transfer_details gwtd on gt.id = gwtd.transfer_id
+    and     gt.from_warehouse_id is not null
+    and     gwtd.add_date between cast(cast(:fromDate as text) || ' 00:00:00.000000' as timestamp)
+                                                        and cast(cast(:toDate as text) || ' 23:59:59.999999' as timestamp)
+    and     (case when :fromWarehouse is not null then gt.from_warehouse_id=:fromWarehouse else true end)
+    and     (case when :toWarehouse is not null then gt.to_warehouse_id=:toWarehouse else true end)
+            join    glt_carton gc on gwtd.carton_id=gc.id
+            join    glt_packing_grade gpg on gc.initial_grade_id = gpg.id
+    and     (case when :gradeId is not null then gpg.id=:gradeId else true end)
+            join    transport t on gt.transport_id = t.id
+            left    join glt_warehouse fgw on gt.from_warehouse_id = fgw.id
+            left    join glt_warehouse tgw on gt.to_warehouse_id = tgw.id
+group by fgw.id, fgw.warehouse_name, tgw.id, tgw.warehouse_name, gt.chalan_no,
+         t.vehicle_reg_no, gpg.id, gpg.grade_name
+order    by fgw.id, tgw.id, gt.chalan_no

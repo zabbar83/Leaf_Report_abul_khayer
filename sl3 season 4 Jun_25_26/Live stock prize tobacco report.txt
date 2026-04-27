@@ -1,0 +1,17 @@
+select
+        gw.id wareHouseId,
+        gw.warehouse_name wareHouseName,
+        gpg.id gradeId,
+        gpg.grade_name gradeName,
+        count(gws.carton_id) cartonQty,
+        sum(gc.net_weight) netWeight
+from    glt_wh_stock gws
+join    glt_warehouse gw on gws.warehouse_id = gw.id
+and     cast(gws.add_date as date)=:stockDate
+and     gws.stock_status='IN'
+and     (case when :wareHouseId is not null then gw.id=:wareHouseId else true end)
+join    glt_carton gc on gws.carton_id=gc.id
+join    glt_packing_grade gpg on gc.initial_grade_id = gpg.id
+and     (case when :gradeId is not null then gpg.id=:gradeId else true end)
+group   by gw.id, gw.warehouse_name, gpg.id, gpg.grade_name
+order   by gw.id,gpg.id
