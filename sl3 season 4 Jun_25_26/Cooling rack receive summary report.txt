@@ -1,0 +1,11 @@
+select
+        gpg.id gradeId,
+        gpg.grade_name gradeName,
+        count(gcc.carton_id) cartonQty
+from    glt_carton_cooling gcc
+join    glt_carton gc on gcc.carton_id = gc.id
+join    glt_packing_grade gpg on gc.initial_grade_id = gpg.id
+where   gcc.add_date between cast(cast(:fromDate as text) || ' 07:00:00.000000' as timestamp)
+          and cast(cast(:toDate as text) || ' 06:59:59.999999' as timestamp)
+group by gpg.id, gpg.grade_name
+order by gpg.id

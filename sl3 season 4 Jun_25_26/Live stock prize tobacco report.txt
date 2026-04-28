@@ -7,7 +7,7 @@ select
         sum(gc.net_weight) netWeight
 from    glt_wh_stock gws
 join    glt_warehouse gw on gws.warehouse_id = gw.id
-and     cast(gws.add_date as date)=:stockDate
+--and     cast(gws.add_date as date)=:stockDate
 and     gws.stock_status='IN'
 and     (case when :wareHouseId is not null then gw.id=:wareHouseId else true end)
 join    glt_carton gc on gws.carton_id=gc.id
