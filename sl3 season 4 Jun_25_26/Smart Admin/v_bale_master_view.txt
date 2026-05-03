@@ -50,14 +50,28 @@ select  bd.bale_id,
         btit_add_date,
         btit_bale_deliver_status,
         btit_actual_weight,
-        btit_net_weight
+        btit_net_weight,
+        obti_add_user,
+        obti_chalan_date,
+        obti_chalan_no,
+        obti_from_buying_center_id,
+        obti_to_buying_center_id,
+        obti_transport_id,
+        obti_transport_vendor_id,
+        obtit_bale_id,
+        obtit_add_date,
+        obtit_delivery_status,
+        obtit_actual_weight,
+        obtit_net_weight
 from (select b.id bale_id,
              b.bale_code,
              bale_accept_status,
              rr.reason
-      from bale b
+      from (select  * from bale where id=:baleId or bale_code=:baleCode
+                                ) b
                left join bale_reject_reason brr on b.id = brr.bale_id
-               left join reject_reason rr on brr.reject_reason_id = rr.id) bd
+               left join reject_reason rr on brr.reject_reason_id = rr.id
+      ) bd
          left join (SELECT bg.bale_id                                     AS purchase_bale_id,
                            bg.grade_id                                    AS purchase_grade_id,
                            pg.grade_name                                  AS purchase_grade_name,
@@ -230,38 +244,71 @@ from (select b.id bale_id,
                            from    buying_center_stock bcs)lb
                      where lb.rank=1) bcs
                     on bd.bale_id=bcs.bcs_bale_id
+         LEFT  JOIN (select
+                         bti_add_user,
+                         bti_chalan_date,
+                         bti_chalan_no,
+                         from_buying_center_id,
+                         to_buying_center_id,
+                         factory_id,
+                         bti_transport_id,
+                         transport_vendor_id,
+                         bale_id btit_bale_id,
+                         add_date btit_add_date,
+                         btit_bale_deliver_status,
+                         btit_actual_weight,
+                         btit_net_weight
+                     from
+                         (select
+                              bti.add_user bti_add_user,
+                              bti.chalan_date bti_chalan_date,
+                              bti.chalan_no bti_chalan_no,
+                              bti.from_buying_center_id,
+                              bti.to_buying_center_id,
+                              bti.factory_id,
+                              bti.transport_id bti_transport_id,
+                              bti.transport_vendor_id,
+                              btit.bale_id,
+                              btit.add_date,
+                              btit.bale_deliver_status btit_bale_deliver_status,
+                              btit.actual_weight btit_actual_weight,
+                              btit.net_weight btit_net_weight,
+                              rank () over (partition by btit.bale_id order by btit.add_date desc) rank
+                          from    bale_transfer_item btit
+                                      join bale_transfer_info bti on btit.transfer_id = bti.id
+                         )lbt
+                     where lbt.rank=1)btil
+                    on bd.bale_id=btil.btit_bale_id
 LEFT  JOIN (select
-                bti_add_user,
-                bti_chalan_date,
-                bti_chalan_no,
-                from_buying_center_id,
-                to_buying_center_id,
-                factory_id,
-                bti_transport_id,
-                transport_vendor_id,
-                bale_id btit_bale_id,
-                add_date btit_add_date,
-                btit_bale_deliver_status,
-                btit_actual_weight,
-                btit_net_weight
+                obti_add_user,
+                obti_chalan_date,
+                obti_chalan_no,
+                obti_from_buying_center_id,
+                obti_to_buying_center_id,
+                obti_transport_id,
+                obti_transport_vendor_id,
+                obtit_bale_id,
+                bt.obtit_add_date,
+                obtit_delivery_status,
+                obtit_actual_weight,
+                obtit_net_weight
             from
                 (select
-                     bti.add_user bti_add_user,
-                     bti.chalan_date bti_chalan_date,
-                     bti.chalan_no bti_chalan_no,
-                     bti.from_buying_center_id,
-                     bti.to_buying_center_id,
-                     bti.factory_id,
-                     bti.transport_id bti_transport_id,
-                     bti.transport_vendor_id,
-                     btit.bale_id,
-                     btit.add_date,
-                     btit.bale_deliver_status btit_bale_deliver_status,
-                     btit.actual_weight btit_actual_weight,
-                     btit.net_weight btit_net_weight,
-                     rank () over (partition by btit.bale_id order by btit.add_date desc) rank
-                 from    bale_transfer_item btit
-                             join bale_transfer_info bti on btit.transfer_id = bti.id
-                )lbt
-            where lbt.rank=1)btil
-           on bd.bale_id=btil.btit_bale_id
+                     obti.added_by_user_id obti_add_user,
+                     obti.challan_date obti_chalan_date,
+                     obti.challan_no obti_chalan_no,
+                     obti.from_buying_center_id obti_from_buying_center_id,
+                     obti.to_buying_center_id obti_to_buying_center_id,
+                     obti.transport_id obti_transport_id,
+                     obti.transport_vendor_id obti_transport_vendor_id,
+                     obtit.bale_id obtit_bale_id,
+                     obtit.add_date obtit_add_date,
+                     obtit.delivery_status obtit_delivery_status,
+                     obtit.actual_weight obtit_actual_weight,
+                     obtit.net_weight obtit_net_weight,
+                     rank () over (partition by obtit.bale_id order by obtit.add_date desc) rank
+                 from    out_buying_bale_transfer_item obtit
+                             join out_buying_bale_transfer_info obti on obtit.transfer_info_id = obti.id
+                )bt
+            where bt.rank=1) obti1
+on bd.bale_id=obti1.obtit_bale_id
