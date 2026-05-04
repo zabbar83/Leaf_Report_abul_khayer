@@ -12,9 +12,9 @@ select  v.id as varietyId,
         coalesce(sum(bb.bonus_amount),0) bonus,
         case when coalesce(SUM(SUM(bw.weight)) OVER (PARTITION BY v.id) -
                            sum(coalesce(sum(bs.sacks_weight),0) + coalesce(sum(bs.extra_weight),0)) over (partition by v.id),0) > 0
-                 then (coalesce(sum(bw.weight),0) / coalesce(SUM(SUM(bw.weight)) OVER (PARTITION BY v.id) -
+                 then ((coalesce(sum(bw.weight),0) - (coalesce(sum(bs.sacks_weight),0) + coalesce(sum(bs.extra_weight),0))) / coalesce(SUM(SUM(bw.weight)) OVER (PARTITION BY v.id) -
                                                              sum(coalesce(sum(bs.sacks_weight),0) + coalesce(sum(bs.extra_weight),0)) over (partition by v.id),0)) * 100
-             else 0 end contribution
+             else 0 end as contribution
 from    bale_grade bg
             join (select * from grade where grade_provider='CLASSIFIER' and season_id=:season) g on bg.grade_id=g.id
     and     bg.grade_provider = 'CLASSIFIER'
