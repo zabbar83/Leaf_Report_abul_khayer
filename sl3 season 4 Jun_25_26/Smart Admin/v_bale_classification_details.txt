@@ -22,7 +22,7 @@ from    (select
                             add_date_time,
                             added_by_user_id grade_provided_by
                         from    bale_grade
-                        where   grade_provider='CLASSIFIER'
+                        where   grade_provider IN ('CLASSIFIER', 'GLT_CLASSIFIER')
                         union all
                         select
                             bale_id,
@@ -33,53 +33,53 @@ from    (select
                         from    reclassified_bale_grade) as tb
                  ) as fb
          where  clg_rank = 1) as bg
-JOIN (select
-                   ts1.*
-           from    (select
-                        ts.*,
-                        RANK() OVER (PARTITION BY bale_id ORDER BY add_date_time DESC) as clsw_rank
-                    from    (select
-                                 bale_id,
-                                 sacks_weight,
-                                 coalesce(extra_weight,0) extra_weight,
-                                 sack_type_selector,
-                                 add_date_time,
-                                 added_by_user_id sack_type_provided_by
-                             from    bale_sacks
-                             where   sack_type_selector ='CLASSIFIER'
-                             union all
-                             select
-                                 bale_id,
-                                 sacks_weight,
-                                 coalesce(extra_weight,0) extra_weight,
-                                 sack_type_selector,
-                                 add_date_time,
-                                  added_by_user_id sack_type_provided_by
-                             from    reclassified_bale_sacks) as ts) as ts1
-           where  ts1.clsw_rank = 1) as bs
-on bg.bale_id = bs.bale_id
-JOIN (select
-                    tw1.*
-           from    (select
-                        tw.*,
-                        RANK() OVER (PARTITION BY tw.bale_id ORDER BY tw.add_date_time DESC) as clw_rank
-                    from    (select
-                                 bale_id,
-                                 weight,
-                                 weight_recipient,
-                                 add_date_time,
-                                 added_by weight_provided_by
-                             from    bale_weight
-                             where   weight_recipient='CLASSIFICATION_FIRST'
-                             union all
-                             select
-                                 bale_id,
-                                 weight,
-                                 weight_recipient,
-                                 add_date_time,
-                                 added_by weight_provided_by
-                             from    reclassified_bale_weight) as tw
-                   ) as tw1
-           where  tw1.clw_rank = 1) as bw
-on bg.bale_id = bw.bale_id
+            JOIN (select
+                      ts1.*
+                  from    (select
+                               ts.*,
+                               RANK() OVER (PARTITION BY bale_id ORDER BY add_date_time DESC) as clsw_rank
+                           from    (select
+                                        bale_id,
+                                        sacks_weight,
+                                        coalesce(extra_weight,0) extra_weight,
+                                        sack_type_selector,
+                                        add_date_time,
+                                        added_by_user_id sack_type_provided_by
+                                    from    bale_sacks
+                                    where   sack_type_selector IN ('CLASSIFIER', 'GLT_CLASSIFIER')
+                                    union all
+                                    select
+                                        bale_id,
+                                        sacks_weight,
+                                        coalesce(extra_weight,0) extra_weight,
+                                        sack_type_selector,
+                                        add_date_time,
+                                        added_by_user_id sack_type_provided_by
+                                    from    reclassified_bale_sacks) as ts) as ts1
+                  where  ts1.clsw_rank = 1) as bs
+                 on bg.bale_id = bs.bale_id
+            JOIN (select
+                      tw1.*
+                  from    (select
+                               tw.*,
+                               RANK() OVER (PARTITION BY tw.bale_id ORDER BY tw.add_date_time DESC) as clw_rank
+                           from    (select
+                                        bale_id,
+                                        weight,
+                                        weight_recipient,
+                                        add_date_time,
+                                        added_by weight_provided_by
+                                    from    bale_weight
+                                    where   weight_recipient IN ('CLASSIFICATION_FIRST', 'GLT_CLASSIFIER')
+                                    union all
+                                    select
+                                        bale_id,
+                                        weight,
+                                        weight_recipient,
+                                        add_date_time,
+                                        added_by weight_provided_by
+                                    from    reclassified_bale_weight) as tw
+                          ) as tw1
+                  where  tw1.clw_rank = 1) as bw
+                 on bg.bale_id = bw.bale_id
 order by bg.bale_id
