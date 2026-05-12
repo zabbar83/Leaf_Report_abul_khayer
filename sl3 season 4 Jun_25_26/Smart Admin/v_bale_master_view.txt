@@ -1,3 +1,4 @@
+--last update query for bale info
 select  bd.bale_id,
         bd.bale_code,
         bd.bale_accept_status,

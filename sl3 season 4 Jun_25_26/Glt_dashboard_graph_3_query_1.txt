@@ -1,0 +1,22 @@
+select
+    gft.glt_id as gltId,
+    g.id as gradeId,
+    g.grade_name gradeName,
+    count(g.id) as nosofBale,
+    ROUND(CAST(sum(gfd.gross_weight - gfd.trolly_weight) AS NUMERIC), 2) as feddingIssueWeight,
+    ROUND(CAST(SUM(sum(gfd.gross_weight - gfd.trolly_weight)) OVER () AS NUMERIC), 2) as totalFeddingIssueWeight,
+
+    ROUND(CAST((sum(gfd.gross_weight - gfd.trolly_weight)
+        /
+                SUM(sum(gfd.gross_weight - gfd.trolly_weight)) OVER ()
+                   ) * 100  AS NUMERIC), 2) as blandPersentage
+from    glt_feeding_details gfd
+            join    glt_feeding_table gft on gfd.feeding_table_id = gft.id
+            join    grade g on gfd.grade_id=g.id
+where   gfd.add_date between
+    CAST(CAST(:fromDate AS text) || ' 06:31:00.000000' AS timestamp)
+    and
+    CAST(CAST(:toDate AS text) || ' 06:30:59.999999' AS timestamp)
+  and (:processId is null or gfd.process_id = :processId)
+  and gft.glt_id= :gltId
+group   by gft.glt_id, g.id,g.grade_name
