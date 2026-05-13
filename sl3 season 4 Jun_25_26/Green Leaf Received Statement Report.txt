@@ -1,0 +1,23 @@
+select
+    vta.area_id areaId,
+    vta.area_name areaName,
+    v.id varietyId,
+    v.variety_name varietyName,
+    g.id gradeId,
+    g.grade_name gradeName,
+    CAST(count(gs.bale_id) AS NUMERIC) baleQty,
+    sum(vbd.bale_weight - (vbd.sacks_weight + vbd.extra_deduction_weight)) totalRecWeight
+from    glt_stock gs
+            join    bale_transfer_item btit on gs.bale_id=btit.bale_id
+    and     gs.add_date_time between cast(cast(2026-04-01 as text) ||  00:00:00.000000 as timestamp) and cast(cast( 2026-05-04 as text) ||  23:59:59.999999 as timestamp)
+    and     (case when 1  is not null then gs.godown_id= 1 else true end)
+            join    bale_transfer_info bti on btit.transfer_id = bti.id and gs.factory_id=bti.factory_id
+            join    buying_center bc on bti.from_buying_center_id = bc.id
+            join    depot d on bc.depot_id = d.id
+            join    (select distinct area_id,area_name from v_teritory_all) vta on d.area_id=vta.area_id
+            join    v_bale_classification_details vbd on gs.bale_id=vbd.bale_id
+            join    grade g on vbd.grade_id=g.id
+            join    variety v on g.variety_id = v.id
+    and     (case when 1  is not null then v.id= 1 else true end)
+group   by vta.area_id, vta.area_name, v.id, v.variety_name, g.id, g.grade_name
+order   by v.id,vta.area_id,g.id 

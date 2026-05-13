@@ -1,26 +1,26 @@
 select
-        gg.id godownId,
-        gg.godown_name godownName,
-        v.id varietyId,
-        v.variety_name varietyName,
-        g.id gradeId,
-        g.grade_name gradeName,
-        count(gs.bale_id) totalRecBaleQty,
-        sum(bcd.bale_weight) - sum(bcd.sacks_weight + bcd.extra_deduction_weight) totalRecWeight,
-        count(gfd.bale_id) feedingIssBaleQty,
-        sum(case when gfd.bale_id is not null then bcd.bale_weight else 0 end) -
-        sum(case when gfd.bale_id is not null then (bcd.sacks_weight + bcd.extra_deduction_weight) else 0 end) feedingIssWeight,
-        count(case when gs.status='IN' then gs.bale_id else null end) instockBaleQty,
-        sum(case when gs.status='IN' then bcd.bale_weight else 0 end) -
-        sum(case when gs.status='IN' then (bcd.sacks_weight + bcd.extra_deduction_weight) else 0 end) instockWeight
+    gg.id godownId,
+    gg.godown_name godownName,
+    v.id varietyId,
+    v.variety_name varietyName,
+    g.id gradeId,
+    g.grade_name gradeName,
+    count(gs.bale_id) totalRecBaleQty,
+    sum(bcd.bale_weight) - sum(bcd.sacks_weight + bcd.extra_deduction_weight) totalRecWeight,
+    count(gfd.bale_id) feedingIssBaleQty,
+    sum(case when gfd.bale_id is not null then bcd.bale_weight else 0 end) -
+    sum(case when gfd.bale_id is not null then (bcd.sacks_weight + bcd.extra_deduction_weight) else 0 end) feedingIssWeight,
+    count(case when gs.status='IN' then gs.bale_id else null end) instockBaleQty,
+    sum(case when gs.status='IN' then bcd.bale_weight else 0 end) -
+    sum(case when gs.status='IN' then (bcd.sacks_weight + bcd.extra_deduction_weight) else 0 end) instockWeight
 from    glt_stock gs
-join    glt_godown gg on gs.godown_id = gg.id
-and     cast(gs.add_date_time as date) between :fromDate and :toDate
-and     gg.id= :godownId
-join    v_bale_classification_details bcd on gs.bale_id=bcd.bale_id
-join    grade g on bcd.grade_id=g.id
-join    variety v on g.variety_id = v.id
-and     v.id= :varietyId
-left    join glt_feeding_details gfd on gs.bale_id=gfd.bale_id
+            join    glt_godown gg on gs.godown_id = gg.id
+    and     gs.add_date_time between cast(cast('2026-05-01' as text) || ' 00:00:00.000000' as timestamp) and cast(cast('2026-05-12' as text) || ' 23:59:59.999999' as timestamp)
+    and     (case when 1  is not null then gg.id= 1 else true end)
+            join    v_bale_classification_details bcd on gs.bale_id=bcd.bale_id
+            join    grade g on bcd.grade_id=g.id
+            join    variety v on g.variety_id = v.id
+    and     (case when 2  is not null then v.id= 2  else true end)
+            left    join glt_feeding_details gfd on gs.bale_id=gfd.bale_id
 group   by gg.id, gg.godown_name, v.id, v.variety_name, g.id, g.grade_name
 order   by v.id, gg.id, g.id
