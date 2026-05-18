@@ -1,85 +1,105 @@
-select
-    bg.bale_id as bale_id,
-    bg.grade_id as grade_id,
-    coalesce(bs.sacks_weight,0) sacks_weight,
-    coalesce(bs.extra_weight,0) extra_deduction_weight,
-    coalesce(bw.weight,0) as bale_weight,
-    bg.grade_provider as grade_provider,
-    bs.sack_type_selector as sack_type_selector,
-    bw.weight_recipient as weight_recipient,
-    bg.grade_provided_by as grade_provided_by,
-    bs.sack_type_provided_by as sack_type_provided_by,
-    bw.weight_provided_by as weight_provided_by
-from    (select
-             fb.*
-         from    (select
-                      tb.*,
-                      RANK() OVER (PARTITION BY tb.bale_id ORDER BY add_date_time DESC) clg_rank
-                  from (select
-                            bale_id,
-                            grade_id,
-                            grade_provider,
-                            add_date_time,
-                            added_by_user_id grade_provided_by
-                        from    bale_grade
-                        where   grade_provider IN ('CLASSIFIER', 'GLT_CLASSIFIER')
-                        union all
-                        select
-                            bale_id,
-                            grade_id,
-                            grade_provider,
-                            add_date_time,
-                            added_by_user_id grade_provided_by
-                        from    reclassified_bale_grade) as tb
-                 ) as fb
-         where  clg_rank = 1) as bg
-            JOIN (select
-                      ts1.*
-                  from    (select
-                               ts.*,
-                               RANK() OVER (PARTITION BY bale_id ORDER BY add_date_time DESC) as clsw_rank
-                           from    (select
-                                        bale_id,
-                                        sacks_weight,
-                                        coalesce(extra_weight,0) extra_weight,
-                                        sack_type_selector,
-                                        add_date_time,
-                                        added_by_user_id sack_type_provided_by
-                                    from    bale_sacks
-                                    where   sack_type_selector IN ('CLASSIFIER', 'GLT_CLASSIFIER')
-                                    union all
-                                    select
-                                        bale_id,
-                                        sacks_weight,
-                                        coalesce(extra_weight,0) extra_weight,
-                                        sack_type_selector,
-                                        add_date_time,
-                                        added_by_user_id sack_type_provided_by
-                                    from    reclassified_bale_sacks) as ts) as ts1
-                  where  ts1.clsw_rank = 1) as bs
-                 on bg.bale_id = bs.bale_id
-            JOIN (select
-                      tw1.*
-                  from    (select
-                               tw.*,
-                               RANK() OVER (PARTITION BY tw.bale_id ORDER BY tw.add_date_time DESC) as clw_rank
-                           from    (select
-                                        bale_id,
-                                        weight,
-                                        weight_recipient,
-                                        add_date_time,
-                                        added_by weight_provided_by
-                                    from    bale_weight
-                                    where   weight_recipient IN ('CLASSIFICATION_FIRST', 'GLT_CLASSIFIER')
-                                    union all
-                                    select
-                                        bale_id,
-                                        weight,
-                                        weight_recipient,
-                                        add_date_time,
-                                        added_by weight_provided_by
-                                    from    reclassified_bale_weight) as tw
-                          ) as tw1
-                  where  tw1.clw_rank = 1) as bw
-                 on bg.bale_id = bw.bale_id
-order by bg.bale_id
+-- create or replace view v_bale_classification_details
+--             (bale_id, grade_id, sacks_id, sacks_weight, extra_deduction_weight, bale_weight, grade_provider,
+--              sack_type_selector, weight_recipient, grade_provided_by, sack_type_provided_by, weight_provided_by)
+-- as
+SELECT bg.bale_id,
+       bg.grade_id,
+       sacks_id,
+       COALESCE(bs.sacks_weight, 0::double precision) AS sacks_weight,
+       COALESCE(bs.extra_weight, 0::double precision) AS extra_deduction_weight,
+       COALESCE(bw.weight, 0::double precision)       AS bale_weight,
+       bg.grade_provider,
+       bs.sack_type_selector,
+       bw.weight_recipient,
+       bg.grade_provided_by,
+       bs.sack_type_provided_by,
+       bw.weight_provided_by
+FROM (SELECT fb.bale_id,
+             fb.grade_id,
+             fb.grade_provider,
+             fb.add_date_time,
+             fb.grade_provided_by,
+             fb.clg_rank
+      FROM (SELECT tb.bale_id,
+                   tb.grade_id,
+                   tb.grade_provider,
+                   tb.add_date_time,
+                   tb.grade_provided_by,
+                   rank() OVER (PARTITION BY tb.bale_id ORDER BY tb.add_date_time DESC) AS clg_rank
+            FROM (SELECT bale_grade.bale_id,
+                         bale_grade.grade_id,
+                         bale_grade.grade_provider,
+                         bale_grade.add_date_time,
+                         bale_grade.added_by_user_id AS grade_provided_by
+                  FROM bale_grade
+                  WHERE bale_grade.grade_provider::text in('CLASSIFIER'::text, 'GLT_CLASSIFIER'::text)
+                  UNION ALL
+                  SELECT reclassified_bale_grade.bale_id,
+                         reclassified_bale_grade.grade_id,
+                         reclassified_bale_grade.grade_provider,
+                         reclassified_bale_grade.add_date_time,
+                         reclassified_bale_grade.added_by_user_id AS grade_provided_by
+                  FROM reclassified_bale_grade) tb) fb
+      WHERE fb.clg_rank = 1) bg
+         JOIN (SELECT ts1.bale_id,
+                      ts1.sacks_id,
+                      ts1.sacks_weight sacks_weight,
+                      ts1.extra_weight,
+                      ts1.sack_type_selector,
+                      ts1.add_date_time,
+                      ts1.sack_type_provided_by,
+                      ts1.clsw_rank
+               FROM (SELECT ts.bale_id,
+                            ts.sacks_id,
+                            ts.sacks_weight,
+                            ts.extra_weight,
+                            ts.sack_type_selector,
+                            ts.add_date_time,
+                            ts.sack_type_provided_by,
+                            rank() OVER (PARTITION BY ts.bale_id ORDER BY ts.add_date_time DESC) AS clsw_rank
+                     FROM (SELECT bale_sacks.bale_id,
+                                  bale_sacks.sacks_id,
+                                  bale_sacks.sacks_weight,
+                                  COALESCE(bale_sacks.extra_weight, 0::double precision) AS extra_weight,
+                                  bale_sacks.sack_type_selector,
+                                  bale_sacks.add_date_time,
+                                  bale_sacks.added_by_user_id                            AS sack_type_provided_by
+                           FROM bale_sacks
+                           WHERE bale_sacks.sack_type_selector::text in('CLASSIFIER'::text, 'GLT_CLASSIFIER'::text)
+                           UNION ALL
+                           SELECT reclassified_bale_sacks.bale_id,
+                                  reclassified_bale_sacks.sacks_id,
+                                  reclassified_bale_sacks.sacks_weight,
+                                  COALESCE(reclassified_bale_sacks.extra_weight, 0::double precision) AS extra_weight,
+                                  reclassified_bale_sacks.sack_type_selector,
+                                  reclassified_bale_sacks.add_date_time,
+                                  reclassified_bale_sacks.added_by_user_id                            AS sack_type_provided_by
+                           FROM reclassified_bale_sacks) ts) ts1
+               WHERE ts1.clsw_rank = 1) bs ON bg.bale_id = bs.bale_id
+         JOIN (SELECT tw1.bale_id,
+                      tw1.weight,
+                      tw1.weight_recipient,
+                      tw1.add_date_time,
+                      tw1.weight_provided_by,
+                      tw1.clw_rank
+               FROM (SELECT tw.bale_id,
+                            tw.weight,
+                            tw.weight_recipient,
+                            tw.add_date_time,
+                            tw.weight_provided_by,
+                            rank() OVER (PARTITION BY tw.bale_id ORDER BY tw.add_date_time DESC) AS clw_rank
+                     FROM (SELECT bale_weight.bale_id,
+                                  bale_weight.weight,
+                                  bale_weight.weight_recipient,
+                                  bale_weight.add_date_time,
+                                  bale_weight.added_by AS weight_provided_by
+                           FROM bale_weight
+                           WHERE bale_weight.weight_recipient::text in('CLASSIFICATION_FIRST'::text, 'CLASSIFICATION_SECOND'::text, 'GLT_CLASSIFIER'::text)
+                           UNION ALL
+                           SELECT reclassified_bale_weight.bale_id,
+                                  reclassified_bale_weight.weight,
+                                  reclassified_bale_weight.weight_recipient,
+                                  reclassified_bale_weight.add_date_time,
+                                  reclassified_bale_weight.added_by AS weight_provided_by
+                           FROM reclassified_bale_weight) tw) tw1
+               WHERE tw1.clw_rank = 1) bw ON bg.bale_id = bw.bale_id
