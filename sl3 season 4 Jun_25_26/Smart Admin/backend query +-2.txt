@@ -1,18 +1,43 @@
-WITH filtered_cartons AS (
-    SELECT carton_code::bigint as id, carton_code
-    FROM glt_carton
-    WHERE id NOT IN (
-        SELECT DISTINCT carton_id
-        FROM glt_qc_test_detail
-        WHERE qc_test_id = 2
-    )
-)
-SELECT
+
+select
     substr(carton_code, 1,1) || id AS reference_carton,
-    MOD(id, 5),
-    substr(carton_code, 1,1) || (case when MOD(id, 5)= 1 then id else id - 2 end) AS start_carton,
-    substr(carton_code, 1,1) || (case when MOD(id, 5)= 1 then id +1 else id + 2 end) AS end_carton
-FROM filtered_cartons
-WHERE (MOD(id, 5)= 0 or (MOD(id, 5)= 1 and substr(id :: text,13,14)='01'))
-and ((mod(id,5)=1 and substr(id :: text,10,14)='00001') or mod(id,5)=0)
-ORDER BY id desc
+    --MOD(id, 5) modValue,
+    substr(carton_code, 1,1) || (case when
+             (case when MOD(id, 5)= 1 then id else id - 2 end) in
+             (SELECT  carton_code::bigint as id
+              FROM glt_carton WHERE   id NOT IN (
+                 SELECT DISTINCT carton_id
+                 FROM glt_qc_test_detail
+                 WHERE qc_test_id = 2)
+             )
+             then
+             (case when MOD(id, 5)= 1 then id else id - 2 end)
+        else id
+        end) AS start_carton,
+
+    substr(carton_code, 1,1) || (case when
+             (case when MOD(id, 5)= 1 then id +1 else id + 2 end) in
+             (SELECT  carton_code::bigint as id
+              FROM glt_carton WHERE   id NOT IN (
+                 SELECT DISTINCT carton_id
+                 FROM glt_qc_test_detail
+                 WHERE qc_test_id = 2)
+             )
+             then
+             (case when MOD(id, 5)= 1 then id +1 else id + 2 end)
+        else id
+        end) AS end_carton
+from    (SELECT
+             carton_code::bigint as id,
+             carton_code,
+	add_date
+         FROM    glt_carton
+         WHERE   id NOT IN (
+             SELECT DISTINCT carton_id
+             FROM glt_qc_test_detail
+             WHERE qc_test_id = 2
+         )
+        ) gc
+WHERE   (MOD(id, 5)= 0 or (MOD(id, 5)= 1 and substr(id :: text,13,14)='01'))
+  and     ((mod(id,5)=1 and substr(id :: text,10,14)='00001') or mod(id,5)=0)
+order by gc.add_date desc
