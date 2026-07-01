@@ -67,75 +67,16 @@ ORDER BY ts.slot_no
 
 
 --shiftwise
-select
-    sum(whiteIssueKg) whiteIssueKg,
-    sum(greenIssueKg) greenIssueKg,
-    sum(whiteIssueKg) + sum(greenIssueKg) totalKg,
+SELECT
+    sum(case when substr(gfd.time_shift,12)='1' then  (gfd.gross_weight - gfd.trolly_weight) end) whiteIssueKg,
+    sum(case when substr(gfd.time_shift,12)='2' then  (gfd.gross_weight - gfd.trolly_weight) end) greenIssueKg,
+    sum(gfd.gross_weight - gfd.trolly_weight) totalKg,
     0 AS targets,
     0 ach
-from (WITH time_slots AS (
-    SELECT generate_series(0, 11) AS slot_no
-),
-
-           base AS (
-               SELECT
-                   gfd.add_date,
-                   gfd.gross_weight,
-                   gfd.trolly_weight,
-                   CASE
-                       WHEN CAST(gfd.add_date AS time) >= TIME :startTime
-                           THEN CAST(gfd.add_date AS date)
-                       ELSE CAST(gfd.add_date AS date) - INTERVAL '1 day'
-                       END AS business_date
-               FROM glt_feeding_details gfd
-                        join  glt_process gp on gfd.process_id = gp.id
-               WHERE gfd.time_shift like cast(:fromDate as varchar) || '%'
-                 and gp.glt_id= :gltId
-           ),
-
-           slot_calc AS (
-               SELECT
-                   FLOOR(
-                           EXTRACT(EPOCH FROM (add_date - (business_date + TIME :startTime)))
-                               / 3600
-                   ) AS slot_no,
-                   gross_weight,
-                   trolly_weight
-               FROM base
-           ),
-
-           agg AS (
-               SELECT
-                   slot_no,
-                   SUM(gross_weight) - SUM(trolly_weight) AS issueKg
-               FROM slot_calc
-               GROUP BY slot_no
-           )
-
-      SELECT
-
-          TO_CHAR(TIME :startTime + (ts.slot_no * INTERVAL '1 hour'), 'HH12:MI am')
-              || '-' ||
-          TO_CHAR(TIME :endTime + (ts.slot_no * INTERVAL '1 hour'), 'HH12:MI am')
-                                 AS whiteTime,
-
-          COALESCE(a.issueKg, 0) AS whiteIssueKg,
-
-          TO_CHAR(TIME :startTime + ((ts.slot_no + 12) * INTERVAL '1 hour'), 'HH12:MI am')
-              || '-' ||
-          TO_CHAR(TIME :endTime + ((ts.slot_no + 12) * INTERVAL '1 hour'), 'HH12:MI am')
-                                 AS greenTime,
-
-          COALESCE(p.issueKg, 0) AS greenIssueKg
-
-      FROM time_slots ts
-
-               LEFT JOIN agg a
-                         ON ts.slot_no = a.slot_no
-
-               LEFT JOIN agg p
-                         ON ts.slot_no + 12 = p.slot_no
-     ) sm
+FROM glt_feeding_details gfd
+         join  glt_process gp on gfd.process_id = gp.id
+WHERE gfd.time_shift like cast(:fromDate as varchar) || '%'
+  and gp.glt_id= :gltId
 ;
 
 
