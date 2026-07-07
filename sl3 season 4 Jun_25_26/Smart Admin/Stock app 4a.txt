@@ -1,0 +1,46 @@
+with season as (
+    SELECT CAST(attribute_value AS NUMERIC) AS season_id
+    FROM global_setting
+    where attribute_name = 'BUYING_SEASON'
+),
+
+     grade_filtered as (
+         SELECT
+             id,
+             grade_name
+         from grade
+         where grade_provider IN ('CLASSIFIER', 'GLT_CLASSIFIER')
+           AND variety_id = :varityId
+           AND season_id = (SELECT season_id FROM season)
+     ),
+
+     stock_filtered as (
+         SELECT
+             bale_id,
+             factory_id,
+             godown_id
+         from glt_stock
+         where factory_id = :factoryId
+           AND godown_id = :godownId
+           AND status = 'IN'
+     )
+
+select
+    f.id as gltId,
+    f.factory_name as factoryName,
+    gg.id AS godownId,
+    gg.godown_name as godownName,
+    bcd.grade_id as id,
+    g.grade_name as name,
+    count(*) as nosofBale,
+    sum(COALESCE(bcd.bale_weight,0) - COALESCE(bcd.sacks_weight,0) - COALESCE(bcd.extra_deduction_weight,0)) as baleWeight
+FROM stock_filtered gs
+         JOIN v_bale_classification_details bcd
+              ON gs.bale_id = bcd.bale_id
+         JOIN grade_filtered g
+              ON g.id = bcd.grade_id
+         JOIN glt_godown gg
+              ON gg.id = gs.godown_id
+         JOIN factory f
+              ON f.id = gs.factory_id
+GROUP BY f.id,f.factory_name,gg.id,gg.godown_name,bcd.grade_id,g.grade_name
