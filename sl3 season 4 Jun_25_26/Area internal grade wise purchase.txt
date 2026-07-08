@@ -32,4 +32,3 @@ from    bale_grade bg
                      ) ing on pd.bale_id=ing.bale_id
 group by fa.area_id, fa.area_name, g.grade_name ,ing.internalGrade
 order by g.grade_name ,ing.internalGrade
-;
