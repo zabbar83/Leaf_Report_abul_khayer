@@ -8,17 +8,17 @@ select
     CAST(count(gs.bale_id) AS NUMERIC) totalRecBaleQty,
     sum(bcd.bale_weight) - sum(bcd.sacks_weight + bcd.extra_deduction_weight) totalRecWeight,
 
-    CAST(count(case when gfd.gross_weight >0 and gfd.net_weight >0 then gfd.bale_id else null end) AS NUMERIC) feedingIssBaleQty,
-    sum(case when gfd.bale_id is not null and gfd.gross_weight >0 and gfd.net_weight >0 then gfd.gross_weight else 0 end) -
-    sum(case when gfd.bale_id is not null and gfd.gross_weight >0 and gfd.net_weight >0 then gfd.trolly_weight else 0 end) feedingIssWeight,
+    CAST(count(case when gfd.gross_weight >0 then gfd.bale_id else null end) AS NUMERIC) feedingIssBaleQty,
+    sum(case when gfd.bale_id is not null and gfd.gross_weight >0 then gfd.gross_weight else 0 end) -
+    sum(case when gfd.bale_id is not null and gfd.gross_weight >0 then gfd.trolly_weight else 0 end) feedingIssWeight,
 
-    CAST(count(case when gfd.gross_weight <0 and gfd.net_weight <0 then gfd.bale_id else null end) AS NUMERIC) rejectBaleQty,
-    abs(sum(case when gfd.bale_id is not null and gfd.gross_weight <0 and gfd.net_weight <0 then bcd.bale_weight else 0 end)) -
-    abs(sum(case when gfd.bale_id is not null and gfd.gross_weight <0 and gfd.net_weight <0 then (bcd.sacks_weight + bcd.extra_deduction_weight) else 0 end)) rejectWeight,
+    CAST(count(case when gfd.gross_weight <0 then gfd.bale_id else null end) AS NUMERIC) rejectBaleQty,
+    abs(sum(case when gfd.bale_id is not null and gfd.gross_weight <0 then bcd.bale_weight else 0 end)) -
+    abs(sum(case when gfd.bale_id is not null and gfd.gross_weight <0 then (bcd.sacks_weight + bcd.extra_deduction_weight) else 0 end)) rejectWeight,
 
-    CAST(count(case when gfd.gross_weight >0 and gfd.net_weight >0 then gs.bale_id else null end) AS NUMERIC) freshBaleQty,
-    sum(case when gfd.gross_weight >0 and gfd.net_weight >0 then bcd.bale_weight else 0 end) -
-    sum(case when gfd.gross_weight >0 and gfd.net_weight >0 then (bcd.sacks_weight + bcd.extra_deduction_weight) else 0 end) freshWeight,
+    CAST(count(case when gfd.gross_weight >0 then gfd.bale_id else null end) AS NUMERIC) freshBaleQty,
+    sum(case when gfd.gross_weight >0 then bcd.bale_weight else 0 end) -
+    sum(case when gfd.gross_weight >0 then (bcd.sacks_weight + bcd.extra_deduction_weight) else 0 end) freshWeight,
 
     CAST(count(case when gs.status='IN' then gs.bale_id else null end)AS NUMERIC) instockBaleQty,
     sum(case when gs.status='IN' then bcd.bale_weight else 0 end) -
@@ -27,8 +27,8 @@ from    glt_stock gs
             join    glt_godown gg on gs.godown_id = gg.id
     and     gs.add_date_time between cast(cast(:fromDate as text) || ' 00:00:00.000000' as timestamp)
                                     and cast(cast(:toDate as text) || ' 23:59:59.999999' as timestamp)
-    and     (case when :factoryId   is not null then gs.factory_id= :factoryId else true end)
-    and     (case when :godownId  is not null then gg.id= :godownId else true end)
+    and     (case when :factoryId is not null then gs.factory_id= :factoryId else true end)
+    and     (case when :godownId is not null then gg.id= :godownId else true end)
             join    v_bale_classification_details bcd on gs.bale_id=bcd.bale_id
             join    grade g on bcd.grade_id=g.id
             join    variety v on g.variety_id = v.id
