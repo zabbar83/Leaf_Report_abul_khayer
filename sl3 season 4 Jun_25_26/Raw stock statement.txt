@@ -16,9 +16,10 @@ select
     abs(sum(case when gfd.bale_id is not null and gfd.gross_weight <0 then bcd.bale_weight else 0 end)) -
     abs(sum(case when gfd.bale_id is not null and gfd.gross_weight <0 then (bcd.sacks_weight + bcd.extra_deduction_weight) else 0 end)) rejectWeight,
 
-    CAST(count(case when gfd.gross_weight >0 then gfd.bale_id else null end) AS NUMERIC) freshBaleQty,
-    sum(case when gfd.gross_weight >0 then bcd.bale_weight else 0 end) -
-    sum(case when gfd.gross_weight >0 then (bcd.sacks_weight + bcd.extra_deduction_weight) else 0 end) freshWeight,
+    CAST(count(gs.bale_id) - (count(case when gfd.gross_weight <0 then gfd.bale_id else null end)) AS NUMERIC) freshBaleQty,
+    sum(bcd.bale_weight) - sum(bcd.sacks_weight + bcd.extra_deduction_weight) -
+    (abs(sum(case when gfd.bale_id is not null and gfd.gross_weight <0 then bcd.bale_weight else 0 end)) -
+    abs(sum(case when gfd.bale_id is not null and gfd.gross_weight <0 then (bcd.sacks_weight + bcd.extra_deduction_weight) else 0 end))) freshWeight,
 
     CAST(count(case when gs.status='IN' then gs.bale_id else null end)AS NUMERIC) instockBaleQty,
     sum(case when gs.status='IN' then bcd.bale_weight else 0 end) -
