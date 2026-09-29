@@ -1,0 +1,97 @@
+--- item wise report (Dynamic) -----
+
+with    base_data as
+         (
+        SELECT
+                fa.area_id,
+                fa.farmer_reg_number,
+                fld.loan_item_id,
+                fld.quantity
+        FROM    farmer_loan_requests flr
+        JOIN    farmer_loan_main flm
+                on flr.id = flm.farmer_loan_request_id
+                AND flr.approval_status = 'APPROVED'
+        JOIN    farmer_loan_details fld
+                on flm.id = fld.loan_main_id
+        JOIN    farmer_agreement fa
+                ON flr.farmer_agreement_id = fa.id
+                AND fa.season_id = :seasonId
+                AND fa.area_id = :areaId
+        )
+SELECT  v.area_id,
+        v.area_name,
+        v.zone_id,
+        v.zone_name,
+        v.sub_area_id,
+        v.sub_area_name,
+        v.village_id,
+        v.village_name,
+        v.farmer_id,
+        v.farmer_name,
+        v.farmer_father_name,
+        v.farmer_reg_number,
+        ROUND(SUM(CASE WHEN d.sl = 1 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_1,
+        ROUND(SUM(CASE WHEN d.sl = 2 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_2,
+        ROUND(SUM(CASE WHEN d.sl = 3 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_3,
+        ROUND(SUM(CASE WHEN d.sl = 4 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_4,
+        ROUND(SUM(CASE WHEN d.sl = 5 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_5,
+        ROUND(SUM(CASE WHEN d.sl = 6 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_6,
+        ROUND(SUM(CASE WHEN d.sl = 7 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_7,
+        ROUND(SUM(CASE WHEN d.sl = 8 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_8,
+        ROUND(SUM(CASE WHEN d.sl = 9 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_9,
+        ROUND(SUM(CASE WHEN d.sl = 10 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_10,
+        ROUND(SUM(CASE WHEN d.sl = 11 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_11,
+        ROUND(SUM(CASE WHEN d.sl = 12 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_12,
+        ROUND(SUM(CASE WHEN d.sl = 13 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_13,
+        ROUND(SUM(CASE WHEN d.sl = 14 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_14,
+        ROUND(SUM(CASE WHEN d.sl = 15 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_15,
+        ROUND(SUM(CASE WHEN d.sl = 16 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_16,
+        ROUND(SUM(CASE WHEN d.sl = 17 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_17,
+        ROUND(SUM(CASE WHEN d.sl = 18 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_18,
+        ROUND(SUM(CASE WHEN d.sl = 19 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_19,
+        ROUND(SUM(CASE WHEN d.sl = 20 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_20,
+        ROUND(SUM(CASE WHEN d.sl = 21 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_21,
+        ROUND(SUM(CASE WHEN d.sl = 22 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_22,
+        ROUND(SUM(CASE WHEN d.sl = 23 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_23,
+        ROUND(SUM(CASE WHEN d.sl = 24 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_24,
+        ROUND(SUM(CASE WHEN d.sl = 25 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_25,
+        ROUND(SUM(CASE WHEN d.sl = 26 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_26,
+        ROUND(SUM(CASE WHEN d.sl = 27 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_27,
+        ROUND(SUM(CASE WHEN d.sl = 28 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_28,
+        ROUND(SUM(CASE WHEN d.sl = 29 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_29,
+        ROUND(SUM(CASE WHEN d.sl = 30 THEN COALESCE(bd.quantity, 0) ELSE NULL END), 2) AS item_30
+FROM    (
+        select
+                row_number() over (order by l.id) as sl,
+                l.*
+        from    loan_items_rate l
+        where   season_id= :seasonId
+        and     (:areaId = 0 or area_id= :areaId)
+         ) as d
+JOIN    (
+        select
+                fa.area_id,
+                fa.area_name,
+                fa.zone_id,
+                fa.zone_name,
+                fa.sub_area_id,
+                fa.sub_area_name,
+                fa.village_id,
+                fa.village_name,
+                fa.farmer_id,
+                fa.farmer_name,
+                fa.farmer_father_name,
+                fa.farmer_reg_number
+        from    farmer_agreement as fa
+        where   season_id = :seasonId
+        and     (:areaId = 0 or area_id = :areaId)
+        ) as v
+        ON d.area_id = v.area_id
+LEFT    JOIN base_data as bd
+        ON d.loan_item_id = bd.loan_item_id
+        AND d.area_id = bd.area_id
+        AND v.farmer_reg_number = bd.farmer_reg_number
+GROUP   BY v.area_id, v.area_name, v.zone_id, v.zone_name, v.sub_area_id, v.sub_area_name, v.village_id,
+         v.village_name, v.farmer_id, v.farmer_name, v.farmer_father_name, v.farmer_reg_number
+order   by v.area_id, v.zone_id, v.sub_area_id, v.village_id, v.farmer_id
+;
