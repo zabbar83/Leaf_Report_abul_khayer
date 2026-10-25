@@ -1,0 +1,60 @@
+Select
+    gc.qr_code             qrCode,
+    gc.id                  cartonId,
+    gc.status              gltCartonStatus,
+    gcc.cooling_start_time productionTime,
+    gcc.add_date           coolStartTime,
+    gcc.mod_date           exitTime,
+    gcc.status             coolingStatus,
+    gqc.qcTestStatus ,
+    gqc.failItems,
+    coalesce(cc.warehouseStockStatus, 'wh stock not receive') warehouseStockStatus,
+    coalesce(cc.chalan_no,nr.chalan_no) chalan_no,
+    coalesce(cc.fromCoolware,nr.fromCoolware) fromCoolware,
+    coalesce(cc.toWarehouse,nr.warehouse_name) toWarehouse
+from (select * from glt_carton where qr_code =:cartonQrcode
+     -- 17893068974681290244 -- 17803226140880630002 --17898539900381300793
+        ) gc
+         left join (select * from glt_carton_cooling) gcc on gc.id = gcc.carton_id
+         left join (select carton_id,
+                           min(case when status not in ('FAIL') then 'PASS' else 'FAIL' end) qcTestStatus ,
+                           STRING_AGG(DISTINCT (case
+                                                    when status = 'FAIL' then l.test_name || '-FAIL'
+                                                    else l.test_name || '-PASS' end), ', ') failItems
+                    from glt_qc_test_detail q
+                             join glt_qc_test_list l on q.qc_test_id = l.id
+                    group by carton_id) gqc on gc.id = gqc.carton_id
+left join (select gs.carton_id,
+             gs.stock_status                                                warehouseStockStatus,
+             gt.chalan_no,
+             coalesce(gcr.rack_name, wtr.warehouse_name, gw.warehouse_name) fromCoolware,
+             wtrt.warehouse_name                                            toWarehouse
+      from (select *
+            from glt_wh_stock) gs
+               left join glt_warehouse gw on gs.warehouse_id = gw.id
+               left join (select *
+                          from (select *,
+                                       rank() over ( partition by carton_id order by add_date desc) rank
+                                from glt_wh_transfer_details) a
+                          where rank = 1) gtd on gs.carton_id = gtd.carton_id
+               left join glt_wh_transfer gt on gtd.transfer_id = gt.id
+               left join glt_cooling_rack gcr on gt.cooling_rack_id = gcr.id
+               left join glt_warehouse wtr on gt.from_warehouse_id = wtr.id
+               left join glt_warehouse wtrt on gt.to_warehouse_id = wtrt.id) cc
+on gc.id=cc.carton_id
+left join (select  gtd.carton_id,
+                   gt.chalan_no,
+                   coalesce(gcr.rack_name, wtr.warehouse_name) fromCoolware,
+                   wtrt.warehouse_name
+           from
+               (select *
+                from (select *,
+                             rank() over ( partition by carton_id order by add_date desc) rank
+                      from glt_wh_transfer_details) a
+                where rank = 1
+               ) gtd
+                   left    join glt_wh_transfer gt on gtd.transfer_id = gt.id
+                   left    join glt_cooling_rack gcr on gt.cooling_rack_id = gcr.id
+                   left    join glt_warehouse wtr on gt.from_warehouse_id = wtr.id
+                   left    join glt_warehouse wtrt on gt.to_warehouse_id = wtrt.id) nr
+on gc.id=nr.carton_id
