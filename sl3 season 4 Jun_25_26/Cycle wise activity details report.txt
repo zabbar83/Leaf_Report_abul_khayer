@@ -30,13 +30,13 @@ select  area_id areaId,
         Mod(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=3 then qqa.answer end) as numeric) , 12) seedLateLobInch,
 
         Max(case when qqc.category_id=2 and qqo.question_option_id=1 and qq.question_id=4 then qqa.answer end) plantationDate,
-        Max(case when qqc.category_id=2 and qqo.question_option_id=2 and qq.question_id=5 then qqa.answer end) plantationEasy,
+        Max(case when qqc.category_id=2 and qqo.question_option_id=2 and qq.question_id=5 then qqa.answer end) plantationEarly,
         Max(case when qqc.category_id=2 and qqo.question_option_id=3 and qq.question_id=5 then qqa.answer end) plantationMid,
         Max(case when qqc.category_id=2 and qqo.question_option_id=4 and qq.question_id=5 then qqa.answer end) plantationLate,
 
-        Max(case when qqc.category_id=3 and qqo.question_option_id=12 and qq.question_id=6 then qqa.answer end) harvestingDate,
-        Max(case when qqc.category_id=3 and qqo.question_option_id=13 and qq.question_id=6 then qqa.answer end) harvestingDate,
-        Max(case when qqc.category_id=3 and qqo.question_option_id=14 and qq.question_id=6 then qqa.answer end) harvestingDate,
+        Max(case when qqc.category_id=3 and qqo.question_option_id=12 and qq.question_id=6 then qqa.answer end) harvestingDate1,
+        Max(case when qqc.category_id=3 and qqo.question_option_id=13 and qq.question_id=6 then qqa.answer end) harvestingDate2,
+        Max(case when qqc.category_id=3 and qqo.question_option_id=14 and qq.question_id=6 then qqa.answer end) harvestingDate3,
 
         Max(case when qqc.category_id=5 and qqo.question_option_id=1 and qq.question_id=10 then qqa.answer end) exiShed,
         Max(case when qqc.category_id=5 and qqo.question_option_id=1 and qq.question_id=11 then qqa.answer end) newShed,
@@ -86,6 +86,7 @@ from    (select * from farmer_agreement
             join    qi_question_option qqo on qqom.option_id = qqo.question_option_id
             join    qi_question qq on qqa.question_id = qq.question_id
             join    qi_question_category qqc on qq.question_category_id = qqc.category_id
+                    and (case when :categoryId is not null then qqc.category_id = :categoryId else true end)
             left    join qi_question_option_map qqom1 on qqom.parent_id=qqom1.question_option_map_id
 group   by area_id, area_name, zone_id, zone_name, sub_area_id, sub_area_name, village_id, variety_name,
         farmer_reg_number, farmer_name, farmer_father_name, mobile_no, land_acreage
@@ -103,3 +104,33 @@ order   by area_id, zone_id, sub_area_id, village_id
 -- join    qi_question_option_map qqom on qqo.question_option_id = qqom.option_id
 -- join    qi_question_option_map qqom1 on qqom.question_option_map_id = qqom1.parent_id
 -- join    qi_question_answer qqa on qqom1.question_option_map_id = qqa.question_option_map_id
+;
+
+
+
+select  distinct
+--         qqc.category_id,
+--         qqom1.option_id,
+--         qqom.parent_id,
+--         qqo.question_option_id,
+--         qq.question_id,
+--         qqa.answer,
+-- 
+--         qqa.farmer_agreement_id,
+--         qqc.category_id,
+--         qqc.question category_name,
+--         qq.question_id,
+--         qq.question question_name,
+--         qqo.question_option_id,
+--         qqo.question_option,
+--         qqa.answer
+-- from    qi_question_answer qqa
+-- join    qi_question_option_map qqom
+--         on qqa.question_option_map_id = qqom.question_option_map_id
+-- and     qqa.question_id = qqom.question_id
+-- join    qi_question_option qqo on qqom.option_id = qqo.question_option_id
+-- join    qi_question qq on qqa.question_id = qq.question_id
+-- join    qi_question_category qqc on qq.question_category_id = qqc.category_id
+-- left join qi_question_option_map qqom1 on qqom.parent_id=qqom1.question_option_map_id
+-- order   by qqc.category_id,
+--            qqo.question_option_id;
