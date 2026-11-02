@@ -5,7 +5,7 @@ select  area_id areaId,
         sub_area_id subAreaId,
         sub_area_name subAreaName,
         village_id villageId,
-        variety_name villageName,
+        village_name villageName,
         farmer_reg_number farRegNum,
         farmer_name farmerName,
         farmer_father_name farFatherName,
@@ -16,18 +16,24 @@ select  area_id areaId,
         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=3 then qqa.answer end) as numeric) seedEarlyLob,
         Floor(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=3 then qqa.answer end) as numeric) / 12) seedEarlyLobFeet,
         Mod(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=3 then qqa.answer end) as numeric) , 12) seedEarlyLobInch,
+        (cast(Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=2 then qqa.answer end) as numeric) *
+         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=3 then qqa.answer end) as numeric)) / 100 seedEarlyDecimal,
 
         Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=1 then qqa.answer end) seedMidDate,
         Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=2 then qqa.answer end) seedMidNob,
         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=3 then qqa.answer end) as numeric) seedMidLob,
         Floor(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=3 then qqa.answer end) as numeric) / 12) seedMidLobFeet,
         Mod(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=3 then qqa.answer end) as numeric) , 12) seedMidLobInch,
+        (cast(Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=2 then qqa.answer end) as numeric) *
+         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=3 then qqa.answer end) as numeric)) / 100 seedMidDecimal,
 
         Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=1 then qqa.answer end) seedLateDate,
         Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=2 then qqa.answer end) seedLateNob,
         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=3 then qqa.answer end) as numeric) seedLateLob,
         Floor(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=3 then qqa.answer end) as numeric) / 12) seedLateLobFeet,
         Mod(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=3 then qqa.answer end) as numeric) , 12) seedLateLobInch,
+        (cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=2 then qqa.answer end) as numeric) *
+         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=3 then qqa.answer end) as numeric)) / 100 seedLateDecimal,
 
         Max(case when qqc.category_id=2 and qqo.question_option_id=1 and qq.question_id=4 then qqa.answer end) plantationDate,
         Max(case when qqc.category_id=2 and qqo.question_option_id=2 and qq.question_id=5 then qqa.answer end) plantationEarly,
@@ -74,11 +80,11 @@ select  area_id areaId,
         Max(case when qqc.category_id=4 and qqom1.option_id=7 and qqo.question_option_id=10 and qq.question_id=8 then qqa.answer end) pakkaNew161612,
         Max(case when qqc.category_id=4 and qqom1.option_id=7 and qqo.question_option_id=11 and qq.question_id=8 then qqa.answer end) pakkaNew161616
 from    (select * from farmer_agreement
-                  where season_id=:seasonId
-                        and :areaId=0 or area_id=:areaId
-                        and :zoneId=0 or zone_id=:zoneId
-                        and :subAreaId=0 or sub_Area_Id=:subAreaId
-                        and :villageId=0 or village_id=:villageId) fa
+         where season_id=:seasonId
+             and :areaId=0 or area_id=:areaId
+             and :zoneId=0 or zone_id=:zoneId
+             and :subAreaId=0 or sub_Area_Id=:subAreaId
+             and :villageId=0 or village_id=:villageId) fa
             join    qi_question_answer qqa on fa.id=qqa.farmer_agreement_id
             join    qi_question_option_map qqom
                     on qqa.question_option_map_id = qqom.question_option_map_id
@@ -86,10 +92,10 @@ from    (select * from farmer_agreement
             join    qi_question_option qqo on qqom.option_id = qqo.question_option_id
             join    qi_question qq on qqa.question_id = qq.question_id
             join    qi_question_category qqc on qq.question_category_id = qqc.category_id
-                    and (case when :categoryId is not null then qqc.category_id = :categoryId else true end)
+    and (case when :categoryId is not null then qqc.category_id = :categoryId else true end)
             left    join qi_question_option_map qqom1 on qqom.parent_id=qqom1.question_option_map_id
-group   by area_id, area_name, zone_id, zone_name, sub_area_id, sub_area_name, village_id, variety_name,
-        farmer_reg_number, farmer_name, farmer_father_name, mobile_no, land_acreage
+group   by area_id, area_name, zone_id, zone_name, sub_area_id, sub_area_name, village_id, village_name,
+           farmer_reg_number, farmer_name, farmer_father_name, mobile_no, land_acreage
 order   by area_id, zone_id, sub_area_id, village_id
 ;
 
