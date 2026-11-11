@@ -1,0 +1,69 @@
+select fa.area_id                                                                                         areaId,
+       fa.area_name                                                                                       areaName,
+       fa.zone_id                                                                                         zoneId,
+       fa.zone_name                                                                                       zoneName,
+       fa.sub_area_id                                                                                     subAreaId,
+       fa.sub_area_name                                                                                   subAreaName,
+       fa.village_id                                                                                      villageId,
+       fa.village_name                                                                                    villageName,
+       fa.season_name as                                                                                  seasonName,
+       fa.season_id                                                                                       seasonId,
+       fa.farmer_id                                                                                       farmerId,
+       fa.farmer_reg_number                                                                               farmerReg,
+       fa.farmer_name                                                                                     farmerName,
+       fa.farmer_father_name                                                                              fatherName,
+       fa.bank_name                                                                                       bankName,
+       fa.bank_branch_name                                                                                branchName,
+       fa.bank_account_number                                                                             accountNumber,
+       fa.land_acreage                                                                                    acre,
+       (fa.land_acreage * vwt.production_target)                                                          targetKg,
+       coalesce(noOfBale, 0)                                                                              noOfBale,
+       coalesce(baleWeight, 0)                                                                            buyingWeight,
+       coalesce(baleAmount, 0)                                                                            amount,
+       coalesce(bonusAmount, 0)                                                                           bonusAmount,
+       coalesce(baleAmount, 0) + coalesce(bonusAmount, 0)                                                 totalAmount,
+       coalesce(loan, 0)                                                                                  loan,
+       coalesce(abs(leaf_loan_relaization), 0)                                                            realisedLoan,
+       coalesce(abs(cash_relaization), 0)                                                                 realisedCash,
+       coalesce(loan, 0) - (coalesce(abs(leaf_loan_relaization), 0) + coalesce(abs(cash_relaization), 0)) balanceLoan
+
+from farmer_agreement fa
+         join season s on fa.season_id = s.id and s.id = :seasonId
+         left join (select flm.farmer_agreement_id   as agreement_id,
+                           abs(sum(flm.loan_amount)) as realizationAmount,
+                           abs(sum(case
+                                       when flm.purchase_main_id is not null then flm.loan_amount
+                                       else 0 end))  as leaf_loan_relaization,
+                           abs(sum(case
+                                       when flm.farmer_loan_request_id is null and flm.purchase_main_id is null
+                                           then flm.loan_amount
+                                       else 0 end)) cash_relaization
+                    from farmer_loan_main as flm
+                    where flm.farmer_loan_request_id is null
+                    group by flm.farmer_agreement_id) flm on fa.id = flm.agreement_id
+         left join variety_wise_target vwt on fa.area_id = vwt.area_id and fa.variety_id = vwt.variety_id and s.id=vwt.season_id
+         left join (select agreement_id,
+                           sum(noOfBale)    noOfBale,
+                           sum(baleWeight)  baleWeight,
+                           sum(baleAmount)  baleAmount,
+                           sum(bonusAmount) bonusAmount
+                    from (select pm.agreement_id,
+                                 pm.id,
+                                 count(pd.bale_id)    noOfBale,
+                                 sum(pd.weight)       baleWeight,
+                                 sum(amount)          baleAmount,
+                                 sum(bb.bonus_amount) bonusAmount
+                          from purchase_main pm
+                                   join purchase_details pd on pm.id = pd.purchase_main_id
+                                   left join bale_bonus bb on pd.bale_id = bb.bale_id
+                          group by pm.agreement_id, pm.id) ps
+                    group by agreement_id) prs on fa.id = prs.agreement_id
+         join (select flr.farmer_agreement_id,
+                      sum(loan_amount) loan
+               from farmer_loan_main flm
+                        join farmer_loan_requests flr on flm.farmer_loan_request_id = flr.id
+               group by flr.farmer_agreement_id) fl on fa.id = fl.farmer_agreement_id
+where (fa.area_id = :areaId)
+  and (:zoneId is null or fa.zone_id = :zoneId)
+  and (:SubAreaId is null or fa.sub_area_id = :SubAreaId)
+order by fa.area_id, fa.zone_id, fa.sub_area_id, fa.village_id, fa.farmer_id, cash_relaization desc

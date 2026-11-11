@@ -14,26 +14,32 @@ select  area_id areaId,
         Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=1 then qqa.answer end) seedEarlyDate,
         Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=2 then qqa.answer end) seedEarlyNob,
         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=3 then qqa.answer end) as numeric) seedEarlyLob,
+
         Floor(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=3 then qqa.answer end) as numeric) / 12) seedEarlyLobFeet,
         Mod(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=3 then qqa.answer end) as numeric) , 12) seedEarlyLobInch,
+
         (cast(Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=2 then qqa.answer end) as numeric) *
-         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=3 then qqa.answer end) as numeric)) / 100 seedEarlyDecimal,
+         (cast(Max(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=3 then qqa.answer end) as numeric) / 12 )) / 100 seedEarlyDecimal,
 
         Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=1 then qqa.answer end) seedMidDate,
         Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=2 then qqa.answer end) seedMidNob,
         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=3 then qqa.answer end) as numeric) seedMidLob,
+        
         Floor(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=3 then qqa.answer end) as numeric) / 12) seedMidLobFeet,
         Mod(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=3 then qqa.answer end) as numeric) , 12) seedMidLobInch,
+        
         (cast(Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=2 then qqa.answer end) as numeric) *
-         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=3 then qqa.answer end) as numeric)) / 100 seedMidDecimal,
+            (cast(Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=3 then qqa.answer end) as numeric) / 12)) / 100 seedMidDecimal,
 
         Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=1 then qqa.answer end) seedLateDate,
         Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=2 then qqa.answer end) seedLateNob,
         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=3 then qqa.answer end) as numeric) seedLateLob,
+        
         Floor(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=3 then qqa.answer end) as numeric) / 12) seedLateLobFeet,
         Mod(cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=3 then qqa.answer end) as numeric) , 12) seedLateLobInch,
+        
         (cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=2 then qqa.answer end) as numeric) *
-         cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=3 then qqa.answer end) as numeric)) / 100 seedLateDecimal,
+            (cast(Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=3 then qqa.answer end) as numeric) / 12)) / 100 seedLateDecimal,
 
         Max(case when qqc.category_id=2 and qqo.question_option_id=1 and qq.question_id=4 then qqa.answer end) plantationDate,
         Max(case when qqc.category_id=2 and qqo.question_option_id=2 and qq.question_id=5 then qqa.answer end) plantationEarly,
