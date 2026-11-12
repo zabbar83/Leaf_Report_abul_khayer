@@ -21,7 +21,7 @@ select  area_id areaId,
         (sum(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=2 then cast(qqa.answer as numeric) end) *
          (sum(case when qqc.category_id=1 and qqo.question_option_id=2 and qq.question_id=3 then cast(qqa.answer as numeric) end) / 12 )) / 100 seedEarlyDecimal,
 
-        Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=1 then qqa.answer end) seedMidDate,
+        case when grouping(fa.farmer_reg_number) = 1 then null else Max(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=1 then qqa.answer end) end seedMidDate,
         sum(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=2 then cast(qqa.answer as numeric) end) seedMidNob,
         sum(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=3 then cast(qqa.answer as numeric) end) seedMidLob,
 
@@ -31,7 +31,7 @@ select  area_id areaId,
         (sum(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=2 then cast(qqa.answer as numeric) end) *
             (sum(case when qqc.category_id=1 and qqo.question_option_id=3 and qq.question_id=3 then cast(qqa.answer as numeric) end) / 12)) / 100 seedMidDecimal,
 
-        Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=1 then qqa.answer end) seedLateDate,
+        case when grouping(fa.farmer_reg_number) = 1 then null else Max(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=1 then qqa.answer end) end seedLateDate,
         sum(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=2 then cast(qqa.answer as numeric) end) seedLateNob,
         sum(case when qqc.category_id=1 and qqo.question_option_id=4 and qq.question_id=3 then cast(qqa.answer as numeric) end) seedLateLob,
 
@@ -46,15 +46,15 @@ select  area_id areaId,
         sum(case when qqc.category_id=2 and qqo.question_option_id=3 and qq.question_id=5 then cast(qqa.answer as numeric) end) plantationMid,
         sum(case when qqc.category_id=2 and qqo.question_option_id=4 and qq.question_id=5 then cast(qqa.answer as numeric) end) plantationLate,
 
-        Max(case when qqc.category_id=3 and qqo.question_option_id=12 and qq.question_id=6 then qqa.answer end) harvestingDate1,
+        case when grouping(fa.farmer_reg_number) = 1 then null else Max(case when qqc.category_id=3 and qqo.question_option_id=12 and qq.question_id=6 then qqa.answer end) end harvestingDate1,
         sum(case when qqc.category_id=3 and qqo.question_option_id=13 and qq.question_id=6 then cast(qqa.answer as numeric) end) harvestingDate2,
         sum(case when qqc.category_id=3 and qqo.question_option_id=14 and qq.question_id=6 then cast(qqa.answer as numeric) end) harvestingDate3,
 
         sum(case when qqc.category_id=5 and qqo.question_option_id=1 and qq.question_id=10 then cast(qqa.answer as numeric) end) exiShed,
         sum(case when qqc.category_id=5 and qqo.question_option_id=1 and qq.question_id=11 then cast(qqa.answer as numeric) end) newShed,
-        Max(case when qqc.category_id=5 and qqo.question_option_id=1 and qq.question_id=12 then qqa.answer end) dateShed,
+        case when grouping(fa.farmer_reg_number) = 1 then null else Max(case when qqc.category_id=5 and qqo.question_option_id=1 and qq.question_id=12 then qqa.answer end) end dateShed,
 
-        Max(case when qqc.category_id=4 and qqo.question_option_id=1 and qq.question_id=9 then qqa.answer end) lastConstructedDate,
+        case when grouping(fa.farmer_reg_number) = 1 then null else Max(case when qqc.category_id=4 and qqo.question_option_id=1 and qq.question_id=9 then qqa.answer end) end lastConstructedDate,
 
         sum(case when qqc.category_id=4 and qqom1.option_id=5 and qqo.question_option_id=8 and qq.question_id=7 then cast(qqa.answer as numeric) end) kachaExi121212,
         sum(case when qqc.category_id=4 and qqom1.option_id=5 and qqo.question_option_id=9 and qq.question_id=7 then cast(qqa.answer as numeric) end) kachaExi161212,
@@ -70,7 +70,7 @@ select  area_id areaId,
         sum(case when qqc.category_id=4 and qqom1.option_id=7 and qqo.question_option_id=9 and qq.question_id=7 then cast(qqa.answer as numeric) end) pakkaExi161212,
         sum(case when qqc.category_id=4 and qqom1.option_id=7 and qqo.question_option_id=10 and qq.question_id=7 then cast(qqa.answer as numeric) end) pakkaExi161612,
         sum(case when qqc.category_id=4 and qqom1.option_id=7 and qqo.question_option_id=11 and qq.question_id=7 then cast(qqa.answer as numeric) end) pakkaExi161616,
---------
+
         sum(case when qqc.category_id=4 and qqom1.option_id=5 and qqo.question_option_id=8 and qq.question_id=8 then cast(qqa.answer as numeric) end) kachaNew121212,
         sum(case when qqc.category_id=4 and qqom1.option_id=5 and qqo.question_option_id=9 and qq.question_id=8 then cast(qqa.answer as numeric) end) kachaNew161212,
         sum(case when qqc.category_id=4 and qqom1.option_id=5 and qqo.question_option_id=10 and qq.question_id=8 then cast(qqa.answer as numeric) end) kachaNew161612,
@@ -110,6 +110,7 @@ group   by grouping sets ((area_id, area_name, zone_id, zone_name, sub_area_id, 
                           ()
                          )
 order   by area_id, zone_id, sub_area_id, village_id
+
 
 ;
 
