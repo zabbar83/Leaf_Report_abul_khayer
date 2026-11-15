@@ -1,0 +1,294 @@
+WITH farmer_answers AS
+         (
+             SELECT
+                 qqa.farmer_agreement_id,
+
+                 MAX(qqa.answer) FILTER (WHERE qqc.category_id = 1 AND qqo.question_option_id = 2 AND qq.question_id = 1) AS seed_early_date,
+                 SUM(CASE WHEN qqc.category_id = 1 AND qqo.question_option_id = 2 AND qq.question_id = 2 THEN CAST(qqa.answer AS NUMERIC) END) AS seed_early_nob,
+                 SUM(CASE WHEN qqc.category_id = 1 AND qqo.question_option_id = 2 AND qq.question_id = 3 THEN CAST(qqa.answer AS NUMERIC) END) AS seed_early_lob,
+
+                 MAX(qqa.answer) FILTER (WHERE qqc.category_id = 1 AND qqo.question_option_id = 3 AND qq.question_id = 1) AS seed_mid_date,
+                 SUM(CASE WHEN qqc.category_id = 1 AND qqo.question_option_id = 3 AND qq.question_id = 2 THEN CAST(qqa.answer AS NUMERIC) END) AS seed_mid_nob,
+                 SUM(CASE WHEN qqc.category_id = 1 AND qqo.question_option_id = 3 AND qq.question_id = 3 THEN CAST(qqa.answer AS NUMERIC) END) AS seed_mid_lob,
+
+                 MAX(qqa.answer) FILTER (WHERE qqc.category_id = 1 AND qqo.question_option_id = 4 AND qq.question_id = 1) AS seed_late_date,
+                 SUM(CASE WHEN qqc.category_id = 1 AND qqo.question_option_id = 4 AND qq.question_id = 2 THEN CAST(qqa.answer AS NUMERIC) END) AS seed_late_nob,
+                 SUM(CASE WHEN qqc.category_id = 1 AND qqo.question_option_id = 4 AND qq.question_id = 3 THEN CAST(qqa.answer AS NUMERIC) END) AS seed_late_lob,
+
+                 MAX(qqa.answer) FILTER (WHERE qqc.category_id = 2 AND qqo.question_option_id = 1 AND qq.question_id = 4) AS plantation_date,
+                 SUM(CASE WHEN qqc.category_id = 2 AND qqo.question_option_id = 2 AND qq.question_id = 5 THEN CAST(qqa.answer AS NUMERIC) END) AS plantation_early,
+                 SUM(CASE WHEN qqc.category_id = 2 AND qqo.question_option_id = 3 AND qq.question_id = 5 THEN CAST(qqa.answer AS NUMERIC) END) AS plantation_mid,
+                 SUM(CASE WHEN qqc.category_id = 2 AND qqo.question_option_id = 4 AND qq.question_id = 5 THEN CAST(qqa.answer AS NUMERIC) END) AS plantation_late,
+
+                 MAX(qqa.answer) FILTER (WHERE qqc.category_id = 3 AND qqo.question_option_id = 12 AND qq.question_id = 6) AS harvesting_date1,
+                 MAX(qqa.answer) FILTER (WHERE qqc.category_id = 3 AND qqo.question_option_id = 13 AND qq.question_id = 6) AS harvesting_date2,
+                 MAX(qqa.answer) FILTER (WHERE qqc.category_id = 3 AND qqo.question_option_id = 14 AND qq.question_id = 6) AS harvesting_date3,
+
+                 SUM(CASE WHEN qqc.category_id = 5 AND qqo.question_option_id = 1 AND qq.question_id = 10 THEN CAST(qqa.answer AS NUMERIC) END) AS exi_shed,
+                 SUM(CASE WHEN qqc.category_id = 5 AND qqo.question_option_id = 1 AND qq.question_id = 11 THEN CAST(qqa.answer AS NUMERIC) END) AS new_shed,
+                 MAX(qqa.answer) FILTER (WHERE qqc.category_id = 5 AND qqo.question_option_id = 1 AND qq.question_id = 12) AS date_shed,
+
+                 MAX(qqa.answer) FILTER (WHERE qqc.category_id = 4 AND qqo.question_option_id = 1 AND qq.question_id = 9) AS last_constructed_date,
+
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 5 AND qqo.question_option_id = 8 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS kacha_exi_121212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 5 AND qqo.question_option_id = 9 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS kacha_exi_161212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 5 AND qqo.question_option_id = 10 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS kacha_exi_161612,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 5 AND qqo.question_option_id = 11 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS kacha_exi_161616,
+
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 6 AND qqo.question_option_id = 8 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS semipakka_exi_121212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 6 AND qqo.question_option_id = 9 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS semipakka_exi_161212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 6 AND qqo.question_option_id = 10 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS semipakka_exi_161612,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 6 AND qqo.question_option_id = 11 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS semipakka_exi_161616,
+
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 7 AND qqo.question_option_id = 8 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS pakka_exi_121212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 7 AND qqo.question_option_id = 9 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS pakka_exi_161212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 7 AND qqo.question_option_id = 10 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS pakka_exi_161612,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 7 AND qqo.question_option_id = 11 AND qq.question_id = 7 THEN CAST(qqa.answer AS NUMERIC) END) AS pakka_exi_161616,
+
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 5 AND qqo.question_option_id = 8 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS kacha_new_121212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 5 AND qqo.question_option_id = 9 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS kacha_new_161212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 5 AND qqo.question_option_id = 10 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS kacha_new_161612,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 5 AND qqo.question_option_id = 11 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS kacha_new_161616,
+
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 6 AND qqo.question_option_id = 8 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS semipakka_new_121212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 6 AND qqo.question_option_id = 9 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS semipakka_new_161212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 6 AND qqo.question_option_id = 10 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS semipakka_new_161612,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 6 AND qqo.question_option_id = 11 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS semipakka_new_161616,
+
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 7 AND qqo.question_option_id = 8 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS pakka_new_121212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 7 AND qqo.question_option_id = 9 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS pakka_new_161212,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 7 AND qqo.question_option_id = 10 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS pakka_new_161612,
+                 SUM(CASE WHEN qqc.category_id = 4 AND qqom1.option_id = 7 AND qqo.question_option_id = 11 AND qq.question_id = 8 THEN CAST(qqa.answer AS NUMERIC) END) AS pakka_new_161616
+
+             FROM qi_question_answer qqa
+                      JOIN qi_question_option_map qqom
+                           ON qqa.question_option_map_id = qqom.question_option_map_id
+                               AND qqa.question_id = qqom.question_id
+                      JOIN qi_question_option qqo
+                           ON qqom.option_id = qqo.question_option_id
+                      JOIN qi_question qq
+                           ON qqa.question_id = qq.question_id
+                      JOIN qi_question_category qqc
+                           ON qq.question_category_id = qqc.category_id
+                      LEFT JOIN qi_question_option_map qqom1
+                                ON qqom.parent_id = qqom1.question_option_map_id
+
+             WHERE (:categoryId IS NULL OR qqc.category_id = :categoryId)
+
+             GROUP BY qqa.farmer_agreement_id
+         ),
+
+     farmer_data AS
+         (
+             SELECT
+                 fa.id,
+                 fa.area_id,
+                 fa.area_name,
+                 fa.zone_id,
+                 fa.zone_name,
+                 fa.sub_area_id,
+                 fa.sub_area_name,
+                 fa.village_id,
+                 fa.village_name,
+                 fa.farmer_reg_number,
+                 fa.farmer_name,
+                 fa.farmer_father_name,
+                 fa.mobile_no,
+                 fa.land_acreage,
+
+                 ans.seed_early_date,
+                 ans.seed_early_nob,
+                 ans.seed_early_lob,
+                 ans.seed_mid_date,
+                 ans.seed_mid_nob,
+                 ans.seed_mid_lob,
+                 ans.seed_late_date,
+                 ans.seed_late_nob,
+                 ans.seed_late_lob,
+
+                 ans.plantation_date,
+                 ans.plantation_early,
+                 ans.plantation_mid,
+                 ans.plantation_late,
+
+                 ans.harvesting_date1,
+                 ans.harvesting_date2,
+                 ans.harvesting_date3,
+
+                 ans.exi_shed,
+                 ans.new_shed,
+                 ans.date_shed,
+                 ans.last_constructed_date,
+
+                 ans.kacha_exi_121212,
+                 ans.kacha_exi_161212,
+                 ans.kacha_exi_161612,
+                 ans.kacha_exi_161616,
+
+                 ans.semipakka_exi_121212,
+                 ans.semipakka_exi_161212,
+                 ans.semipakka_exi_161612,
+                 ans.semipakka_exi_161616,
+
+                 ans.pakka_exi_121212,
+                 ans.pakka_exi_161212,
+                 ans.pakka_exi_161612,
+                 ans.pakka_exi_161616,
+
+                 ans.kacha_new_121212,
+                 ans.kacha_new_161212,
+                 ans.kacha_new_161612,
+                 ans.kacha_new_161616,
+
+                 ans.semipakka_new_121212,
+                 ans.semipakka_new_161212,
+                 ans.semipakka_new_161612,
+                 ans.semipakka_new_161616,
+
+                 ans.pakka_new_121212,
+                 ans.pakka_new_161212,
+                 ans.pakka_new_161612,
+                 ans.pakka_new_161616
+
+             FROM farmer_agreement fa
+             JOIN farmer_answers ans
+                ON fa.id = ans.farmer_agreement_id
+
+             WHERE fa.season_id = :seasonId
+               AND (:areaId = 0 OR fa.area_id = :areaId)
+               AND (:zoneId = 0 OR fa.zone_id = :zoneId)
+               AND (:subAreaId = 0 OR fa.sub_area_id = :subAreaId)
+               AND (:villageId = 0 OR fa.village_id = :villageId)
+         )
+
+SELECT
+    area_id AS areaId,
+    area_name AS areaName,
+    zone_id AS zoneId,
+    zone_name AS zoneName,
+    sub_area_id AS subAreaId,
+    sub_area_name AS subAreaName,
+    village_id AS villageId,
+    village_name AS villageName,
+
+    farmer_reg_number AS farRegNum,
+    farmer_name AS farmerName,
+    farmer_father_name AS farFatherName,
+    mobile_no AS mobileNo,
+
+    SUM(land_acreage) AS landAcreage,
+
+    CASE WHEN GROUPING(id) = 1 THEN NULL ELSE MAX(seed_early_date) END AS seedEarlyDate,
+    SUM(seed_early_nob) AS seedEarlyNob,
+    SUM(seed_early_lob) AS seedEarlyLob,
+    FLOOR(SUM(seed_early_lob) / 12) AS seedEarlyLobFeet,
+    MOD(SUM(seed_early_lob), 12) AS seedEarlyLobInch,
+    (SUM(seed_early_nob) * (SUM(seed_early_lob) / 12)) / 100 AS seedEarlyDecimal,
+
+    CASE WHEN GROUPING(id) = 1 THEN NULL ELSE MAX(seed_mid_date) END AS seedMidDate,
+    SUM(seed_mid_nob) AS seedMidNob,
+    SUM(seed_mid_lob) AS seedMidLob,
+    FLOOR(SUM(seed_mid_lob) / 12) AS seedMidLobFeet,
+    MOD(SUM(seed_mid_lob), 12) AS seedMidLobInch,
+    (SUM(seed_mid_nob) * (SUM(seed_mid_lob) / 12)) / 100 AS seedMidDecimal,
+
+    CASE WHEN GROUPING(id) = 1 THEN NULL ELSE MAX(seed_late_date) END AS seedLateDate,
+    SUM(seed_late_nob) AS seedLateNob,
+    SUM(seed_late_lob) AS seedLateLob,
+    FLOOR(SUM(seed_late_lob) / 12) AS seedLateLobFeet,
+    MOD(SUM(seed_late_lob), 12) AS seedLateLobInch,
+    (SUM(seed_late_nob) * (SUM(seed_late_lob) / 12)) / 100 AS seedLateDecimal,
+
+    CASE WHEN GROUPING(id) = 1 THEN NULL ELSE MAX(plantation_date) END AS plantationDate,
+    SUM(plantation_early) AS plantationEarly,
+    SUM(plantation_mid) AS plantationMid,
+    SUM(plantation_late) AS plantationLate,
+
+    CASE WHEN GROUPING(id) = 1 THEN NULL ELSE MAX(harvesting_date1) END AS harvestingDate1,
+    CASE WHEN GROUPING(id) = 1 THEN NULL ELSE MAX(harvesting_date2) END AS harvestingDate2,
+    CASE WHEN GROUPING(id) = 1 THEN NULL ELSE MAX(harvesting_date3) END AS harvestingDate3,
+
+    SUM(exi_shed) AS exiShed,
+    SUM(new_shed) AS newShed,
+    CASE WHEN GROUPING(id) = 1 THEN NULL ELSE MAX(date_shed) END AS dateShed,
+    CASE WHEN GROUPING(id) = 1 THEN NULL ELSE MAX(last_constructed_date) END AS lastConstructedDate,
+
+    SUM(kacha_exi_121212) AS kachaExi121212,
+    SUM(kacha_exi_161212) AS kachaExi161212,
+    SUM(kacha_exi_161612) AS kachaExi161612,
+    SUM(kacha_exi_161616) AS kachaExi161616,
+
+    SUM(semipakka_exi_121212) AS semipakkaExi121212,
+    SUM(semipakka_exi_161212) AS semipakkaExi161212,
+    SUM(semipakka_exi_161612) AS semipakkaExi161612,
+    SUM(semipakka_exi_161616) AS semipakkaExi161616,
+
+    SUM(pakka_exi_121212) AS pakkaExi121212,
+    SUM(pakka_exi_161212) AS pakkaExi161212,
+    SUM(pakka_exi_161612) AS pakkaExi161612,
+    SUM(pakka_exi_161616) AS pakkaExi161616,
+
+    SUM(kacha_new_121212) AS kachaNew121212,
+    SUM(kacha_new_161212) AS kachaNew161212,
+    SUM(kacha_new_161612) AS kachaNew161612,
+    SUM(kacha_new_161616) AS kachaNew161616,
+
+    SUM(semipakka_new_121212) AS semipakkaNew121212,
+    SUM(semipakka_new_161212) AS semipakkaNew161212,
+    SUM(semipakka_new_161612) AS semipakkaNew161612,
+    SUM(semipakka_new_161616) AS semipakkaNew161616,
+
+    SUM(pakka_new_121212) AS pakkaNew121212,
+    SUM(pakka_new_161212) AS pakkaNew161212,
+    SUM(pakka_new_161612) AS pakkaNew161612,
+    SUM(pakka_new_161616) AS pakkaNew161616
+
+FROM farmer_data
+
+GROUP BY GROUPING SETS
+    (
+    (
+     id,
+     area_id, area_name,
+     zone_id, zone_name,
+     sub_area_id, sub_area_name,
+     village_id, village_name,
+     farmer_reg_number,
+     farmer_name,
+     farmer_father_name,
+     mobile_no,
+     land_acreage,
+
+     seed_early_date, seed_early_nob, seed_early_lob,
+     seed_mid_date, seed_mid_nob, seed_mid_lob,
+     seed_late_date, seed_late_nob, seed_late_lob,
+
+     plantation_date, plantation_early, plantation_mid, plantation_late,
+
+     harvesting_date1, harvesting_date2, harvesting_date3,
+
+     exi_shed, new_shed, date_shed, last_constructed_date,
+
+     kacha_exi_121212, kacha_exi_161212, kacha_exi_161612, kacha_exi_161616,
+     semipakka_exi_121212, semipakka_exi_161212, semipakka_exi_161612, semipakka_exi_161616,
+     pakka_exi_121212, pakka_exi_161212, pakka_exi_161612, pakka_exi_161616,
+
+     kacha_new_121212, kacha_new_161212, kacha_new_161612, kacha_new_161616,
+     semipakka_new_121212, semipakka_new_161212, semipakka_new_161612, semipakka_new_161616,
+     pakka_new_121212, pakka_new_161212, pakka_new_161612, pakka_new_161616
+        ),
+
+    (area_id, area_name, zone_id, zone_name, sub_area_id, sub_area_name, village_id, village_name),
+    (area_id, area_name, zone_id, zone_name, sub_area_id, sub_area_name),
+    (area_id, area_name, zone_id, zone_name),
+    (area_id, area_name),
+    ()
+    )
+
+ORDER BY
+    area_id NULLS LAST,
+    zone_id NULLS LAST,
+    sub_area_id NULLS LAST,
+    village_id NULLS LAST,
+    GROUPING(village_id),
+    farmer_reg_number
